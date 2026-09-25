@@ -21,22 +21,21 @@ val TickCountTypography = Typography().let { base ->
     )
 }
 
-/** The oversized day count at the top of the screen. */
-val DayCountTextStyle = TextStyle(
+/** The number inside one countdown cell — "4 months", "11 days", … */
+val CountNumberTextStyle = TextStyle(
     fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Light,
-    fontSize = 92.sp,
-    lineHeight = 96.sp,
-    letterSpacing = (-4).sp,
+    fontWeight = FontWeight.Normal,
+    fontSize = 32.sp,
+    lineHeight = 36.sp,
+    letterSpacing = (-0.5).sp,
     fontFeatureSettings = TABULAR_FIGURES,
 )
 
-/** The live `HH:MM:SS` line. */
-val ClockTextStyle = TextStyle(
+/** The placeholder shown when the selected day has no countdown. */
+val EmptyValueTextStyle = TextStyle(
     fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Medium,
-    fontSize = 30.sp,
-    lineHeight = 36.sp,
-    letterSpacing = 1.sp,
-    fontFeatureSettings = TABULAR_FIGURES,
+    fontWeight = FontWeight.Light,
+    fontSize = 64.sp,
+    lineHeight = 68.sp,
+    letterSpacing = 2.sp,
 )

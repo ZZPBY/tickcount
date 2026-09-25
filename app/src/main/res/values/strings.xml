@@ -4,26 +4,60 @@
 
     <!-- Actions -->
     <string name="action_today">Today</string>
+    <string name="action_this_month">This month</string>
     <string name="action_add">Add countdown</string>
     <string name="action_edit">Rename</string>
     <string name="action_delete">Delete</string>
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
 
+    <!-- Accessibility labels for the year stepper in the month picker -->
+    <string name="action_year_back">Previous year</string>
+    <string name="action_year_forward">Next year</string>
+    <string name="action_year_back_ten">Back ten years</string>
+    <string name="action_year_forward_ten">Forward ten years</string>
+
     <!-- Countdown header -->
     <string name="label_no_countdown">No countdown yet</string>
-    <string name="label_today">Today</string>
-    <string name="label_days_away">days away</string>
-    <string name="label_days_ago">days ago</string>
-    <string name="label_left_today">Left today</string>
-    <string name="label_elapsed_today">Elapsed today</string>
+    <string name="label_countdown_left">Time left</string>
+    <string name="label_today_elapsed">Elapsed today</string>
+    <string name="label_countdown_ago">Time since</string>
+    <!-- Shown in place of the numbers when the selected day has no countdown. -->
+    <string name="value_empty">--</string>
 
     <!-- Editor dialog -->
     <string name="dialog_new_title">New countdown</string>
     <string name="dialog_edit_title">Rename countdown</string>
+    <string name="dialog_pick_month_title">Jump to</string>
     <string name="field_name">Name</string>
     <string name="field_name_hint">Birthday, exam, trip…</string>
     <string name="dialog_clear_hint">Clearing the name removes this countdown.</string>
+
+    <!-- Countdown units. Plurals so English reads "1 day" / "2 days". -->
+    <plurals name="unit_years">
+        <item quantity="one">year</item>
+        <item quantity="other">years</item>
+    </plurals>
+    <plurals name="unit_months">
+        <item quantity="one">month</item>
+        <item quantity="other">months</item>
+    </plurals>
+    <plurals name="unit_days">
+        <item quantity="one">day</item>
+        <item quantity="other">days</item>
+    </plurals>
+    <plurals name="unit_hours">
+        <item quantity="one">hour</item>
+        <item quantity="other">hours</item>
+    </plurals>
+    <plurals name="unit_minutes">
+        <item quantity="one">minute</item>
+        <item quantity="other">minutes</item>
+    </plurals>
+    <plurals name="unit_seconds">
+        <item quantity="one">second</item>
+        <item quantity="other">seconds</item>
+    </plurals>
 
     <!--
       Date patterns for java.time.DateTimeFormatter. Keeping the pattern in a

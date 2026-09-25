@@ -25,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -40,6 +39,7 @@ import com.tickcount.app.domain.firstDayOfWeek
 import com.tickcount.app.domain.monthCells
 import com.tickcount.app.domain.weekDaysInOrder
 import com.tickcount.app.ui.components.ChevronIcon
+import com.tickcount.app.ui.components.currentLocale
 import com.tickcount.app.ui.theme.eventAccent
 import java.time.LocalDate
 import java.time.YearMonth
@@ -62,10 +62,11 @@ fun MonthCalendar(
     events: Map<LocalDate, CountdownEvent>,
     onSelect: (LocalDate) -> Unit,
     onStepMonth: (Long) -> Unit,
+    onMonthClick: () -> Unit,
     onToday: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val locale = LocalConfiguration.current.locales[0] ?: Locale.getDefault()
+    val locale = currentLocale()
     val calendarLocale = remember(locale) { if (locale.language.isEmpty()) Locale.getDefault() else locale }
 
     Surface(
@@ -79,6 +80,7 @@ fun MonthCalendar(
                 month = month,
                 locale = calendarLocale,
                 onStepMonth = onStepMonth,
+                onMonthClick = onMonthClick,
                 onToday = onToday,
             )
             Spacer(Modifier.height(4.dp))
@@ -101,6 +103,7 @@ private fun MonthHeader(
     month: YearMonth,
     locale: Locale,
     onStepMonth: (Long) -> Unit,
+    onMonthClick: () -> Unit,
     onToday: () -> Unit,
 ) {
     val pattern = stringResource(R.string.month_year_format)
@@ -114,13 +117,24 @@ private fun MonthHeader(
             ChevronIcon(pointsLeft = true)
         }
 
-        Text(
-            text = month.format(formatter),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.weight(1f),
-        )
+        // Tapping the title opens the year/month chooser, which is far quicker
+        // than stepping through months when the target is years away.
+        Surface(
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            modifier = Modifier
+                .weight(1f)
+                .clip(CircleShape)
+                .clickable(onClick = onMonthClick),
+        ) {
+            Text(
+                text = month.format(formatter),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(vertical = 8.dp),
+            )
+        }
 
         TextButton(onClick = onToday) {
             Text(

@@ -26,123 +26,175 @@ class CountdownTest {
         zone: ZoneId = shanghai,
     ): ZonedDateTime = ZonedDateTime.of(year, month, day, hour, minute, second, 0, zone)
 
-    @Test
-    fun `counts whole calendar days to a future date`() {
-        val countdown = countdownTo(LocalDate.of(2027, 2, 6), at(2026, 9, 25, 18, 0))
+    private fun parts(y: Long = 0, mo: Long = 0, d: Long = 0, h: Long = 0, mi: Long = 0, s: Long = 0) =
+        TimeParts(y, mo, d, h, mi, s)
 
-        assertEquals(CountdownPhase.FUTURE, countdown.phase)
-        assertEquals(134L, countdown.days)
+    // ---------------------------------------------------------------- decompose
+
+    @Test
+    fun `splits a short interval into hours, minutes and seconds`() {
+        val result = decompose(at(2026, 9, 25, 18, 0, 0), at(2026, 9, 25, 20, 30, 15))
+
+        assertEquals(parts(h = 2, mi = 30, s = 15), result)
     }
 
     @Test
-    fun `a date later today is today, not tomorrow`() {
-        val countdown = countdownTo(LocalDate.of(2026, 9, 25), at(2026, 9, 25, 23, 59, 59))
+    fun `splits months and days out of a medium interval`() {
+        // 2026-09-25 18:00 -> 2027-02-06 00:00 is 4 months, 11 days and 6 hours.
+        val result = decompose(at(2026, 9, 25, 18, 0, 0), at(2027, 2, 6, 0, 0, 0))
 
-        assertEquals(CountdownPhase.TODAY, countdown.phase)
-        assertEquals(0L, countdown.days)
+        assertEquals(parts(mo = 4, d = 11, h = 6), result)
     }
 
     @Test
-    fun `tomorrow is one day away even late at night`() {
-        val countdown = countdownTo(LocalDate.of(2026, 9, 26), at(2026, 9, 25, 23, 30))
+    fun `splits whole years out of a long interval`() {
+        val result = decompose(at(2026, 9, 25, 0, 0, 0), at(2028, 11, 30, 0, 0, 0))
 
-        assertEquals(CountdownPhase.FUTURE, countdown.phase)
-        assertEquals(1L, countdown.days)
+        assertEquals(parts(y = 2, mo = 2, d = 5), result)
     }
 
     @Test
-    fun `counts elapsed calendar days for a past date`() {
-        val countdown = countdownTo(LocalDate.of(2026, 9, 13), at(2026, 9, 25, 18, 0))
-
-        assertEquals(CountdownPhase.PAST, countdown.phase)
-        assertEquals(12L, countdown.days)
+    fun `an exact interval has no remainder`() {
+        assertEquals(
+            parts(y = 1, mo = 1, d = 1, h = 1, mi = 1, s = 1),
+            decompose(at(2026, 1, 1, 1, 1, 1), at(2027, 2, 2, 2, 2, 2)),
+        )
     }
 
     @Test
-    fun `the live clock measures the time left in the current day`() {
-        val countdown = countdownTo(LocalDate.of(2027, 2, 6), at(2026, 9, 25, 18, 30, 15))
+    fun `components always add back up to the interval`() {
+        val from = at(2026, 9, 25, 17, 43, 21)
+        val to = at(2029, 3, 1, 4, 15, 59)
 
-        // 5h 29m 45s until midnight.
-        assertEquals((5 * 3600 + 29 * 60 + 45) * 1000L, countdown.dayProgressMillis)
-        assertEquals("05:29:45", formatDayProgress(countdown.dayProgressMillis))
-    }
+        val result = decompose(from, to)
 
-    @Test
-    fun `the live clock measures the time since midnight for a past date`() {
-        val countdown = countdownTo(LocalDate.of(2026, 9, 13), at(2026, 9, 25, 18, 30, 15))
-
-        assertEquals((18 * 3600 + 30 * 60 + 15) * 1000L, countdown.dayProgressMillis)
-        assertEquals("18:30:15", formatDayProgress(countdown.dayProgressMillis))
-    }
-
-    @Test
-    fun `handles a month boundary`() {
-        assertEquals(1L, countdownTo(LocalDate.of(2026, 10, 1), at(2026, 9, 30, 12)).days)
-    }
-
-    @Test
-    fun `handles a year boundary`() {
-        assertEquals(1L, countdownTo(LocalDate.of(2027, 1, 1), at(2026, 12, 31, 12)).days)
-        // 2027 is a common year, so its first day to the next first day is 365 days.
-        assertEquals(365L, countdownTo(LocalDate.of(2028, 1, 1), at(2027, 1, 1, 0)).days)
-        assertEquals(364L, countdownTo(LocalDate.of(2027, 12, 31), at(2027, 1, 1, 0)).days)
+        var rebuilt = from
+        rebuilt = rebuilt.plusYears(result.years)
+        rebuilt = rebuilt.plusMonths(result.months)
+        rebuilt = rebuilt.plusDays(result.days)
+        rebuilt = rebuilt.plusHours(result.hours)
+        rebuilt = rebuilt.plusMinutes(result.minutes)
+        rebuilt = rebuilt.plusSeconds(result.seconds)
+        assertEquals(to.toInstant(), rebuilt.toInstant())
     }
 
     @Test
     fun `handles a leap day`() {
-        assertEquals(1L, countdownTo(LocalDate.of(2028, 2, 29), at(2028, 2, 28, 12)).days)
-        assertEquals(2L, countdownTo(LocalDate.of(2028, 3, 1), at(2028, 2, 28, 12)).days)
+        assertEquals(parts(d = 1), decompose(at(2028, 2, 28), at(2028, 2, 29)))
+        assertEquals(parts(d = 2), decompose(at(2028, 2, 28), at(2028, 3, 1)))
+        // 2027 is a common year, so it has no 29 February to land on.
+        assertEquals(parts(d = 1), decompose(at(2027, 2, 28), at(2027, 3, 1)))
     }
 
     @Test
-    fun `a short daylight-saving day is 23 hours long, not 24`() {
-        // US DST starts on 2026-03-08: the local day is 23 hours.
-        val countdown = countdownTo(LocalDate.of(2026, 3, 9), at(2026, 3, 8, 0, 0, 0, newYork))
-
-        assertEquals(1L, countdown.days)
-        assertEquals(23 * 3600 * 1000L, countdown.dayProgressMillis)
+    fun `handles month and year boundaries`() {
+        assertEquals(parts(d = 1), decompose(at(2026, 9, 30, 12), at(2026, 10, 1, 12)))
+        assertEquals(parts(d = 1), decompose(at(2026, 12, 31, 12), at(2027, 1, 1, 12)))
+        assertEquals(parts(y = 1), decompose(at(2026, 12, 31), at(2027, 12, 31)))
     }
 
     @Test
-    fun `a long daylight-saving day reports its extra hour instead of wrapping`() {
-        // US DST ends on 2026-11-01: the local day is 25 hours.
-        val countdown = countdownTo(LocalDate.of(2026, 11, 2), at(2026, 11, 1, 0, 0, 0, newYork))
-
-        assertEquals(1L, countdown.days)
-        assertEquals(25 * 3600 * 1000L, countdown.dayProgressMillis)
-        assertEquals("25:00:00", formatDayProgress(countdown.dayProgressMillis))
+    fun `a short daylight-saving day is still one calendar day`() {
+        // US DST starts on 2026-03-08: only 23 hours of real time elapse.
+        assertEquals(parts(d = 1), decompose(at(2026, 3, 8, 0, 0, 0, newYork), at(2026, 3, 9, 0, 0, 0, newYork)))
     }
 
     @Test
-    fun `the day counter and the clock roll over at the same instant`() {
-        val target = LocalDate.of(2027, 2, 6)
-
-        val justBefore = countdownTo(target, at(2026, 9, 25, 23, 59, 59))
-        val justAfter = countdownTo(target, at(2026, 9, 26, 0, 0, 0))
-
-        // One second before midnight the clock is almost spent...
-        assertEquals(1_000L, justBefore.dayProgressMillis)
-        // ...and at midnight the day count drops by exactly one and the clock
-        // restarts at a full day. The two numbers never contradict each other.
-        assertEquals(justBefore.days - 1, justAfter.days)
-        assertEquals(24 * 3600 * 1000L, justAfter.dayProgressMillis)
+    fun `a long daylight-saving day is still one calendar day`() {
+        // US DST ends on 2026-11-01: 25 hours of real time elapse.
+        assertEquals(parts(d = 1), decompose(at(2026, 11, 1, 0, 0, 0, newYork), at(2026, 11, 2, 0, 0, 0, newYork)))
     }
 
     @Test
-    fun `formatDayProgress never goes negative and pads every field`() {
-        assertEquals("00:00:00", formatDayProgress(0))
-        assertEquals("00:00:00", formatDayProgress(-5_000))
-        assertEquals("00:00:01", formatDayProgress(1_400))
-        assertEquals("01:02:03", formatDayProgress((3600 + 120 + 3) * 1000L))
+    fun `a zero-length interval is all zeros`() {
+        val moment = at(2026, 9, 25, 18, 0, 0)
+        assertEquals(parts(), decompose(moment, moment))
+    }
+
+    // ------------------------------------------------------------- countdownTo
+
+    @Test
+    fun `a future date counts down to its midnight`() {
+        val countdown = countdownTo(LocalDate.of(2027, 2, 6), at(2026, 9, 25, 18, 0, 0))
+
+        assertEquals(CountdownPhase.FUTURE, countdown.phase)
+        assertEquals(parts(mo = 4, d = 11, h = 6), countdown.parts)
     }
 
     @Test
-    fun `days are identical regardless of the time of day they are measured at`() {
-        val target = LocalDate.of(2027, 2, 6)
-        val expected = countdownTo(target, at(2026, 9, 25, 0, 0, 1)).days
+    fun `tomorrow evening is hours away, not a whole day`() {
+        // The countdown targets midnight, so at 18:00 the honest answer is 6 hours.
+        val countdown = countdownTo(LocalDate.of(2026, 9, 26), at(2026, 9, 25, 18, 0, 0))
 
-        listOf(6, 12, 18, 23).forEach { hour ->
-            assertEquals(expected, countdownTo(target, at(2026, 9, 25, hour, 30)).days)
-        }
+        assertEquals(CountdownPhase.FUTURE, countdown.phase)
+        assertEquals(parts(h = 6), countdown.parts)
+    }
+
+    @Test
+    fun `the selected date being today counts up from its midnight`() {
+        val countdown = countdownTo(LocalDate.of(2026, 9, 25), at(2026, 9, 25, 18, 30, 15))
+
+        assertEquals(CountdownPhase.TODAY, countdown.phase)
+        assertEquals(parts(h = 18, mi = 30, s = 15), countdown.parts)
+    }
+
+    @Test
+    fun `a past date counts up from its midnight`() {
+        val countdown = countdownTo(LocalDate.of(2026, 9, 13), at(2026, 9, 25, 18, 0, 0))
+
+        assertEquals(CountdownPhase.PAST, countdown.phase)
+        assertEquals(parts(d = 12, h = 18), countdown.parts)
+    }
+
+    @Test
+    fun `a date one second away is a future countdown`() {
+        val countdown = countdownTo(LocalDate.of(2026, 9, 26), at(2026, 9, 25, 23, 59, 59))
+
+        assertEquals(CountdownPhase.FUTURE, countdown.phase)
+        assertEquals(parts(s = 1), countdown.parts)
+    }
+
+    @Test
+    fun `the phase flips at exactly midnight`() {
+        val target = LocalDate.of(2026, 9, 26)
+
+        assertEquals(CountdownPhase.FUTURE, countdownTo(target, at(2026, 9, 25, 23, 59, 59)).phase)
+        assertEquals(CountdownPhase.TODAY, countdownTo(target, at(2026, 9, 26, 0, 0, 0)).phase)
+        assertEquals(CountdownPhase.PAST, countdownTo(target, at(2026, 9, 27, 0, 0, 0)).phase)
+    }
+
+    // -------------------------------------------------------- significantUnits
+
+    @Test
+    fun `leading zero units are dropped`() {
+        assertEquals(
+            listOf(TimeUnit.MONTHS, TimeUnit.DAYS, TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS),
+            parts(mo = 4, d = 11, h = 6).significantUnits(),
+        )
+    }
+
+    @Test
+    fun `a year-long countdown shows every unit`() {
+        assertEquals(TimeUnit.entries.toList(), parts(y = 1, mo = 2, d = 3, h = 4, mi = 5, s = 6).significantUnits())
+    }
+
+    @Test
+    fun `seconds are always shown so the display keeps ticking`() {
+        assertEquals(listOf(TimeUnit.SECONDS), parts().significantUnits())
+        assertEquals(listOf(TimeUnit.SECONDS), parts(s = 7).significantUnits())
+    }
+
+    @Test
+    fun `an hour-long countdown starts at hours`() {
+        assertEquals(
+            listOf(TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS),
+            parts(h = 1).significantUnits(),
+        )
+    }
+
+    @Test
+    fun `isZero only for an all-zero breakdown`() {
+        assertEquals(true, parts().isZero)
+        assertEquals(false, parts(s = 1).isZero)
     }
 }

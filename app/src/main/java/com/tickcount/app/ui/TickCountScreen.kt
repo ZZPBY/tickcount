@@ -22,6 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tickcount.app.domain.countdownTo
 import com.tickcount.app.ui.calendar.MonthCalendar
+import com.tickcount.app.ui.calendar.MonthYearPickerDialog
 import com.tickcount.app.ui.countdown.CountdownHeader
 import com.tickcount.app.ui.theme.eventAccent
 import java.time.LocalDate
@@ -45,6 +46,7 @@ fun TickCountScreen(viewModel: MainViewModel = viewModel()) {
     // `mutableStateOf` rather than `mutableLongStateOf`: only the boxed
     // MutableState has a saveable overload.
     var editorEpochDay by rememberSaveable { mutableStateOf(NO_DATE) }
+    var monthPickerOpen by rememberSaveable { mutableStateOf(false) }
 
     val today = now.toLocalDate()
     val countdown = remember(now, selectedDate) { countdownTo(selectedDate, now) }
@@ -79,11 +81,23 @@ fun TickCountScreen(viewModel: MainViewModel = viewModel()) {
             events = events,
             onSelect = viewModel::select,
             onStepMonth = viewModel::stepMonth,
+            onMonthClick = { monthPickerOpen = true },
             onToday = viewModel::goToToday,
             modifier = Modifier.padding(horizontal = 12.dp),
         )
 
         Spacer(Modifier.height(20.dp))
+    }
+
+    if (monthPickerOpen) {
+        MonthYearPickerDialog(
+            initial = visibleMonth,
+            onSelect = { picked ->
+                viewModel.showMonth(picked)
+                monthPickerOpen = false
+            },
+            onDismiss = { monthPickerOpen = false },
+        )
     }
 
     if (editorEpochDay != NO_DATE) {

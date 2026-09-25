@@ -4,26 +4,54 @@
 
     <!-- 操作 -->
     <string name="action_today">今天</string>
+    <string name="action_this_month">本月</string>
     <string name="action_add">设为倒数日</string>
     <string name="action_edit">改名</string>
     <string name="action_delete">删除</string>
     <string name="action_save">保存</string>
     <string name="action_cancel">取消</string>
 
+    <!-- 年月选择器里年份按钮的无障碍说明 -->
+    <string name="action_year_back">上一年</string>
+    <string name="action_year_forward">下一年</string>
+    <string name="action_year_back_ten">往前十年</string>
+    <string name="action_year_forward_ten">往后十年</string>
+
     <!-- 倒数日 -->
     <string name="label_no_countdown">还没有倒数日</string>
-    <string name="label_today">今天</string>
-    <string name="label_days_away">天后</string>
-    <string name="label_days_ago">天前</string>
-    <string name="label_left_today">今日剩余</string>
-    <string name="label_elapsed_today">今天已过</string>
+    <string name="label_countdown_left">还有</string>
+    <string name="label_today_elapsed">今天已过</string>
+    <string name="label_countdown_ago">已过去</string>
+    <!-- 选中日期没有倒数日时，代替数字显示的内容。 -->
+    <string name="value_empty">--</string>
 
     <!-- 编辑对话框 -->
     <string name="dialog_new_title">新建倒数日</string>
     <string name="dialog_edit_title">修改名称</string>
+    <string name="dialog_pick_month_title">跳转到</string>
     <string name="field_name">名称</string>
     <string name="field_name_hint">生日、考试、旅行…</string>
     <string name="dialog_clear_hint">清空名称将删除这个倒数日。</string>
+
+    <!-- 倒数日单位。中文只有 other 一种形式。 -->
+    <plurals name="unit_years">
+        <item quantity="other">年</item>
+    </plurals>
+    <plurals name="unit_months">
+        <item quantity="other">月</item>
+    </plurals>
+    <plurals name="unit_days">
+        <item quantity="other">天</item>
+    </plurals>
+    <plurals name="unit_hours">
+        <item quantity="other">小时</item>
+    </plurals>
+    <plurals name="unit_minutes">
+        <item quantity="other">分</item>
+    </plurals>
+    <plurals name="unit_seconds">
+        <item quantity="other">秒</item>
+    </plurals>
 
     <!-- 日期格式 -->
     <string name="month_year_format">yyyy年M月</string>
