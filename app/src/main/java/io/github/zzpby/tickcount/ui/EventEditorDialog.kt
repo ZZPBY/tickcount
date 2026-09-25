@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui
+package io.github.zzpby.tickcount.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -21,9 +21,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import io.github.ginko.tickcount.R
-import io.github.ginko.tickcount.data.CountdownEvent
-import io.github.ginko.tickcount.ui.components.rememberDateFormatter
+import io.github.zzpby.tickcount.R
+import io.github.zzpby.tickcount.data.CountdownEvent
+import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import java.time.LocalDate
 
 /**

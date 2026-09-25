@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui
+package io.github.zzpby.tickcount.ui
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -20,11 +20,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import io.github.ginko.tickcount.domain.countdownTo
-import io.github.ginko.tickcount.ui.calendar.MonthCalendar
-import io.github.ginko.tickcount.ui.calendar.MonthYearPickerDialog
-import io.github.ginko.tickcount.ui.countdown.CountdownHeader
-import io.github.ginko.tickcount.ui.theme.eventAccent
+import io.github.zzpby.tickcount.domain.countdownTo
+import io.github.zzpby.tickcount.ui.calendar.MonthCalendar
+import io.github.zzpby.tickcount.ui.calendar.MonthYearPickerDialog
+import io.github.zzpby.tickcount.ui.countdown.CountdownHeader
+import io.github.zzpby.tickcount.ui.theme.eventAccent
 import java.time.LocalDate
 
 private const val NO_DATE = Long.MIN_VALUE

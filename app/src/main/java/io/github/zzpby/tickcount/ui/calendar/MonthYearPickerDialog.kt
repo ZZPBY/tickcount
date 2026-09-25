@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui.calendar
+package io.github.zzpby.tickcount.ui.calendar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,9 +32,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.ginko.tickcount.R
-import io.github.ginko.tickcount.ui.components.ChevronIcon
-import io.github.ginko.tickcount.ui.components.currentLocale
+import io.github.zzpby.tickcount.R
+import io.github.zzpby.tickcount.ui.components.ChevronIcon
+import io.github.zzpby.tickcount.ui.components.currentLocale
 import java.time.Month
 import java.time.YearMonth
 import java.time.format.TextStyle

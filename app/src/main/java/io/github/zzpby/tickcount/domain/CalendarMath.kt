@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.domain
+package io.github.zzpby.tickcount.domain
 
 import java.time.DayOfWeek
 import java.time.LocalDate

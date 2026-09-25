@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui.countdown
+package io.github.zzpby.tickcount.ui.countdown
 
 import androidx.annotation.PluralsRes
 import androidx.compose.foundation.background
@@ -29,14 +29,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.ginko.tickcount.R
-import io.github.ginko.tickcount.domain.Countdown
-import io.github.ginko.tickcount.domain.CountdownPhase
-import io.github.ginko.tickcount.domain.TimeParts
-import io.github.ginko.tickcount.domain.TimeUnit
-import io.github.ginko.tickcount.ui.components.rememberDateFormatter
-import io.github.ginko.tickcount.ui.theme.CountNumberTextStyle
-import io.github.ginko.tickcount.ui.theme.EmptyValueTextStyle
+import io.github.zzpby.tickcount.R
+import io.github.zzpby.tickcount.domain.Countdown
+import io.github.zzpby.tickcount.domain.CountdownPhase
+import io.github.zzpby.tickcount.domain.TimeParts
+import io.github.zzpby.tickcount.domain.TimeUnit
+import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
+import io.github.zzpby.tickcount.ui.theme.CountNumberTextStyle
+import io.github.zzpby.tickcount.ui.theme.EmptyValueTextStyle
 import java.time.LocalDate
 
 private val CELL_WIDTH = 78.dp

@@ -8,6 +8,9 @@
 
 *[English](README.md) | 中文*
 
+> 装到手机上后，中文系统的应用名显示为 **倒数日**，其他语言显示 **TickCount** ——
+> 和图标上的「倒数日」保持一致。
+
 ---
 
 ## 功能
@@ -36,7 +39,7 @@
 也是这里用 `ChronoUnit` 而不是拿毫秒总数去除的原因。
 夏令时切换的那一天仍然算作一天，哪怕它实际只有 23 或 25 小时。
 
-实现见 [`Countdown.kt`](app/src/main/java/io/github/ginko/tickcount/domain/Countdown.kt)。
+实现见 [`Countdown.kt`](app/src/main/java/io/github/zzpby/tickcount/domain/Countdown.kt)。
 
 ## 下载
 
@@ -93,7 +96,7 @@ Windows 下把 `./gradlew` 换成 `gradlew.bat`。
 ### 目录结构
 
 ```
-app/src/main/java/io/github/ginko/tickcount/
+app/src/main/java/io/github/zzpby/tickcount/
 ├── MainActivity.kt              边到边（edge-to-edge）宿主
 ├── data/                        CountdownEvent 模型 + JSON 持久化
 ├── domain/                      纯逻辑，有单元测试

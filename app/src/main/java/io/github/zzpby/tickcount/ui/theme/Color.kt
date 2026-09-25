@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui.theme
+package io.github.zzpby.tickcount.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

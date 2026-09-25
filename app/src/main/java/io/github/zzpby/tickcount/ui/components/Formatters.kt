@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui.components
+package io.github.zzpby.tickcount.ui.components
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable

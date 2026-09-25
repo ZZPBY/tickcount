@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.data
+package io.github.zzpby.tickcount.data
 
 import android.content.Context
 import android.util.Log

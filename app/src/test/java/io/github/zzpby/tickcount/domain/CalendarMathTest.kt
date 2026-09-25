@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.domain
+package io.github.zzpby.tickcount.domain
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue

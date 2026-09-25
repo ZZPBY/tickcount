@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TickCount</string>
+    <!--
+      The launcher label follows the same bilingual rule as the rest of the app:
+      倒数日 on a Chinese device, TickCount everywhere else. The icon artwork
+      says 倒数日, so this keeps the icon and the label consistent.
+    -->
+    <string name="app_name">倒数日</string>
 
     <!-- 操作 -->
     <string name="action_today">今天</string>

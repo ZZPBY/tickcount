@@ -1,10 +1,10 @@
-package io.github.ginko.tickcount.ui
+package io.github.zzpby.tickcount.ui
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.ginko.tickcount.data.CountdownEvent
-import io.github.ginko.tickcount.data.EventStore
+import io.github.zzpby.tickcount.data.CountdownEvent
+import io.github.zzpby.tickcount.data.EventStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

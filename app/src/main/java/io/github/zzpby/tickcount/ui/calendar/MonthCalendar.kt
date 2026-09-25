@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui.calendar
+package io.github.zzpby.tickcount.ui.calendar
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,15 +32,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import io.github.ginko.tickcount.R
-import io.github.ginko.tickcount.data.CountdownEvent
-import io.github.ginko.tickcount.domain.CalendarCell
-import io.github.ginko.tickcount.domain.firstDayOfWeek
-import io.github.ginko.tickcount.domain.monthCells
-import io.github.ginko.tickcount.domain.weekDaysInOrder
-import io.github.ginko.tickcount.ui.components.ChevronIcon
-import io.github.ginko.tickcount.ui.components.currentLocale
-import io.github.ginko.tickcount.ui.theme.eventAccent
+import io.github.zzpby.tickcount.R
+import io.github.zzpby.tickcount.data.CountdownEvent
+import io.github.zzpby.tickcount.domain.CalendarCell
+import io.github.zzpby.tickcount.domain.firstDayOfWeek
+import io.github.zzpby.tickcount.domain.monthCells
+import io.github.zzpby.tickcount.domain.weekDaysInOrder
+import io.github.zzpby.tickcount.ui.components.ChevronIcon
+import io.github.zzpby.tickcount.ui.components.currentLocale
+import io.github.zzpby.tickcount.ui.theme.eventAccent
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+      The launcher label. Chinese devices show 倒数日 (see values-zh); this is
+      the fallback for every other language.
+    -->
     <string name="app_name">TickCount</string>
 
     <!-- Actions -->

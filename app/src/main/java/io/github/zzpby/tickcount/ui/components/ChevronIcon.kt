@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui.components
+package io.github.zzpby.tickcount.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.size

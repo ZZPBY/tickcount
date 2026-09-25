@@ -1,4 +1,4 @@
-package io.github.ginko.tickcount.ui.theme
+package io.github.zzpby.tickcount.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
