@@ -130,15 +130,27 @@ jobs:
           if-no-files-found: error
 
       # Idempotent, so re-running a workflow replaces the asset instead of
-      # failing on a release that already exists.
+      # failing on a release that already exists. Ends by asserting the asset is
+      # actually attached: a release that silently ends up with no APK is worse
+      # than a red build.
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           apk=app/build/outputs/apk/release/app-release.apk
+          ls -l "$apk"
+
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME exists; replacing its APK."
             gh release upload "$GITHUB_REF_NAME" "$apk" --clobber
           else
+            echo "Creating release $GITHUB_REF_NAME."
             gh release create "$GITHUB_REF_NAME" "$apk" --generate-notes
           fi
+
+          gh release view "$GITHUB_REF_NAME" --json tagName,assets \
+            --jq '{tag: .tagName, assets: [.assets[].name]}'
+          gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name' \
+            | grep -q '\.apk$'
