@@ -59,20 +59,87 @@ Install it by opening the file on your phone (you will need to allow installing
 from unknown sources for your browser or file manager).
 
 > **Signing note.** Releases published by CI are signed with the standard Android
-> *debug* key, because the repository has no private signing key. The APK is
-> minified and not debuggable, and installs fine, but it is not suitable for
-> publishing to Google Play. If you fork this and want real releases, create a
-> `keystore.properties` in the project root (it is `.gitignore`d):
+> *debug* key, because the repository does not contain a private signing key. The
+> APK is minified and not debuggable and installs fine, but it is not suitable for
+> publishing to Google Play. See [Signing](#signing) to build with your own key.
+
+## Signing
+
+`assembleRelease` picks up a real key automatically if — and only if — a
+`keystore.properties` file exists in the project root. Without it, the release
+build falls back to the Android debug key so that a fresh clone still produces an
+installable APK.
+
+**1. Create a keystore.** Keep it somewhere you back up; 10000 days is about 27
+years, and Google Play requires a certificate valid past October 2033.
+
+```bash
+keytool -genkeypair -v -keystore release.jks -alias tickcount \
+        -keyalg RSA -keysize 4096 -validity 10000 -storetype PKCS12 \
+        -dname "CN=Your Name"
+```
+
+Only `CN` matters. `O`/`OU`/`L`/`ST`/`C` are inert metadata that Android never
+reads, so most personal projects leave them out entirely.
+
+**2. Describe it** in `keystore.properties` (already `.gitignore`d, together with
+`*.jks`):
+
+```properties
+storeFile=release.jks
+storePassword=…
+keyAlias=tickcount
+keyPassword=…
+```
+
+For PKCS12 the two passwords are the same.
+
+**3. Build.** `./gradlew assembleRelease` now signs with your key.
+
+> ### Two things that will bite you
 >
-> ```properties
-> storeFile=release.jks
-> storePassword=…
-> keyAlias=…
-> keyPassword=…
-> ```
+> **Back the keystore up.** Android identifies an app by its signing certificate,
+> not by its package name. Lose `release.jks` and you can never ship an update to
+> an app you have already published — every user would have to uninstall first,
+> and on Google Play the listing is simply stuck. Put a copy in a password manager
+> or an encrypted backup.
 >
-> `assembleRelease` will then use your key automatically. Note that switching keys
-> means users must uninstall the debug-signed build first.
+> **Never change the key once released.** Same reason. If you start with a
+> debug-signed APK and later switch to a real key, users must uninstall the old
+> build before the new one will install.
+>
+> A `keystore.properties` in the project root also means the debug keystore is no
+> longer used at all — which is worth knowing, because the *debug* keystore's
+> location depends on `ANDROID_USER_HOME`. Build the same project from a shell
+> that does not set it and Gradle silently uses a different debug key in
+> `~/.android`, producing an APK that will not install over the previous one.
+
+### Signing in CI
+
+The workflow in [`.github/workflows/android.yml`](.github/workflows/android.yml)
+builds an unsigned-when-unconfigured release APK. To have it sign properly, add
+four repository secrets and one step that materialises them:
+
+| Secret | Contents |
+|---|---|
+| `KEYSTORE_BASE64` | `base64 -w0 release.jks` |
+| `STORE_PASSWORD` | the keystore password |
+| `KEY_ALIAS` | `tickcount` |
+| `KEY_PASSWORD` | the same password |
+
+```yaml
+- name: Write keystore
+  env:
+    KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+  run: |
+    echo "$KEYSTORE_BASE64" | base64 -d > release.jks
+    cat > keystore.properties <<EOF
+    storeFile=release.jks
+    storePassword=${{ secrets.STORE_PASSWORD }}
+    keyAlias=${{ secrets.KEY_ALIAS }}
+    keyPassword=${{ secrets.KEY_PASSWORD }}
+    EOF
+```
 
 ## Building
 

@@ -53,17 +53,79 @@
 在手机上打开文件安装即可（需要允许浏览器或文件管理器「安装未知来源应用」）。
 
 > **签名说明。** CI 发布的版本使用 Android 标准的 **debug 密钥**签名，因为仓库里
-> 没有私钥。APK 是经过压缩混淆、不可调试的，正常安装没有问题，但**不适合上架应用商店**。
-> 如果你 fork 之后想正式发布，在项目根目录建一个 `keystore.properties`（已被 `.gitignore` 忽略）：
+> 不含私钥。APK 是经过压缩混淆、不可调试的，正常安装没有问题，但**不适合上架应用商店**。
+> 想用自己的密钥构建，见 [签名](#签名)。
+
+## 签名
+
+只要项目根目录存在 `keystore.properties`，`assembleRelease` 就会自动用你的正式密钥；
+没有它则回退到 Android debug 密钥，保证刚 clone 下来也能直接构建出可安装的 APK。
+
+**第 1 步：生成密钥库。** 请放在你会备份的地方。10000 天约 27 年，
+而 Google Play 要求证书有效期至少覆盖到 2033 年 10 月。
+
+```bash
+keytool -genkeypair -v -keystore release.jks -alias tickcount \
+        -keyalg RSA -keysize 4096 -validity 10000 -storetype PKCS12 \
+        -dname "CN=你的名字"
+```
+
+**只有 `CN` 有意义。** `O`/`OU`/`L`/`ST`/`C` 是 Android 从不读取的惰性元数据，
+个人项目一般全部留空。
+
+**第 2 步：写 `keystore.properties`**（该文件与 `*.jks` 都已被 `.gitignore` 忽略）：
+
+```properties
+storeFile=release.jks
+storePassword=…
+keyAlias=tickcount
+keyPassword=…
+```
+
+PKCS12 格式下两个密码是同一个。
+
+**第 3 步：构建。** 此后 `./gradlew assembleRelease` 就用你的密钥签名。
+
+> ### 两件一定会坑到你的事
 >
-> ```properties
-> storeFile=release.jks
-> storePassword=…
-> keyAlias=…
-> keyPassword=…
-> ```
+> **务必备份密钥库。** Android 靠**签名证书**（而不是包名）来认定"这是同一个应用"。
+> 一旦 `release.jks` 丢失，你就**永远无法**给已经发布出去的应用推送更新——
+> 所有用户必须先卸载重装，在 Google Play 上则等于listing 直接卡死。
+> 请把副本放进密码管理器或加密备份里。
 >
-> 之后 `assembleRelease` 会自动用你的密钥。注意：换密钥意味着用户必须先卸载 debug 签名的版本。
+> **发布之后绝不能换密钥。** 原因同上。如果你先用 debug 签名的 APK 装过，
+> 后来换成正式密钥，用户必须先卸载旧版才能装新版。
+>
+> 另外：项目根目录一旦有了 `keystore.properties`，debug 密钥就**完全不再参与**了。
+> 这一点值得知道，因为 **debug 密钥库的位置取决于 `ANDROID_USER_HOME`**。
+> 在不设置该变量的终端里构建同一个项目，Gradle 会静默改用 `~/.android` 里的
+> 另一个 debug 密钥，产出的 APK 装不上之前的版本。
+
+### 在 CI 里签名
+
+[`.github/workflows/android.yml`](.github/workflows/android.yml) 目前构建的是未配置
+签名时的 release APK。想让它正确签名，加四个仓库 Secret 和一个落盘步骤：
+
+| Secret | 内容 |
+|---|---|
+| `KEYSTORE_BASE64` | `base64 -w0 release.jks` 的输出 |
+| `STORE_PASSWORD` | 密钥库口令 |
+| `KEY_ALIAS` | `tickcount` |
+| `KEY_PASSWORD` | 同上口令 |
+
+```yaml
+- name: Write keystore
+  env:
+    KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+  run: |
+    echo "$KEYSTORE_BASE64" | base64 -d > release.jks
+    cat > keystore.properties <<EOF
+    storeFile=release.jks
+    storePassword=${{ secrets.STORE_PASSWORD }}
+    keyAlias=${{ secrets.KEY_ALIAS }}
+    keyPassword=${{ secrets.KEY_PASSWORD }}
+    EOF
+```
 
 ## 自己编译
 
