@@ -1,77 +1,85 @@
 # TickCount
 
-A tiny, offline Android app that answers one question: **how long until — or since — a date?**
+[![Build](https://github.com/ZZPBY/tickcount/actions/workflows/android.yml/badge.svg)](https://github.com/ZZPBY/tickcount/actions/workflows/android.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Pick any day on the calendar, give it a name, and the top of the screen breaks the
-distance down into **years, months, days, hours, minutes and seconds**, ticking live.
-It counts *up* for dates that have already passed, so it works for anniversaries and
-"days since" just as well as for countdowns.
+A minimal, offline Android countdown calendar. Tap a day, give it a name, and
+TickCount shows how long until — or since — that date.
 
 *Read this in [中文](README.zh-CN.md).*
 
----
-
 ## Features
 
-- **Countdown to any date** — tap a day, name it, done.
-- **One fixed-width line** — `yyyy年MM月dd日 HH时mm分ss秒`, ticking live. Only the
-  *leading* units are blanked, with dashes the width of their pattern letter, so a
-  countdown under a year reads `----年04月11日 06时30分15秒`, while a zero that sits
-  between counting units stays a real number: `----年--月02日 00时00分30秒`. Nothing
-  flickers to dashes mid-count. Monospace keeps every slot the same width, so the
-  line never shifts or reflows as the seconds tick.
-- **Counts up for the past** — the same line, labelled "Time since".
-- **As many countdowns as you like** — every named day gets a coloured dot on the
-  calendar, so a month at a glance shows what is coming.
-- **Jump anywhere quickly** — tap the month title to open a year/month picker with
-  one-year and ten-year steps, instead of tapping "next month" thirty times.
-- **Days without a countdown show the blanked line** —
-  `----年--月--日 --时--分--秒`. A countdown is something you create; the app does
-  not invent one for every day you browse past.
-- **Material 3**, light and dark, with wallpaper-based dynamic colour on Android 12+.
-- **Chinese and English**, following the system language. Dates are formatted with
-  locale-aware patterns (`2027年2月6日 星期六` / `Saturday, February 6, 2027`).
-- **No permissions, no network, no analytics.** The app cannot phone home because
-  it never asks for the ability to.
-- Small: a single module, no third-party UI or calendar libraries, minSdk 29.
+- **Countdown to any date** — tap a day in the calendar and name it.
+- **One fixed-width line** — `yyyy年MM月dd日 HH时mm分ss秒`, ticking every second.
+- **Counts up for past dates** — the same line under a `Time since` label.
+- **Multiple countdowns** — each named day is marked with a coloured dot, so a
+  month at a glance shows what is coming.
+- **Fast month navigation** — the month title opens a year/month picker with
+  one-year and ten-year steps.
+- **Material 3** — light and dark, with wallpaper-based dynamic colour on
+  Android 12+.
+- **Chinese and English**, following the system language, with locale-aware date
+  patterns.
+- **No permissions, no network, no analytics.**
+- Single module, no third-party libraries, `minSdk` 29.
 
-## What exactly is being counted
+## How the countdown reads
 
-The countdown targets **00:00 local time on the chosen date** — the only definition
-under which "how long until the 6th" is unambiguous. Once that midnight has passed,
-the same arithmetic runs backwards and the label switches from "Time left" to
-"Time since", so a countdown becomes an anniversary without any special casing.
+The target is **00:00 local time on the chosen date**. After that instant the same
+arithmetic runs in reverse and the label changes from `Time left` to `Time since`.
 
-Years, months and days are **calendar** arithmetic — a month is a month however long
-it is — while hours, minutes and seconds are elapsed time. That is the only way
-"1 year 2 months 5 days" can mean anything, and it is why the split is computed with
-`ChronoUnit` rather than by dividing a millisecond total. A daylight-saving day is
-still reported as one day, even though it is 23 or 25 hours long.
+A slot that is still *leading* — zero, with every larger unit also zero — is
+blanked with dashes the width of its pattern letter. A zero sitting between
+counting units stays a real number, so nothing flickers mid-count:
 
-See [`Countdown.kt`](app/src/main/java/io/github/zzpby/tickcount/domain/Countdown.kt).
+| Countdown | Display |
+|---|---|
+| 4 months, 11 days, 6h 30m 15s | `----年04月11日 06时30分15秒` |
+| 2 days, 30s | `----年--月02日 00时00分30秒` |
+| 3 years, 4 months | `0003年04月11日 06时30分15秒` |
+| no countdown set | `----年--月--日 --时--分--秒` |
+
+The line is set in monospace so digits and dashes occupy identical widths and it
+never shifts as the seconds tick. Its size is measured at runtime and scaled to
+the available width, keeping it on one line across devices and font scales.
+
+Years, months and days are calendar arithmetic, while hours, minutes and seconds
+are elapsed time. A daylight-saving day is therefore still reported as one day
+even though it is 23 or 25 hours long. See
+[`Countdown.kt`](app/src/main/java/io/github/zzpby/tickcount/domain/Countdown.kt).
 
 ## Download
 
-Grab the APK from the [latest release](../../releases/latest), or from the
-artifacts of any green CI run under **Actions**.
+APKs are published under [Releases](../../releases/latest) and as artifacts of
+each green CI run on the **Actions** tab.
 
-Install it by opening the file on your phone (you will need to allow installing
-from unknown sources for your browser or file manager).
+APKs built by CI are signed with the Android debug key, since no private signing
+key is stored in the repository. They install normally but are not suitable for
+store publication. See [Signing](#signing) to build with a real key.
 
-> **Signing note.** Releases published by CI are signed with the standard Android
-> *debug* key, because the repository does not contain a private signing key. The
-> APK is minified and not debuggable and installs fine, but it is not suitable for
-> publishing to Google Play. See [Signing](#signing) to build with your own key.
+## Building
+
+Requirements:
+
+- JDK 17
+- Android SDK Platform 37 and Build Tools 36.0.0
+- The SDK location in `local.properties`, or `ANDROID_HOME` exported
+
+```bash
+./gradlew testDebugUnitTest   # unit tests
+./gradlew assembleRelease     # APK -> app/build/outputs/apk/release/
+```
+
+On Windows, use `gradlew.bat`.
 
 ## Signing
 
-`assembleRelease` picks up a real key automatically if — and only if — a
-`keystore.properties` file exists in the project root. Without it, the release
-build falls back to the Android debug key so that a fresh clone still produces an
-installable APK.
+`assembleRelease` uses a real key when a `keystore.properties` file exists in the
+project root, and otherwise falls back to the Android debug key so that a fresh
+clone still produces an installable APK.
 
-**1. Create a keystore.** Keep it somewhere you back up; 10000 days is about 27
-years, and Google Play requires a certificate valid past October 2033.
+Create a keystore:
 
 ```bash
 keytool -genkeypair -v -keystore release.jks -alias tickcount \
@@ -79,11 +87,11 @@ keytool -genkeypair -v -keystore release.jks -alias tickcount \
         -dname "CN=Your Name"
 ```
 
-Only `CN` matters. `O`/`OU`/`L`/`ST`/`C` are inert metadata that Android never
-reads, so most personal projects leave them out entirely.
+Only `CN` is meaningful; `O`/`OU`/`L`/`ST`/`C` are metadata that Android never
+reads. `validity 10000` is roughly 27 years, comfortably past the certificate
+horizon Google Play requires.
 
-**2. Describe it** in `keystore.properties` (already `.gitignore`d, together with
-`*.jks`):
+Then point `keystore.properties` at it:
 
 ```properties
 storeFile=release.jks
@@ -92,40 +100,19 @@ keyAlias=tickcount
 keyPassword=…
 ```
 
-For PKCS12 the two passwords are the same.
+The file is `.gitignore`d, along with `*.jks` and `*.keystore`. For PKCS12 the two
+passwords are identical.
 
-**3. Build.** `./gradlew assembleRelease` now signs with your key.
-
-> ### Two things that will bite you
->
-> **Back the keystore up.** Android identifies an app by its signing certificate,
-> not by its package name. Lose `release.jks` and you can never ship an update to
-> an app you have already published — every user would have to uninstall first,
-> and on Google Play the listing is simply stuck. Put a copy in a password manager
-> or an encrypted backup.
->
-> **Never change the key once released.** Same reason. If you start with a
-> debug-signed APK and later switch to a real key, users must uninstall the old
-> build before the new one will install.
->
-> A `keystore.properties` in the project root also means the debug keystore is no
-> longer used at all — which is worth knowing, because the *debug* keystore's
-> location depends on `ANDROID_USER_HOME`. Build the same project from a shell
-> that does not set it and Gradle silently uses a different debug key in
-> `~/.android`, producing an APK that will not install over the previous one.
+> Android identifies an application by its signing certificate, not by its
+> package name. A keystore used for a published release must be backed up and must
+> never be replaced: losing it, or switching keys afterwards, permanently prevents
+> shipping an update that installs over an existing one.
 
 ### Signing in CI
 
-The workflow in [`.github/workflows/android.yml`](.github/workflows/android.yml)
-builds an unsigned-when-unconfigured release APK. To have it sign properly, add
-four repository secrets and one step that materialises them:
-
-| Secret | Contents |
-|---|---|
-| `KEYSTORE_BASE64` | `base64 -w0 release.jks` |
-| `STORE_PASSWORD` | the keystore password |
-| `KEY_ALIAS` | `tickcount` |
-| `KEY_PASSWORD` | the same password |
+Add four repository secrets — `KEYSTORE_BASE64` (`base64 -w0 release.jks`),
+`STORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD` — and materialise them before the
+build step in [`.github/workflows/android.yml`](.github/workflows/android.yml):
 
 ```yaml
 - name: Write keystore
@@ -141,24 +128,6 @@ four repository secrets and one step that materialises them:
     EOF
 ```
 
-## Building
-
-Requirements:
-
-- JDK 17
-- Android SDK Platform 37 (`android-37`) and Build Tools 36.0.0
-- The Android SDK location in `local.properties`, or `ANDROID_HOME` exported
-
-```bash
-# unit tests
-./gradlew testDebugUnitTest
-
-# installable APK -> app/build/outputs/apk/release/
-./gradlew assembleRelease
-```
-
-On Windows use `gradlew.bat` instead of `./gradlew`.
-
 ## Tech stack
 
 | | |
@@ -168,19 +137,19 @@ On Windows use `gradlew.bat` instead of `./gradlew`.
 | Build | AGP 9.4.1, Gradle 9.6.0, version catalog in `gradle/libs.versions.toml` |
 | SDK | compileSdk 37, targetSdk 36, minSdk 29 |
 | Storage | `SharedPreferences` holding one small JSON document |
-| Dependencies | AndroidX + Compose only — no third-party libraries at all |
+| Dependencies | AndroidX and Compose only |
 
-Because `minSdk` is 29, `java.time` is available from the platform: no
-`coreLibraryDesugaring`, no compatibility shims.
+`minSdk` 29 means `java.time` comes from the platform, so no
+`coreLibraryDesugaring` and no compatibility shims are needed.
 
-### Project layout
+## Project layout
 
 ```
 app/src/main/java/io/github/zzpby/tickcount/
 ├── MainActivity.kt              edge-to-edge host
 ├── data/                        CountdownEvent model + JSON persistence
 ├── domain/                      pure, unit-tested logic
-│   ├── Countdown.kt             the year/month/day/h/m/s breakdown
+│   ├── Countdown.kt             the y/mo/d/h/m/s breakdown and slot formatting
 │   └── CalendarMath.kt          month grid construction
 └── ui/
     ├── MainViewModel.kt         state + the one clock in the process
@@ -190,17 +159,17 @@ app/src/main/java/io/github/zzpby/tickcount/
     └── theme/                   Material 3 colour and type
 ```
 
-### App icon
+The countdown arithmetic is covered by unit tests in `app/src/test/`, including
+month lengths, leap days, year boundaries and both daylight-saving transitions.
 
-The launcher icon is black 倒数日 on white:
+## App icon
 
 ![icon preview](tools/icon-preview.png)
 
-Vector XML cannot draw CJK glyphs, so the label is rasterised by
-[`tools/IconGen.java`](tools/IconGen.java) — a small JDK program that loads
-Microsoft YaHei, sizes the text to fit Android's 66 dp adaptive-icon safe circle,
-and writes the PNG that ships in `res/drawable-xxxhdpi/`. Re-run it if you want to
-change the label:
+Vector XML cannot draw CJK glyphs, so the launcher label is rasterised by
+[`tools/IconGen.java`](tools/IconGen.java). It loads Microsoft YaHei, sizes the
+text to fit Android's 66 dp adaptive-icon safe circle, and writes the PNG shipped
+in `res/drawable-xxxhdpi/`:
 
 ```bash
 java tools/IconGen.java app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png
@@ -209,11 +178,11 @@ java tools/IconGen.java app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground
 ## Privacy
 
 TickCount stores a list of `(date, name)` pairs in its own private
-`SharedPreferences`, and nothing else. It declares **no permissions**. It makes no
-network requests, contains no analytics and no ads. The only thing that leaves the
-device is the list itself, if you have Android's own cloud backup enabled — and
-`res/xml/backup_rules.xml` decides that.
+`SharedPreferences` and nothing else. It declares no permissions, makes no network
+requests, and contains no analytics or advertising. The list leaves the device only
+if Android's own cloud backup is enabled, which `res/xml/backup_rules.xml`
+governs.
 
 ## License
 
-[MIT](LICENSE). Do whatever you like with it.
+[MIT](LICENSE).
