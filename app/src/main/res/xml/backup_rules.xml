@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backup rules. The saved countdown list is small, personal and worth keeping
+  across a device change, so it is included in cloud backups.
+-->
+<full-backup-content>
+    <include domain="sharedpref" path="." />
+</full-backup-content>

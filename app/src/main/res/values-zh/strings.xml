@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TickCount</string>
+
+    <!-- 操作 -->
+    <string name="action_today">今天</string>
+    <string name="action_add">设为倒数日</string>
+    <string name="action_edit">改名</string>
+    <string name="action_delete">删除</string>
+    <string name="action_save">保存</string>
+    <string name="action_cancel">取消</string>
+
+    <!-- 倒数日 -->
+    <string name="label_no_countdown">还没有倒数日</string>
+    <string name="label_today">今天</string>
+    <string name="label_days_away">天后</string>
+    <string name="label_days_ago">天前</string>
+    <string name="label_left_today">今日剩余</string>
+    <string name="label_elapsed_today">今天已过</string>
+
+    <!-- 编辑对话框 -->
+    <string name="dialog_new_title">新建倒数日</string>
+    <string name="dialog_edit_title">修改名称</string>
+    <string name="field_name">名称</string>
+    <string name="field_name_hint">生日、考试、旅行…</string>
+    <string name="dialog_clear_hint">清空名称将删除这个倒数日。</string>
+
+    <!-- 日期格式 -->
+    <string name="month_year_format">yyyy年M月</string>
+    <string name="date_format_full">yyyy年M月d日 EEEE</string>
+</resources>

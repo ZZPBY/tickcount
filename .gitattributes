@@ -1,0 +1,19 @@
+# Normalise line endings so a Windows checkout cannot break the Linux CI build.
+* text=auto
+
+# The Gradle wrapper shell script must keep LF, or its shebang breaks on Linux.
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Windows batch files must keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets.
+*.jar binary
+*.png binary
+*.jpg binary
+*.jks binary
+*.keystore binary
+*.apk binary
+*.aab binary

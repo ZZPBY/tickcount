@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TickCount</string>
+
+    <!-- Actions -->
+    <string name="action_today">Today</string>
+    <string name="action_add">Add countdown</string>
+    <string name="action_edit">Rename</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Countdown header -->
+    <string name="label_no_countdown">No countdown yet</string>
+    <string name="label_today">Today</string>
+    <string name="label_days_away">days away</string>
+    <string name="label_days_ago">days ago</string>
+    <string name="label_left_today">Left today</string>
+    <string name="label_elapsed_today">Elapsed today</string>
+
+    <!-- Editor dialog -->
+    <string name="dialog_new_title">New countdown</string>
+    <string name="dialog_edit_title">Rename countdown</string>
+    <string name="field_name">Name</string>
+    <string name="field_name_hint">Birthday, exam, trip…</string>
+    <string name="dialog_clear_hint">Clearing the name removes this countdown.</string>
+
+    <!--
+      Date patterns for java.time.DateTimeFormatter. Keeping the pattern in a
+      resource means a new language only needs a translation, not a code change.
+    -->
+    <string name="month_year_format">MMMM yyyy</string>
+    <string name="date_format_full">EEEE, MMMM d, yyyy</string>
+</resources>
