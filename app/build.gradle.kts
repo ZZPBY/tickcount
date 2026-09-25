@@ -24,11 +24,11 @@ val keystoreProperties = Properties().apply {
 val hasReleaseKeystore = keystorePropertiesFile.exists()
 
 android {
-    namespace = "com.tickcount.app"
+    namespace = "io.github.ginko.tickcount"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.tickcount.app"
+        applicationId = "io.github.ginko.tickcount"
         // java.time and the modern notification APIs are all available from 29,
         // so there is no desugaring and no compatibility shim anywhere.
         minSdk = 29

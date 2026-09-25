@@ -44,7 +44,7 @@ it is — while hours, minutes and seconds are elapsed time. That is the only wa
 `ChronoUnit` rather than by dividing a millisecond total. A daylight-saving day is
 still reported as one day, even though it is 23 or 25 hours long.
 
-See [`Countdown.kt`](app/src/main/java/com/tickcount/app/domain/Countdown.kt).
+See [`Countdown.kt`](app/src/main/java/io/github/ginko/tickcount/domain/Countdown.kt).
 
 ## Download
 
@@ -105,7 +105,7 @@ Because `minSdk` is 29, `java.time` is available from the platform: no
 ### Project layout
 
 ```
-app/src/main/java/com/tickcount/app/
+app/src/main/java/io/github/ginko/tickcount/
 ├── MainActivity.kt              edge-to-edge host
 ├── data/                        CountdownEvent model + JSON persistence
 ├── domain/                      pure, unit-tested logic
