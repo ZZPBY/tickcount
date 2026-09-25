@@ -14,16 +14,19 @@ It counts *up* for dates that have already passed, so it works for anniversaries
 ## Features
 
 - **Countdown to any date** — tap a day, name it, done.
-- **Full breakdown** — years / months / days / hours / minutes / seconds, with leading
-  zero units dropped so a three-day countdown reads "3 days 4 hours", not
-  "0 years 0 months 3 days".
-- **Counts up for the past** — the same numbers, labelled "Time since".
+- **One fixed-width line** — `yyyy年MM月dd日 HH时mm分ss秒`, ticking live. A slot whose
+  value is zero is blanked with dashes the width of its pattern letter, so a
+  countdown under a year reads `----年04月11日 06时30分15秒` rather than `00年…`.
+  Monospace keeps every slot the same width, so the line never shifts or reflows
+  as the seconds tick.
+- **Counts up for the past** — the same line, labelled "Time since".
 - **As many countdowns as you like** — every named day gets a coloured dot on the
   calendar, so a month at a glance shows what is coming.
 - **Jump anywhere quickly** — tap the month title to open a year/month picker with
   one-year and ten-year steps, instead of tapping "next month" thirty times.
-- **Days without a countdown show `--`.** A countdown is something you create; the
-  app does not invent one for every day you browse past.
+- **Days without a countdown show the blanked line** —
+  `----年--月--日 --时--分--秒`. A countdown is something you create; the app does
+  not invent one for every day you browse past.
 - **Material 3**, light and dark, with wallpaper-based dynamic colour on Android 12+.
 - **Chinese and English**, following the system language. Dates are formatted with
   locale-aware patterns (`2027年2月6日 星期六` / `Saturday, February 6, 2027`).

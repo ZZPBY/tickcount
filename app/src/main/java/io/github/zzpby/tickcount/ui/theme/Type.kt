@@ -21,21 +21,19 @@ val TickCountTypography = Typography().let { base ->
     )
 }
 
-/** The number inside one countdown cell — "4 months", "11 days", … */
-val CountNumberTextStyle = TextStyle(
-    fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Normal,
-    fontSize = 32.sp,
-    lineHeight = 36.sp,
-    letterSpacing = (-0.5).sp,
-    fontFeatureSettings = TABULAR_FIGURES,
-)
-
-/** The placeholder shown when the selected day has no countdown. */
-val EmptyValueTextStyle = TextStyle(
-    fontFamily = FontFamily.Default,
-    fontWeight = FontWeight.Light,
-    fontSize = 64.sp,
-    lineHeight = 68.sp,
-    letterSpacing = 2.sp,
+/**
+ * The single countdown line, e.g. `----年04月11日 06时30分15秒`.
+ *
+ * Monospace is deliberate and load-bearing: every slot occupies the same width
+ * whether it currently holds digits or the dash placeholder, so the line neither
+ * reflows nor slides sideways as the seconds tick.
+ *
+ * The size is chosen per screen by the caller; this only fixes face and weight.
+ */
+val CountdownLineTextStyle = TextStyle(
+    fontFamily = FontFamily.Monospace,
+    fontWeight = FontWeight.Medium,
+    fontSize = 20.sp,
+    lineHeight = 28.sp,
+    letterSpacing = 0.sp,
 )

@@ -163,38 +163,56 @@ class CountdownTest {
         assertEquals(CountdownPhase.PAST, countdownTo(target, at(2026, 9, 27, 0, 0, 0)).phase)
     }
 
-    // -------------------------------------------------------- significantUnits
+    // ------------------------------------------------------------- formatSlot
 
     @Test
-    fun `leading zero units are dropped`() {
-        assertEquals(
-            listOf(TimeUnit.MONTHS, TimeUnit.DAYS, TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS),
-            parts(mo = 4, d = 11, h = 6).significantUnits(),
+    fun `a zero slot becomes dashes as wide as its pattern letter`() {
+        assertEquals("----", formatSlot(0, 4))
+        assertEquals("--", formatSlot(0, 2))
+    }
+
+    @Test
+    fun `a non-zero slot is padded with leading zeros`() {
+        assertEquals("0003", formatSlot(3, 4))
+        assertEquals("06", formatSlot(6, 2))
+        assertEquals("11", formatSlot(11, 2))
+        assertEquals("2026", formatSlot(2026, 4))
+    }
+
+    @Test
+    fun `a value wider than its slot is passed through rather than truncated`() {
+        // A five-digit year would rather overflow the line than silently show
+        // the wrong number.
+        assertEquals("12345", formatSlot(12345, 4))
+    }
+
+    @Test
+    fun `every slot of an unset countdown is a placeholder`() {
+        val slots = listOf(
+            formatSlot(TimeParts.ZERO.years, 4),
+            formatSlot(TimeParts.ZERO.months, 2),
+            formatSlot(TimeParts.ZERO.days, 2),
+            formatSlot(TimeParts.ZERO.hours, 2),
+            formatSlot(TimeParts.ZERO.minutes, 2),
+            formatSlot(TimeParts.ZERO.seconds, 2),
         )
+
+        assertEquals(listOf("----", "--", "--", "--", "--", "--"), slots)
     }
 
     @Test
-    fun `a year-long countdown shows every unit`() {
-        assertEquals(TimeUnit.entries.toList(), parts(y = 1, mo = 2, d = 3, h = 4, mi = 5, s = 6).significantUnits())
-    }
-
-    @Test
-    fun `seconds are always shown so the display keeps ticking`() {
-        assertEquals(listOf(TimeUnit.SECONDS), parts().significantUnits())
-        assertEquals(listOf(TimeUnit.SECONDS), parts(s = 7).significantUnits())
-    }
-
-    @Test
-    fun `an hour-long countdown starts at hours`() {
-        assertEquals(
-            listOf(TimeUnit.HOURS, TimeUnit.MINUTES, TimeUnit.SECONDS),
-            parts(h = 1).significantUnits(),
+    fun `every slot of a full countdown fits its pattern letter`() {
+        val parts = TimeParts(years = 3, months = 11, days = 30, hours = 23, minutes = 59, seconds = 58)
+        val slots = listOf(
+            formatSlot(parts.years, 4),
+            formatSlot(parts.months, 2),
+            formatSlot(parts.days, 2),
+            formatSlot(parts.hours, 2),
+            formatSlot(parts.minutes, 2),
+            formatSlot(parts.seconds, 2),
         )
-    }
 
-    @Test
-    fun `isZero only for an all-zero breakdown`() {
-        assertEquals(true, parts().isZero)
-        assertEquals(false, parts(s = 1).isZero)
+        assertEquals(listOf("0003", "11", "30", "23", "59", "58"), slots)
+        assertEquals(listOf(4, 2, 2, 2, 2, 2), slots.map { it.length })
     }
 }

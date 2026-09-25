@@ -1,13 +1,14 @@
 package io.github.zzpby.tickcount.ui.countdown
 
-import androidx.annotation.PluralsRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,30 +25,42 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.domain.Countdown
 import io.github.zzpby.tickcount.domain.CountdownPhase
 import io.github.zzpby.tickcount.domain.TimeParts
-import io.github.zzpby.tickcount.domain.TimeUnit
+import io.github.zzpby.tickcount.domain.formatSlot
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
-import io.github.zzpby.tickcount.ui.theme.CountNumberTextStyle
-import io.github.zzpby.tickcount.ui.theme.EmptyValueTextStyle
+import io.github.zzpby.tickcount.ui.theme.CountdownLineTextStyle
 import java.time.LocalDate
 
-private val CELL_WIDTH = 78.dp
+/**
+ * The line is measured once at this size and then scaled to whatever width is
+ * actually available — see [CountdownLine].
+ */
+private val LINE_REFERENCE_SIZE = 20.sp
+
+/** Stops an extreme screen or accessibility scale producing absurd text. */
+private val MIN_LINE_SIZE = 9.sp
+private val MAX_LINE_SIZE = 28.sp
 
 /**
- * The top half of the screen: the selected date and, if it has been named, the
- * distance to it broken into years, months, days, hours, minutes and seconds.
+ * The top half of the screen: the selected date and, if it has been named, a
+ * single fixed-width line showing the distance to it as
+ * `yyyy年MM月dd日 HH时mm分ss秒`.
  *
- * A day with no saved countdown deliberately shows `--` instead of a number: the
- * countdown is something the user creates, so inventing one for every day they
- * browse past would be noise.
+ * A slot whose value is zero is replaced by dashes the width of its pattern
+ * letter, so a countdown under a year reads `----年...`. A day with no saved
+ * countdown shows the same line with every slot blanked, which keeps the layout
+ * from jumping while making it obvious that nothing is set.
  */
 @Composable
 fun CountdownHeader(
@@ -64,7 +77,7 @@ fun CountdownHeader(
     val hasEvent = title != null
 
     Column(
-        modifier = modifier.padding(horizontal = 16.dp),
+        modifier = modifier.padding(horizontal = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(24.dp))
@@ -76,18 +89,14 @@ fun CountdownHeader(
             onClick = onTitleClick,
         )
 
-        Spacer(Modifier.height(30.dp))
+        Spacer(Modifier.height(28.dp))
 
         if (hasEvent) {
             PhaseLabel(countdown.phase, accent)
-            Spacer(Modifier.height(14.dp))
-            Breakdown(parts = countdown.parts)
+            Spacer(Modifier.height(12.dp))
+            CountdownLine(countdown.parts)
         } else {
-            Text(
-                text = stringResource(R.string.value_empty),
-                style = EmptyValueTextStyle,
-                color = MaterialTheme.colorScheme.outline,
-            )
+            CountdownLine(TimeParts.ZERO)
         }
 
         Spacer(Modifier.height(28.dp))
@@ -176,57 +185,59 @@ private fun PhaseLabel(phase: CountdownPhase, accent: Color) {
 }
 
 /**
- * Lays the components out in rows of three, centred, so the grid stays balanced
- * whether the countdown spans six units or only two.
+ * The countdown itself, on exactly one line.
+ *
+ * The font size is derived by *measuring* the rendered line and scaling it to
+ * the width actually available, rather than by guessing an em-width. Text width
+ * is linear in font size, so one measurement is exact — and because it uses the
+ * real resolved font, the line still fits after a font fallback, a different
+ * monospace face, or the user turning up the accessibility font scale.
  */
 @Composable
-private fun Breakdown(parts: TimeParts) {
-    val units = parts.significantUnits()
+private fun CountdownLine(parts: TimeParts) {
+    val line = stringResource(
+        R.string.countdown_line_format,
+        formatSlot(parts.years, 4),
+        formatSlot(parts.months, 2),
+        formatSlot(parts.days, 2),
+        formatSlot(parts.hours, 2),
+        formatSlot(parts.minutes, 2),
+        formatSlot(parts.seconds, 2),
+    )
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.Center,
     ) {
-        units.chunked(3).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                row.forEach { unit ->
-                    TimeCell(value = parts.value(unit), unit = unit)
-                }
+        val availablePx = with(density) { maxWidth.toPx() }
+
+        val fontSize = remember(line, availablePx) {
+            val measuredWidth = measurer.measure(
+                text = AnnotatedString(line),
+                style = CountdownLineTextStyle,
+            ).size.width
+
+            if (measuredWidth <= 0) {
+                LINE_REFERENCE_SIZE
+            } else {
+                // Clamp on the raw sp number: TextUnit is not Comparable, so
+                // coerceIn is not available on it.
+                (LINE_REFERENCE_SIZE.value * (availablePx / measuredWidth))
+                    .coerceIn(MIN_LINE_SIZE.value, MAX_LINE_SIZE.value)
+                    .sp
             }
         }
-    }
-}
 
-@Composable
-private fun TimeCell(value: Long, unit: TimeUnit) {
-    Column(
-        modifier = Modifier.width(CELL_WIDTH),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
         Text(
-            text = value.toString(),
-            style = CountNumberTextStyle,
+            text = line,
+            style = CountdownLineTextStyle.copy(fontSize = fontSize),
             color = MaterialTheme.colorScheme.onSurface,
             maxLines = 1,
+            softWrap = false,
             textAlign = TextAlign.Center,
-        )
-        Spacer(Modifier.height(2.dp))
-        Text(
-            text = pluralStringResource(unit.labelRes(), value.toInt()),
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth(),
         )
     }
-}
-
-@PluralsRes
-private fun TimeUnit.labelRes(): Int = when (this) {
-    TimeUnit.YEARS -> R.plurals.unit_years
-    TimeUnit.MONTHS -> R.plurals.unit_months
-    TimeUnit.DAYS -> R.plurals.unit_days
-    TimeUnit.HOURS -> R.plurals.unit_hours
-    TimeUnit.MINUTES -> R.plurals.unit_minutes
-    TimeUnit.SECONDS -> R.plurals.unit_seconds
 }

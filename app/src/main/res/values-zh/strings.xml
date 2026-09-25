@@ -27,8 +27,12 @@
     <string name="label_countdown_left">还有</string>
     <string name="label_today_elapsed">今天已过</string>
     <string name="label_countdown_ago">已过去</string>
-    <!-- 选中日期没有倒数日时，代替数字显示的内容。 -->
-    <string name="value_empty">--</string>
+
+    <!--
+      单行倒数日格式。六个参数依次是 年/月/日/时/分/秒，已经补好零、
+      为 0 的位已替换成等宽短横线，所以这里只负责排版和单位文字。
+    -->
+    <string name="countdown_line_format">%1$s年%2$s月%3$s日 %4$s时%5$s分%6$s秒</string>
 
     <!-- 编辑对话框 -->
     <string name="dialog_new_title">新建倒数日</string>
@@ -37,26 +41,6 @@
     <string name="field_name">名称</string>
     <string name="field_name_hint">生日、考试、旅行…</string>
     <string name="dialog_clear_hint">清空名称将删除这个倒数日。</string>
-
-    <!-- 倒数日单位。中文只有 other 一种形式。 -->
-    <plurals name="unit_years">
-        <item quantity="other">年</item>
-    </plurals>
-    <plurals name="unit_months">
-        <item quantity="other">月</item>
-    </plurals>
-    <plurals name="unit_days">
-        <item quantity="other">天</item>
-    </plurals>
-    <plurals name="unit_hours">
-        <item quantity="other">小时</item>
-    </plurals>
-    <plurals name="unit_minutes">
-        <item quantity="other">分</item>
-    </plurals>
-    <plurals name="unit_seconds">
-        <item quantity="other">秒</item>
-    </plurals>
 
     <!-- 日期格式 -->
     <string name="month_year_format">yyyy年M月</string>

@@ -17,21 +17,6 @@ enum class CountdownPhase {
 }
 
 /**
- * The units a countdown is broken into, largest first.
- *
- * The order of the constants is the display order and is relied upon by
- * [TimeParts.significantUnits].
- */
-enum class TimeUnit {
-    YEARS,
-    MONTHS,
-    DAYS,
-    HOURS,
-    MINUTES,
-    SECONDS,
-}
-
-/**
  * A countdown broken into calendar and clock components.
  *
  * Years, months and days are *calendar* arithmetic (a month is a month, however
@@ -47,34 +32,9 @@ data class TimeParts(
     val minutes: Long,
     val seconds: Long,
 ) {
-    val isZero: Boolean
-        get() = years == 0L && months == 0L && days == 0L &&
-            hours == 0L && minutes == 0L && seconds == 0L
-
-    fun value(unit: TimeUnit): Long = when (unit) {
-        TimeUnit.YEARS -> years
-        TimeUnit.MONTHS -> months
-        TimeUnit.DAYS -> days
-        TimeUnit.HOURS -> hours
-        TimeUnit.MINUTES -> minutes
-        TimeUnit.SECONDS -> seconds
-    }
-
-    /**
-     * The units worth putting on screen: everything from the largest non-zero
-     * unit down to seconds.
-     *
-     * Leading zeros are dropped so a three-day countdown reads "3 days 4 hours"
-     * rather than "0 years 0 months 3 days 4 hours". Trailing units are always
-     * kept, which is what makes the seconds visibly tick.
-     */
-    fun significantUnits(): List<TimeUnit> {
-        val all = TimeUnit.entries
-        val first = all.indexOfFirst { value(it) != 0L }
-        return when {
-            first < 0 -> listOf(TimeUnit.SECONDS)
-            else -> all.subList(first, all.size)
-        }
+    companion object {
+        /** Every component zero — what a day with no saved countdown renders as. */
+        val ZERO = TimeParts(0, 0, 0, 0, 0, 0)
     }
 }
 
@@ -85,12 +45,28 @@ data class Countdown(
 )
 
 /**
+ * Renders one slot of the fixed-width countdown line.
+ *
+ * A non-zero value is padded with leading zeros so that every slot keeps the
+ * width of its pattern letter (`yyyy` is four characters, `MM` is two). A zero
+ * value becomes a run of dashes of the same width instead, which is what makes
+ * "less than a year" read as `----年` rather than `00年`.
+ */
+fun formatSlot(value: Long, width: Int): String {
+    if (value == 0L) return "-".repeat(width)
+    val digits = value.toString()
+    // Longer than the slot (a five-digit year, say) is passed through rather
+    // than truncated — silently showing a wrong number would be worse.
+    return if (digits.length >= width) digits else "0".repeat(width - digits.length) + digits
+}
+
+/**
  * Works out the countdown for [date] as observed at [now].
  *
  * The countdown targets **00:00 local time on [date]**, which is the only
  * definition under which "how long until the 6th" is unambiguous. Once that
  * midnight has passed the same numbers are reported as elapsed time instead, so
- * the display simply switches from "还有" to "已过去".
+ * the display simply switches from "Time left" to "Time since".
  */
 fun countdownTo(date: LocalDate, now: ZonedDateTime): Countdown {
     val target = date.atStartOfDay(now.zone)
