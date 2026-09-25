@@ -54,9 +54,11 @@ even though it is 23 or 25 hours long. See
 APKs are published under [Releases](../../releases/latest) and as artifacts of
 each green CI run on the **Actions** tab.
 
-APKs built by CI are signed with the Android debug key, since no private signing
-key is stored in the repository. They install normally but are not suitable for
-store publication. See [Signing](#signing) to build with a real key.
+Release APKs are signed with the maintainer's key when the repository's signing
+secrets are configured; otherwise CI falls back to the Android debug key and
+says so in its log. A debug-key APK installs normally but cannot upgrade an
+install signed with the release key, and is not suitable for store publication.
+See [Signing](#signing) to build with your own key.
 
 ## Building
 

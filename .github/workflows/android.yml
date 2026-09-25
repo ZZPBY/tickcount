@@ -61,6 +61,10 @@ jobs:
     needs: test
     permissions:
       contents: write
+    env:
+      # Empty when the repository has no signing secrets. Surfaced through `env`
+      # because the `secrets` context is not available in a step-level `if`.
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v5
 
@@ -84,12 +88,39 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # The release build falls back to the Android debug key when no
-      # keystore.properties is present, so this works without any secrets.
-      # To sign with a real key, add KEYSTORE_BASE64, STORE_PASSWORD, KEY_ALIAS
-      # and KEY_PASSWORD repository secrets and materialise them here.
+      # Restores the release keystore so every release is signed with the same
+      # certificate — which is what lets an installed copy upgrade in place.
+      # Skipped, with a warning below, when the secrets are absent.
+      - name: Restore signing keystore
+        if: env.KEYSTORE_BASE64 != ''
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > release.jks
+          cat > keystore.properties <<EOF
+          storeFile=release.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Report signing key
+        run: |
+          if [ -f keystore.properties ]; then
+            echo "Signing with the release keystore from repository secrets."
+          else
+            echo "::warning::No KEYSTORE_BASE64 secret is configured. This APK will be signed with the Android debug key and cannot upgrade an install signed with the release key."
+          fi
+
       - name: Build release APK
         run: ./gradlew assembleRelease --stacktrace
+
+      - name: Show APK signer
+        run: |
+          apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
+          "$apksigner" verify --print-certs app/build/outputs/apk/release/app-release.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v5
@@ -98,8 +129,16 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
+      # Idempotent, so re-running a workflow replaces the asset instead of
+      # failing on a release that already exists.
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" app/build/outputs/apk/release/*.apk --generate-notes
+        run: |
+          apk=app/build/outputs/apk/release/app-release.apk
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$apk" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$apk" --generate-notes
+          fi
