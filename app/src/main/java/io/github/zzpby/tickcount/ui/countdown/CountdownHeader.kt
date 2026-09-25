@@ -37,7 +37,7 @@ import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.domain.Countdown
 import io.github.zzpby.tickcount.domain.CountdownPhase
 import io.github.zzpby.tickcount.domain.TimeParts
-import io.github.zzpby.tickcount.domain.formatSlot
+import io.github.zzpby.tickcount.domain.formatSlots
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.CountdownLineTextStyle
 import java.time.LocalDate
@@ -197,12 +197,7 @@ private fun PhaseLabel(phase: CountdownPhase, accent: Color) {
 private fun CountdownLine(parts: TimeParts) {
     val line = stringResource(
         R.string.countdown_line_format,
-        formatSlot(parts.years, 4),
-        formatSlot(parts.months, 2),
-        formatSlot(parts.days, 2),
-        formatSlot(parts.hours, 2),
-        formatSlot(parts.minutes, 2),
-        formatSlot(parts.seconds, 2),
+        *formatSlots(parts).toTypedArray(),
     )
     val measurer = rememberTextMeasurer()
     val density = LocalDensity.current

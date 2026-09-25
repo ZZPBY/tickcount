@@ -14,11 +14,12 @@ It counts *up* for dates that have already passed, so it works for anniversaries
 ## Features
 
 - **Countdown to any date** — tap a day, name it, done.
-- **One fixed-width line** — `yyyy年MM月dd日 HH时mm分ss秒`, ticking live. A slot whose
-  value is zero is blanked with dashes the width of its pattern letter, so a
-  countdown under a year reads `----年04月11日 06时30分15秒` rather than `00年…`.
-  Monospace keeps every slot the same width, so the line never shifts or reflows
-  as the seconds tick.
+- **One fixed-width line** — `yyyy年MM月dd日 HH时mm分ss秒`, ticking live. Only the
+  *leading* units are blanked, with dashes the width of their pattern letter, so a
+  countdown under a year reads `----年04月11日 06时30分15秒`, while a zero that sits
+  between counting units stays a real number: `----年--月02日 00时00分30秒`. Nothing
+  flickers to dashes mid-count. Monospace keeps every slot the same width, so the
+  line never shifts or reflows as the seconds tick.
 - **Counts up for the past** — the same line, labelled "Time since".
 - **As many countdowns as you like** — every named day gets a coloured dot on the
   calendar, so a month at a glance shows what is coming.

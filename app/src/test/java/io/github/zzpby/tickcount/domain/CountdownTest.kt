@@ -163,56 +163,66 @@ class CountdownTest {
         assertEquals(CountdownPhase.PAST, countdownTo(target, at(2026, 9, 27, 0, 0, 0)).phase)
     }
 
-    // ------------------------------------------------------------- formatSlot
+    // ------------------------------------------------------------ formatSlots
 
     @Test
-    fun `a zero slot becomes dashes as wide as its pattern letter`() {
-        assertEquals("----", formatSlot(0, 4))
-        assertEquals("--", formatSlot(0, 2))
+    fun `every slot of an unset countdown is a placeholder`() {
+        assertEquals(
+            listOf("----", "--", "--", "--", "--", "--"),
+            formatSlots(TimeParts.ZERO),
+        )
     }
 
     @Test
-    fun `a non-zero slot is padded with leading zeros`() {
-        assertEquals("0003", formatSlot(3, 4))
-        assertEquals("06", formatSlot(6, 2))
-        assertEquals("11", formatSlot(11, 2))
-        assertEquals("2026", formatSlot(2026, 4))
+    fun `only leading units are blanked`() {
+        // Four months in: the year is still leading, everything below it counts.
+        assertEquals(
+            listOf("----", "04", "11", "06", "30", "15"),
+            formatSlots(TimeParts(years = 0, months = 4, days = 11, hours = 6, minutes = 30, seconds = 15)),
+        )
+    }
+
+    @Test
+    fun `a zero between counting units is a real zero, not a dash`() {
+        // The whole point of "leading only": two days and thirty seconds must
+        // not blank out the hours and minutes it passes through on the way.
+        assertEquals(
+            listOf("----", "--", "02", "00", "00", "30"),
+            formatSlots(TimeParts(years = 0, months = 0, days = 2, hours = 0, minutes = 0, seconds = 30)),
+        )
+    }
+
+    @Test
+    fun `the last hour of a countdown keeps its hours`() {
+        assertEquals(
+            listOf("----", "--", "05", "00", "00", "01"),
+            formatSlots(TimeParts(years = 0, months = 0, days = 5, hours = 0, minutes = 0, seconds = 1)),
+        )
+    }
+
+    @Test
+    fun `seconds are shown as a number even when nothing larger is counting`() {
+        assertEquals(
+            listOf("----", "--", "--", "--", "--", "07"),
+            formatSlots(TimeParts(0, 0, 0, 0, 0, 7)),
+        )
+    }
+
+    @Test
+    fun `a multi-year countdown pads the year to four digits`() {
+        val slots = formatSlots(TimeParts(years = 3, months = 4, days = 11, hours = 6, minutes = 30, seconds = 15))
+
+        assertEquals(listOf("0003", "04", "11", "06", "30", "15"), slots)
+        assertEquals(listOf(4, 2, 2, 2, 2, 2), slots.map { it.length })
     }
 
     @Test
     fun `a value wider than its slot is passed through rather than truncated`() {
         // A five-digit year would rather overflow the line than silently show
         // the wrong number.
-        assertEquals("12345", formatSlot(12345, 4))
-    }
-
-    @Test
-    fun `every slot of an unset countdown is a placeholder`() {
-        val slots = listOf(
-            formatSlot(TimeParts.ZERO.years, 4),
-            formatSlot(TimeParts.ZERO.months, 2),
-            formatSlot(TimeParts.ZERO.days, 2),
-            formatSlot(TimeParts.ZERO.hours, 2),
-            formatSlot(TimeParts.ZERO.minutes, 2),
-            formatSlot(TimeParts.ZERO.seconds, 2),
+        assertEquals(
+            listOf("12345", "00", "00", "00", "00", "00"),
+            formatSlots(TimeParts(years = 12345, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0)),
         )
-
-        assertEquals(listOf("----", "--", "--", "--", "--", "--"), slots)
-    }
-
-    @Test
-    fun `every slot of a full countdown fits its pattern letter`() {
-        val parts = TimeParts(years = 3, months = 11, days = 30, hours = 23, minutes = 59, seconds = 58)
-        val slots = listOf(
-            formatSlot(parts.years, 4),
-            formatSlot(parts.months, 2),
-            formatSlot(parts.days, 2),
-            formatSlot(parts.hours, 2),
-            formatSlot(parts.minutes, 2),
-            formatSlot(parts.seconds, 2),
-        )
-
-        assertEquals(listOf("0003", "11", "30", "23", "59", "58"), slots)
-        assertEquals(listOf(4, 2, 2, 2, 2, 2), slots.map { it.length })
     }
 }

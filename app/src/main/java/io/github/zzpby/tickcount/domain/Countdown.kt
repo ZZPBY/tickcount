@@ -44,19 +44,42 @@ data class Countdown(
     val parts: TimeParts,
 )
 
+/** Width of each field of the countdown pattern, in display order: yyyy MM dd HH mm ss. */
+private val SLOT_WIDTHS = intArrayOf(4, 2, 2, 2, 2, 2)
+
 /**
- * Renders one slot of the fixed-width countdown line.
+ * Formats [parts] into the six slots of the countdown line, in display order:
+ * years, months, days, hours, minutes, seconds.
  *
- * A non-zero value is padded with leading zeros so that every slot keeps the
- * width of its pattern letter (`yyyy` is four characters, `MM` is two). A zero
- * value becomes a run of dashes of the same width instead, which is what makes
- * "less than a year" read as `----年` rather than `00年`.
+ * A slot is blanked with dashes the width of its pattern letter only while it is
+ * still *leading* — that is, while it and every larger unit are zero. So a
+ * countdown under a year reads `----年04月11日 06时30分15秒`, while a zero that
+ * sits *between* counting units is a real number: two days and thirty seconds
+ * reads `----年--月02日 00时00分30秒`, not a screen full of dashes.
+ *
+ * Values that overflow their slot (a five-digit year) are passed through rather
+ * than truncated — silently showing a wrong number would be worse.
  */
-fun formatSlot(value: Long, width: Int): String {
-    if (value == 0L) return "-".repeat(width)
+fun formatSlots(parts: TimeParts): List<String> {
+    val values = longArrayOf(
+        parts.years,
+        parts.months,
+        parts.days,
+        parts.hours,
+        parts.minutes,
+        parts.seconds,
+    )
+
+    var leading = true
+    return values.mapIndexed { index, value ->
+        if (value != 0L) leading = false
+        val width = SLOT_WIDTHS[index]
+        if (leading) "-".repeat(width) else padToWidth(value, width)
+    }
+}
+
+private fun padToWidth(value: Long, width: Int): String {
     val digits = value.toString()
-    // Longer than the slot (a five-digit year, say) is passed through rather
-    // than truncated — silently showing a wrong number would be worse.
     return if (digits.length >= width) digits else "0".repeat(width - digits.length) + digits
 }
 
