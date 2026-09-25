@@ -31,6 +31,18 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Belt and braces: AGP auto-downloads a missing SDK platform when the
+      # licences are accepted, so make sure the standard licence hash is on
+      # disk before it tries. Without this a runner image that predates
+      # API 37 would fail the build instead of fetching it.
+      - name: Accept Android SDK licences
+        run: |
+          mkdir -p "$ANDROID_HOME/licenses"
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > "$ANDROID_HOME/licenses/android-sdk-license"
+
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
@@ -60,6 +72,18 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # Belt and braces: AGP auto-downloads a missing SDK platform when the
+      # licences are accepted, so make sure the standard licence hash is on
+      # disk before it tries. Without this a runner image that predates
+      # API 37 would fail the build instead of fetching it.
+      - name: Accept Android SDK licences
+        run: |
+          mkdir -p "$ANDROID_HOME/licenses"
+          echo "24333f8a63b6825ea9c5514f83c2829b004d1fee" > "$ANDROID_HOME/licenses/android-sdk-license"
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
