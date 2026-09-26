@@ -65,56 +65,6 @@ Android debug 密钥，并会在日志里给出警告。debug 密钥签的包可
 
 Windows 下使用 `gradlew.bat`。
 
-## 签名
-
-当项目根目录存在 `keystore.properties` 时，`assembleRelease` 会使用其中的正式密钥；
-不存在时回退到 Android debug 密钥，以保证刚 clone 下来的仓库也能构建出可安装的 APK。
-
-生成密钥库：
-
-```bash
-keytool -genkeypair -v -keystore release.jks -alias tickcount \
-        -keyalg RSA -keysize 4096 -validity 10000 -storetype PKCS12 \
-        -dname "CN=Your Name"
-```
-
-只有 `CN` 有意义；`O`/`OU`/`L`/`ST`/`C` 是 Android 从不读取的元数据。
-`validity 10000` 约合 27 年，远超过 Google Play 要求的证书有效期下限。
-
-然后让 `keystore.properties` 指向它：
-
-```properties
-storeFile=release.jks
-storePassword=…
-keyAlias=tickcount
-keyPassword=…
-```
-
-该文件已被 `.gitignore` 忽略，`*.jks` 与 `*.keystore` 同样。PKCS12 格式下两个密码相同。
-
-> Android 靠**签名证书**（而非包名）识别一个应用。用于正式发布的密钥库必须备份，
-> 且绝不可更换：丢失密钥库，或日后更换密钥，都会导致无法再推送能覆盖安装的更新。
-
-### 在 CI 里签名
-
-添加四个仓库 Secret —— `KEYSTORE_BASE64`（`base64 -w0 release.jks` 的输出）、
-`STORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD` —— 并在
-[`.github/workflows/android.yml`](.github/workflows/android.yml) 的构建步骤之前落盘：
-
-```yaml
-- name: Write keystore
-  env:
-    KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-  run: |
-    echo "$KEYSTORE_BASE64" | base64 -d > release.jks
-    cat > keystore.properties <<EOF
-    storeFile=release.jks
-    storePassword=${{ secrets.STORE_PASSWORD }}
-    keyAlias=${{ secrets.KEY_ALIAS }}
-    keyPassword=${{ secrets.KEY_PASSWORD }}
-    EOF
-```
-
 ## 技术栈
 
 | | |
