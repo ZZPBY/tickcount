@@ -48,7 +48,8 @@ APK 发布在 [Releases](../../releases/latest)，也可以从 **Actions** 标�
 配置了签名 Secret 时，Release APK 使用维护者的正式密钥签名；未配置时 CI 回退到
 Android debug 密钥，并会在日志里给出警告。debug 密钥签的包可以正常安装，
 但**无法覆盖安装**已用正式密钥签名的版本，也不适合上架应用商店。
-用自己的密钥构建见[签名](#签名)。
+用自己的密钥构建：在项目根目录创建 `keystore.properties`（已被 `.gitignore` 忽略），
+填入 `storeFile`、`storePassword`、`keyAlias`、`keyPassword` 后执行 `./gradlew assembleRelease`。
 
 ## 编译
 
@@ -91,7 +92,9 @@ app/src/main/java/io/github/zzpby/tickcount/
 └── ui/
     ├── MainViewModel.kt         状态 + 全进程唯一的那个时钟
     ├── TickCountScreen.kt       唯一的界面
+    ├── EventEditorDialog.kt     给某一天命名 / 改名的弹窗
     ├── calendar/                手写月历 + 年月选择窗
+    ├── components/              Canvas 箭头图标 + 本地化日期格式
     ├── countdown/               顶部倒计时
     └── theme/                   Material 3 配色与字体
 ```
@@ -101,14 +104,15 @@ app/src/main/java/io/github/zzpby/tickcount/
 
 ## 应用图标
 
-![图标预览](tools/icon-preview.png)
+![图标预览](.tools/图标生成/icon-preview.png)
 
-矢量 XML 无法绘制汉字，因此启动器文字由 [`tools/IconGen.java`](tools/IconGen.java)
-栅格化：它加载微软雅黑，把文字缩放到正好落在 Android 自适应图标的 66dp 安全圆内，
+矢量 XML 无法绘制汉字，因此启动器文字由
+[`.tools/图标生成/IconGen.java`](.tools/图标生成/IconGen.java) 栅格化：
+它加载微软雅黑，把文字缩放到正好落在 Android 自适应图标的 66dp 安全圆内，
 再输出 `res/drawable-xxxhdpi/` 中的 PNG。
 
 ```bash
-java tools/IconGen.java app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png
+java .tools/图标生成/IconGen.java app/src/main/res/drawable-xxxhdpi/ic_launcher_foreground.png
 ```
 
 ## 隐私

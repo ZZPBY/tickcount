@@ -1,0 +1,41 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Kotlin compiler session data
+.kotlin/
+
+# Local machine configuration — never commit.
+local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Local AI-agent instructions, not part of the published project.
+AGENTS.md
+
+# Local toolchain, kept beside the project instead of installed system-wide.
+# .tools/git/ is a full portable Git (~390 MB); 签名密钥文件/ holds the real
+# release keystore. The icon generator in .tools/图标生成/ is deliberately NOT
+# ignored, because the README documents it as part of the project.
+.tools/git/
+.tools/签名密钥文件/
+.tools/apk输出目录/
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Build outputs
+*.apk
+*.aab
+*.ap_
+*.dex
