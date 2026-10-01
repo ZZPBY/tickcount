@@ -46,8 +46,10 @@ android {
         minSdk = 29
         // Google Play requires new apps to target API 36+ since 2026-08-31.
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.0.1"
+        // Bumped together with versionName: 1.0.1 already shipped as version code
+        // 2, and Play rejects a version code it has seen before.
+        versionCode = 3
+        versionName = "1.0.2"
     }
 
     signingConfigs {
@@ -92,6 +94,9 @@ android {
 
     buildFeatures {
         compose = true
+        // The About box reads VERSION_NAME from the generated BuildConfig, so the
+        // version can never drift from the one in the build script.
+        buildConfig = true
     }
 
     lint {

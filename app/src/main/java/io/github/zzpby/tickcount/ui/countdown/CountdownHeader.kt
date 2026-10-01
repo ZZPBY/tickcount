@@ -53,14 +53,18 @@ private val MIN_LINE_SIZE = 9.sp
 private val MAX_LINE_SIZE = 28.sp
 
 /**
- * The top half of the screen: the selected date and, if it has been named, a
- * single fixed-width line showing the distance to it as
+ * The top half of the screen: the countdown list bar, the selected date and, if
+ * it has been named, a single fixed-width line showing the distance to it as
  * `yyyy年MM月dd日 HH时mm分ss秒`.
  *
  * A slot whose value is zero is replaced by dashes the width of its pattern
  * letter, so a countdown under a year reads `----年...`. A day with no saved
  * countdown shows the same line with every slot blanked, which keeps the layout
  * from jumping while making it obvious that nothing is set.
+ *
+ * [listBar] is a slot rather than a pile of extra parameters: the bar needs every
+ * saved countdown and its own expanded state, neither of which this component has
+ * any use for. Handing it in keeps that state with the screen that owns it.
  */
 @Composable
 fun CountdownHeader(
@@ -72,6 +76,7 @@ fun CountdownHeader(
     onPrimaryAction: () -> Unit,
     onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier,
+    listBar: @Composable () -> Unit = {},
 ) {
     val fullDateFormatter = rememberDateFormatter(R.string.date_format_full)
     val hasEvent = title != null
@@ -81,6 +86,10 @@ fun CountdownHeader(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(24.dp))
+
+        listBar()
+
+        Spacer(Modifier.height(14.dp))
 
         TitlePill(
             title = title,
@@ -93,11 +102,20 @@ fun CountdownHeader(
 
         if (hasEvent) {
             PhaseLabel(countdown.phase, accent)
-            Spacer(Modifier.height(12.dp))
-            CountdownLine(countdown.parts)
         } else {
-            CountdownLine(TimeParts.ZERO)
+            // Occupies the phase label's row rather than being left out, so the
+            // countdown line below stays put when a day is named or cleared.
+            // Muted rather than accented: nothing here is counting yet.
+            Text(
+                text = stringResource(R.string.label_countdown_tbd),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
+
+        Spacer(Modifier.height(12.dp))
+
+        CountdownLine(if (hasEvent) countdown.parts else TimeParts.ZERO)
 
         Spacer(Modifier.height(28.dp))
 

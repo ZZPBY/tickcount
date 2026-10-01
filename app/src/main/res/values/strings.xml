@@ -15,6 +15,10 @@
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
 
+    <!-- Accessibility labels for the bar that expands into the countdown list -->
+    <string name="action_expand_list">Show all countdowns</string>
+    <string name="action_collapse_list">Hide the list of countdowns</string>
+
     <!-- Accessibility labels for the year stepper in the month picker -->
     <string name="action_year_back">Previous year</string>
     <string name="action_year_forward">Next year</string>
@@ -26,6 +30,12 @@
     <string name="label_countdown_left">Time left</string>
     <string name="label_today_elapsed">Elapsed today</string>
     <string name="label_countdown_ago">Time since</string>
+
+    <!--
+      Stands in the phase label's place on a day that has no countdown, so the
+      countdown line below it does not shift when a day is named or cleared.
+    -->
+    <string name="label_countdown_tbd">TBD</string>
 
     <!--
       The single countdown line. Arguments are years, months, days, hours,
@@ -44,9 +54,33 @@
     <string name="dialog_clear_hint">Clearing the name removes this countdown.</string>
 
     <!--
+      Asked before a countdown is deleted from a button. Emptying the name field
+      is deliberately NOT confirmed: that is a visible act of editing rather than
+      a stray tap, and confirming it would tax every rename.
+    -->
+    <string name="dialog_delete_title">Delete this countdown?</string>
+    <string name="dialog_delete_message">“%1$s” will be removed. This cannot be undone.</string>
+
+    <!--
       Date patterns for java.time.DateTimeFormatter. Keeping the pattern in a
       resource means a new language only needs a translation, not a code change.
     -->
     <string name="month_year_format">MMMM yyyy</string>
     <string name="date_format_full">EEEE, MMMM d, yyyy</string>
+
+    <!-- Top bar, and the About box it opens -->
+    <string name="action_about">About</string>
+    <string name="action_close">Close</string>
+    <string name="about_tagline">A minimal, fully offline countdown calendar.</string>
+    <string name="about_body">Tap a day in the calendar and give it a name. The line above counts down to that day, then keeps counting once the day has passed.</string>
+    <string name="about_privacy">No permissions, no network, no analytics.</string>
+    <string name="about_version">Version %1$s</string>
+
+    <!--
+      The project's home. translatable="false" because a URL is the same string in
+      every language — so these live here only and are deliberately absent from
+      values-zh rather than duplicated.
+    -->
+    <string name="about_link_url" translatable="false">https://github.com/ZZPBY/tickcount</string>
+    <string name="about_link_label" translatable="false">github.com/ZZPBY/tickcount</string>
 </resources>

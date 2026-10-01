@@ -16,6 +16,10 @@
     <string name="action_save">保存</string>
     <string name="action_cancel">取消</string>
 
+    <!-- 展开倒数日列表那一栏的无障碍说明 -->
+    <string name="action_expand_list">展开全部倒数日</string>
+    <string name="action_collapse_list">收起倒数日列表</string>
+
     <!-- 年月选择器里年份按钮的无障碍说明 -->
     <string name="action_year_back">上一年</string>
     <string name="action_year_forward">下一年</string>
@@ -27,6 +31,12 @@
     <string name="label_countdown_left">还有</string>
     <string name="label_today_elapsed">今天已过</string>
     <string name="label_countdown_ago">已过去</string>
+
+    <!--
+      没设置倒数日时，占住状态文字那一行的位置，这样给某天命名或清空时，
+      下面的倒计时行不会上下移动。
+    -->
+    <string name="label_countdown_tbd">待定</string>
 
     <!--
       单行倒数日格式。六个参数依次是 年/月/日/时/分/秒，已经补好零、
@@ -42,7 +52,22 @@
     <string name="field_name_hint">生日、考试、旅行…</string>
     <string name="dialog_clear_hint">清空名称将删除这个倒数日。</string>
 
+    <!--
+      点按钮删除前的确认。清空名称不在此列：那是看得见的编辑动作，不是误触，
+      为它加确认只会让每次改名都多一步。
+    -->
+    <string name="dialog_delete_title">删除这个倒数日？</string>
+    <string name="dialog_delete_message">「%1$s」将被删除，且无法恢复。</string>
+
     <!-- 日期格式 -->
     <string name="month_year_format">yyyy年M月</string>
     <string name="date_format_full">yyyy年M月d日 EEEE</string>
+
+    <!-- 顶栏，以及它打开的关于框 -->
+    <string name="action_about">关于</string>
+    <string name="action_close">关闭</string>
+    <string name="about_tagline">一个极简、纯离线的安卓倒数日日历。</string>
+    <string name="about_body">在日历上点一天、起个名字，上面那行就会数到那天还有多久；那天过去之后，它继续往下数。</string>
+    <string name="about_privacy">不要任何权限、不联网、无统计。</string>
+    <string name="about_version">版本 %1$s</string>
 </resources>
