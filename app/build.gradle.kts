@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -7,21 +8,32 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
-// Optional release signing. Create a `keystore.properties` file in the project
-// root (it is .gitignore'd) with:
-//   storeFile=release.jks
-//   storePassword=...
-//   keyAlias=...
-//   keyPassword=...
-// Without it, `assembleDebug` works out of the box and `assembleRelease`
-// produces an unsigned APK.
-val keystorePropertiesFile = rootProject.file("keystore.properties")
-val keystoreProperties = Properties().apply {
-    if (keystorePropertiesFile.exists()) {
-        FileInputStream(keystorePropertiesFile).use { load(it) }
-    }
+// Optional release signing. The properties file is looked up in two places:
+//
+//   keystore.properties                     written by CI on the runner
+//   .tools/签名密钥文件/keystore.properties    the maintainer's local copy
+//
+// The second path is written with \u escapes to keep this script pure ASCII.
+// Gradle reads the script as UTF-8, but the JVM here reports GBK for both
+// file.encoding and sun.jnu.encoding, and a corrupted literal would fail
+// *silently* by falling back to debug signing — which is the exact bug this
+// lookup exists to prevent.
+//
+// `storeFile` is resolved relative to the properties file itself, so the
+// keystore can sit next to its properties instead of needing a second copy at
+// the repository root. Both paths are .gitignore'd. Without either file
+// `assembleDebug` works out of the box and `assembleRelease` falls back to the
+// debug key — see the README.
+val keystorePropertiesFile: File? = listOf(
+    rootProject.file("keystore.properties"),
+    rootProject.file(".tools/\u7B7E\u540D\u5BC6\u94A5\u6587\u4EF6/keystore.properties"),
+).firstOrNull { it.isFile }
+
+val keystoreProperties = Properties()
+keystorePropertiesFile?.let { file ->
+    FileInputStream(file).use { stream -> keystoreProperties.load(stream) }
 }
-val hasReleaseKeystore = keystorePropertiesFile.exists()
+val hasReleaseKeystore = keystorePropertiesFile != null
 
 android {
     namespace = "io.github.zzpby.tickcount"
@@ -39,9 +51,13 @@ android {
     }
 
     signingConfigs {
-        if (hasReleaseKeystore) {
+        val propertiesFile = keystorePropertiesFile
+        if (propertiesFile != null) {
             create("release") {
-                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                // Relative to the properties file, which keeps the keystore next
+                // to it rather than requiring a second copy at the root.
+                storeFile = propertiesFile.parentFile
+                    .resolve(keystoreProperties.getProperty("storeFile"))
                 storePassword = keystoreProperties.getProperty("storePassword")
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
