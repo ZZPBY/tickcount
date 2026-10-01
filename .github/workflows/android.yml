@@ -139,18 +139,30 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          apk=app/build/outputs/apk/release/app-release.apk
-          ls -l "$apk"
+
+          # Name the asset after the tag, not after Gradle's output file. The
+          # release is what people actually download, and "app-release.apk" says
+          # nothing about which version it is. Copied rather than renamed so the
+          # build output the earlier steps reported on is left alone.
+          asset="TickCount-${GITHUB_REF_NAME#v}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$asset"
+          ls -l "$asset"
 
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            echo "Release $GITHUB_REF_NAME exists; replacing its APK."
-            gh release upload "$GITHUB_REF_NAME" "$apk" --clobber
+            echo "Release $GITHUB_REF_NAME exists; replacing its asset."
+            gh release upload "$GITHUB_REF_NAME" "$asset" --clobber
           else
             echo "Creating release $GITHUB_REF_NAME."
-            gh release create "$GITHUB_REF_NAME" "$apk" --generate-notes
+            gh release create "$GITHUB_REF_NAME" "$asset" --generate-notes
           fi
 
           gh release view "$GITHUB_REF_NAME" --json tagName,assets \
             --jq '{tag: .tagName, assets: [.assets[].name]}'
-          gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name' \
-            | grep -q '\.apk$'
+
+          # Assert the exact asset rather than "some .apk is attached", and read
+          # the list in one go: piping gh straight into `grep -q` lets grep exit
+          # on the first match, which under `pipefail` can fail the step for a
+          # reason that has nothing to do with the release.
+          names=$(gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name')
+          printf '%s\n' "$names"
+          printf '%s\n' "$names" | grep -qx "$asset"
