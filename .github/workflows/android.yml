@@ -140,20 +140,26 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Name the asset after the tag, not after Gradle's output file. The
-          # release is what people actually download, and "app-release.apk" says
-          # nothing about which version it is. Copied rather than renamed so the
-          # build output the earlier steps reported on is left alone.
-          asset="TickCount-${GITHUB_REF_NAME#v}.apk"
+          # The tag carries the version, and both the asset name and the release
+          # title are derived from it. Naming the asset after Gradle's output
+          # file said nothing about which version it was, and gh would have
+          # titled a fresh release "v1.0.2" while the existing ones read "1.0.2".
+          # Copied rather than renamed so the build output the earlier steps
+          # reported on is left alone.
+          version="${GITHUB_REF_NAME#v}"
+          asset="TickCount-${version}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$asset"
           ls -l "$asset"
 
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            # An existing release may have been renamed by hand, so a re-run
+            # replaces the asset and leaves the title alone.
             echo "Release $GITHUB_REF_NAME exists; replacing its asset."
             gh release upload "$GITHUB_REF_NAME" "$asset" --clobber
           else
             echo "Creating release $GITHUB_REF_NAME."
-            gh release create "$GITHUB_REF_NAME" "$asset" --generate-notes
+            gh release create "$GITHUB_REF_NAME" "$asset" \
+              --title "$version" --generate-notes
           fi
 
           gh release view "$GITHUB_REF_NAME" --json tagName,assets \
