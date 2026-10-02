@@ -49,12 +49,6 @@
 APK 发布在 [Releases](../../releases/latest)，也可以从 **Actions** 标签页里
 任意一次成功的构建中下载产物。每个版本改了什么见 [`更新日志.txt`](更新日志.txt)。
 
-配置了签名 Secret 时，Release APK 使用维护者的正式密钥签名；未配置时 CI 回退到
-Android debug 密钥，并会在日志里给出警告。debug 密钥签的包可以正常安装，
-但**无法覆盖安装**已用正式密钥签名的版本，也不适合上架应用商店。
-用自己的密钥构建：在项目根目录创建 `keystore.properties`（已被 `.gitignore` 忽略），
-填入 `storeFile`、`storePassword`、`keyAlias`、`keyPassword` 后执行 `./gradlew assembleRelease`。
-其中 `storeFile` 相对于该 properties 文件所在的目录解析。
 
 ## 编译
 
