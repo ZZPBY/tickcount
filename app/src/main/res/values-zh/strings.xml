@@ -63,9 +63,11 @@
     <string name="month_year_format">yyyy年M月</string>
     <string name="date_format_full">yyyy年M月d日 EEEE</string>
 
-    <!-- 顶栏，以及它打开的关于框 -->
+    <!-- 顶栏，以及它打开的两个框 -->
     <string name="action_about">关于</string>
+    <string name="action_changelog">更新日志</string>
     <string name="action_close">关闭</string>
+    <string name="changelog_missing">更新日志读取失败。</string>
     <string name="about_tagline">一个极简、纯离线的安卓倒数日日历。</string>
     <string name="about_body">在日历上点一天、起个名字，上面那行就会数到那天还有多久；那天过去之后，它继续往下数。</string>
     <string name="about_privacy">不要任何权限、不联网、无统计。</string>

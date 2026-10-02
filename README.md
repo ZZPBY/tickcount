@@ -16,10 +16,11 @@
 - **快速翻月** —— 点月份标题会弹出年月选择窗，带「±1 年」和「±10 年」按钮。
 - **删除前会确认** —— 点「删除」不会立刻生效，先问一次。
 - **关于** —— 右上角的入口，说明这个应用是什么、什么版本、源码在哪。
+- **更新日志** —— 左上角的入口，应用内直接看历次改动，内容取自仓库根目录的同名文件。
 - **Material 3** —— 亮色 / 暗色，Android 12+ 支持跟随壁纸取色。
 - **中英双语** —— 跟随系统语言，日期格式也本地化。
 - **不要任何权限、不联网、无统计。**
-- 单模块，不含任何第三方库，`minSdk` 29。
+- 单模块，不含任何第三方库，`minSdk` 27（Android 8.1）。
 
 ## 倒计时的读法
 
@@ -77,12 +78,13 @@ Windows 下使用 `gradlew.bat`。
 | 语言 | Kotlin 2.4.20 |
 | UI | Jetpack Compose + Material 3（Compose BOM 2026.09.00） |
 | 构建 | AGP 9.4.1、Gradle 9.6.0，版本集中在 `gradle/libs.versions.toml` |
-| SDK | compileSdk 37、targetSdk 36、minSdk 29 |
+| SDK | compileSdk 37、targetSdk 36、minSdk 27 |
 | 存储 | `SharedPreferences` 里存一个小 JSON 文档 |
 | 依赖 | 仅 AndroidX 与 Compose |
 
-`minSdk` 为 29，`java.time` 由系统直接提供，因此不需要 `coreLibraryDesugaring`，
-也不需要任何兼容垫片。
+`minSdk` 为 27。`java.time` 在 API 26 就有了，主题里的 `windowLightNavigationBar`
+在 27 也有了，所以既不需要 `coreLibraryDesugaring`，也不需要任何兼容垫片，
+更不必把主题按版本拆成两份。
 
 ## 目录结构
 

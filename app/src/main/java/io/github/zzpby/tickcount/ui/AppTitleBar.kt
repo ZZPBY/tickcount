@@ -13,15 +13,16 @@ import androidx.compose.ui.text.font.FontWeight
 import io.github.zzpby.tickcount.R
 
 /**
- * The strip at the very top: the app's own name, centred, with the way into the
- * About box at the right.
+ * The strip at the very top: the app's own name, centred, with the changelog at
+ * the left and the About box at the right.
  *
  * The name is centred in a Box rather than placed in a three-slot Row, so it sits
- * in the middle of the *screen* instead of the middle of whatever space the About
- * button happens to leave over.
+ * in the middle of the *screen* instead of the middle of whatever space the two
+ * buttons happen to leave over.
  */
 @Composable
 fun AppTitleBar(
+    onChangelog: () -> Unit,
     onAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -32,6 +33,15 @@ fun AppTitleBar(
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.align(Alignment.Center),
         )
+        TextButton(
+            onClick = onChangelog,
+            modifier = Modifier.align(Alignment.CenterStart),
+        ) {
+            Text(
+                text = stringResource(R.string.action_changelog),
+                style = MaterialTheme.typography.labelLarge,
+            )
+        }
         TextButton(
             onClick = onAbout,
             modifier = Modifier.align(Alignment.CenterEnd),

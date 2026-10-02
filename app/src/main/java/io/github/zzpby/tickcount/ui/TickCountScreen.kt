@@ -54,6 +54,7 @@ fun TickCountScreen(viewModel: MainViewModel = viewModel()) {
     var monthPickerOpen by rememberSaveable { mutableStateOf(false) }
     var listExpanded by rememberSaveable { mutableStateOf(false) }
     var aboutOpen by rememberSaveable { mutableStateOf(false) }
+    var changelogOpen by rememberSaveable { mutableStateOf(false) }
 
     // The date a delete *button* has asked about, or NO_DATE. Both delete buttons
     // funnel through this one value, which is what lets the confirmation be
@@ -77,6 +78,7 @@ fun TickCountScreen(viewModel: MainViewModel = viewModel()) {
         Spacer(Modifier.height(8.dp))
 
         AppTitleBar(
+            onChangelog = { changelogOpen = true },
             onAbout = { aboutOpen = true },
             modifier = Modifier.padding(horizontal = 12.dp),
         )
@@ -122,6 +124,10 @@ fun TickCountScreen(viewModel: MainViewModel = viewModel()) {
         )
 
         Spacer(Modifier.height(20.dp))
+    }
+
+    if (changelogOpen) {
+        ChangelogDialog(onDismiss = { changelogOpen = false })
     }
 
     if (aboutOpen) {

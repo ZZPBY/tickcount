@@ -1,3 +1,9 @@
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.File
 import java.io.FileInputStream
@@ -35,21 +41,58 @@ keystorePropertiesFile?.let { file ->
 }
 val hasReleaseKeystore = keystorePropertiesFile != null
 
+/**
+ * Copies the repository-root changelog into a directory the variant API adopts as
+ * generated assets.
+ *
+ * A plain Copy task will not do. AGP 9 refuses Provider instances in the older
+ * SourceSet API, and wiring a resolved directory into `sourceSets` leaves every
+ * task that reads assets — the merge, and the lint model among them — with no
+ * declared dependency on the producer. It is a whack-a-mole that
+ * `addGeneratedSourceDirectory` exists to end.
+ */
+abstract class CopyChangelogTask : DefaultTask() {
+    @get:InputFile
+    abstract val sourceFile: RegularFileProperty
+
+    @get:OutputDirectory
+    abstract val outputDir: DirectoryProperty
+
+    @TaskAction
+    fun copyChangelog() {
+        val from = sourceFile.get().asFile
+        val into = outputDir.get().asFile
+        into.mkdirs()
+        from.copyTo(into.resolve(from.name), overwrite = true)
+    }
+}
+
+// The changelog lives at the repository root so it is readable on GitHub, and is
+// copied into the APK's assets at build time so the in-app dialog and that file
+// can never disagree. Generated into the build directory rather than committed a
+// second time under src/main/assets. The file name is written with \u escapes to
+// keep this script pure ASCII, for the same reason as the keystore path above.
+val copyChangelog = tasks.register<CopyChangelogTask>("copyChangelog") {
+    sourceFile.set(rootProject.file("\u66F4\u65B0\u65E5\u5FD7.txt"))
+    outputDir.set(layout.buildDirectory.dir("generated/changelogAssets"))
+}
+
 android {
     namespace = "io.github.zzpby.tickcount"
     compileSdk = 37
 
     defaultConfig {
         applicationId = "io.github.zzpby.tickcount"
-        // java.time and the modern notification APIs are all available from 29,
-        // so there is no desugaring and no compatibility shim anywhere.
-        minSdk = 29
+        // java.time arrived in API 26 and the theme's windowLightNavigationBar in
+        // 27, so 27 is the lowest floor that needs no desugaring, no compatibility
+        // shim and no split of the theme files.
+        minSdk = 27
         // Google Play requires new apps to target API 36+ since 2026-08-31.
         targetSdk = 36
         // Bumped together with versionName: 1.0.1 already shipped as version code
         // 2, and Play rejects a version code it has seen before.
-        versionCode = 3
-        versionName = "1.0.2"
+        versionCode = 4
+        versionName = "1.0.3"
     }
 
     signingConfigs {
@@ -101,6 +144,18 @@ android {
 
     lint {
         abortOnError = false
+    }
+}
+
+// Declared through the variant API so AGP knows the directory is generated, and
+// wires the dependency for every task that reads assets rather than for whichever
+// ones happened to fail first.
+androidComponents {
+    onVariants { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(
+            copyChangelog,
+            CopyChangelogTask::outputDir,
+        )
     }
 }
 
