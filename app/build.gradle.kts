@@ -1,8 +1,11 @@
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.File
@@ -75,6 +78,79 @@ abstract class CopyChangelogTask : DefaultTask() {
 val copyChangelog = tasks.register<CopyChangelogTask>("copyChangelog") {
     sourceFile.set(rootProject.file("\u66F4\u65B0\u65E5\u5FD7.txt"))
     outputDir.set(layout.buildDirectory.dir("generated/changelogAssets"))
+}
+
+/**
+ * Writes this version's section of the changelog to a file, so the GitHub release
+ * publishes the same words the app shows instead of GitHub's generated compare
+ * link — which is all `--generate-notes` ever produced.
+ *
+ * The extraction lives here rather than in a shell one-liner in the workflow
+ * because it can then be run and read on a developer machine. The CI shell cannot
+ * be exercised locally, and an unverifiable awk script is not worth the risk.
+ */
+abstract class WriteReleaseNotesTask : DefaultTask() {
+    @get:InputFile
+    abstract val changelog: RegularFileProperty
+
+    @get:Input
+    abstract val version: Property<String>
+
+    @get:OutputFile
+    abstract val notesFile: RegularFileProperty
+
+    @TaskAction
+    fun writeReleaseNotes() {
+        val source = changelog.get().asFile
+        val section = sectionOf(source.readText(), version.get())
+        check(section.isNotBlank()) {
+            "${source.name} has no ${version.get()} section, so the release would " +
+                "have no notes. Add a \"${version.get()}\" heading to it."
+        }
+        val target = notesFile.get().asFile
+        target.parentFile.mkdirs()
+        target.writeText(section + "\n")
+    }
+
+    /**
+     * Everything after [version]'s bare `x.y.z` heading, up to the next heading.
+     *
+     * The rule of dashes under each heading and the blank lines around the block are
+     * dropped: the release page supplies its own spacing. An empty result means the
+     * changelog has no such section, which [writeReleaseNotes] treats as an error
+     * rather than publishing a release with nothing on it.
+     */
+    private fun sectionOf(text: String, version: String): String {
+        // A BOM would otherwise ride along on the first line and hide the top entry.
+        val lines = text.removePrefix("\uFEFF").lines()
+        val heading = lines.indexOfFirst { it.trim() == version }
+        if (heading < 0) return ""
+
+        val next = (heading + 1 until lines.size)
+            .firstOrNull { lines[it].trim().matches(Regex("""\d+\.\d+\.\d+""")) }
+            ?: lines.size
+
+        return lines.subList(heading + 1, next)
+            .filterNot { it.trim().matches(Regex("-+")) }
+            .dropWhile { it.isBlank() }
+            .dropLastWhile { it.isBlank() }
+            .joinToString("\n")
+    }
+}
+
+val writeReleaseNotes = tasks.register<WriteReleaseNotesTask>("writeReleaseNotes") {
+    group = "build"
+    description = "Writes this version's changelog section to build/release-notes.md."
+    changelog.set(rootProject.file("\u66F4\u65B0\u65E5\u5FD7.txt"))
+    // Deferred, because defaultConfig is filled in below.
+    version.set(providers.provider { android.defaultConfig.versionName ?: "0.0.0" })
+    notesFile.set(layout.buildDirectory.file("release-notes.md"))
+}
+
+// The release step reads that file, and assembleRelease is what CI runs before it
+// publishes, so hanging the task off it keeps the two in one Gradle invocation.
+tasks.matching { it.name == "assembleRelease" }.configureEach {
+    dependsOn(writeReleaseNotes)
 }
 
 android {

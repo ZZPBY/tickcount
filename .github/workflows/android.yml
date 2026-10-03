@@ -151,15 +151,30 @@ jobs:
           cp app/build/outputs/apk/release/app-release.apk "$asset"
           ls -l "$asset"
 
+          # assembleRelease wrote this out of the repository changelog, so the
+          # release page and the in-app changelog carry the same words.
+          # --generate-notes was tried first and produced nothing but a compare
+          # link, which said less than the changelog already did. The extraction
+          # is a Gradle task rather than a shell one-liner here because a shell
+          # one-liner cannot be run and checked on a developer machine.
+          notesFile="app/build/release-notes.md"
+          if [ ! -s "$notesFile" ]; then
+            echo "::error::$notesFile is missing or empty; writeReleaseNotes should have produced it."
+            exit 1
+          fi
+          cat "$notesFile"
+
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            # An existing release may have been renamed by hand, so a re-run
-            # replaces the asset and leaves the title alone.
-            echo "Release $GITHUB_REF_NAME exists; replacing its asset."
+            # An existing release may have been renamed by hand, so a re-run leaves
+            # the title alone. Its notes are replaced, because they are derived from
+            # the repository rather than typed on the release page.
+            echo "Release $GITHUB_REF_NAME exists; replacing its asset and notes."
             gh release upload "$GITHUB_REF_NAME" "$asset" --clobber
+            gh release edit "$GITHUB_REF_NAME" --notes-file "$notesFile"
           else
             echo "Creating release $GITHUB_REF_NAME."
             gh release create "$GITHUB_REF_NAME" "$asset" \
-              --title "$version" --generate-notes
+              --title "$version" --notes-file "$notesFile"
           fi
 
           gh release view "$GITHUB_REF_NAME" --json tagName,assets \
