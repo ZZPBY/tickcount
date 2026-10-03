@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What the widget picker shows on Android 12+, where a live preview replaces the
+  app icon.
+
+  Every text is fixed here rather than bound to a Chronometer: this layout is
+  inflated once by the launcher and never updated, so it is a picture of the widget
+  rather than a working one. It mirrors the stacked arrangement at the default 4x2
+  size, which is what a new instance actually looks like.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="@string/widget_preview_name"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="12sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="13"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="@string/widget_preview_days"
+        android:textColor="@color/widget_text_primary"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="17"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="@string/widget_preview_clock"
+        android:textColor="@color/widget_text_primary"
+        android:textSize="24sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="10"
+        android:gravity="center"
+        android:maxLines="1"
+        android:text="@string/widget_preview_date"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="11sp" />
+</LinearLayout>

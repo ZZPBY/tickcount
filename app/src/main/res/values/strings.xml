@@ -85,4 +85,48 @@
     -->
     <string name="about_link_url" translatable="false">https://github.com/ZZPBY/tickcount</string>
     <string name="about_link_label" translatable="false">github.com/ZZPBY/tickcount</string>
+
+    <!--
+      Home-screen widget. The name shown in the widget picker comes from app_name
+      through the manifest, so it is not repeated here.
+    -->
+    <string name="widget_description">The countdown to your chosen day, ticking live on the home screen.</string>
+    <string name="widget_config_title">Choose a countdown</string>
+    <string name="widget_config_empty">No countdowns yet. Add one in TickCount first.</string>
+    <plurals name="widget_days_left">
+        <item quantity="one">%1$d day left</item>
+        <item quantity="other">%1$d days left</item>
+    </plurals>
+    <plurals name="widget_days_ago">
+        <item quantity="one">%1$d day ago</item>
+        <item quantity="other">%1$d days ago</item>
+    </plurals>
+    <string name="widget_tomorrow">Tomorrow</string>
+    <string name="widget_today">Today</string>
+
+    <!--
+      The tall layout spells the countdown out in calendar units instead of one
+      total. Years and months carry a trailing space of their own, so the units can
+      be concatenated with nothing in between; the result is trimmed afterwards.
+    -->
+    <plurals name="widget_years">
+        <item quantity="one">"%1$d year "</item>
+        <item quantity="other">"%1$d years "</item>
+    </plurals>
+    <plurals name="widget_months">
+        <item quantity="one">"%1$d month "</item>
+        <item quantity="other">"%1$d months "</item>
+    </plurals>
+    <plurals name="widget_breakdown_days">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+    <string name="widget_breakdown_left">%1$s left</string>
+    <string name="widget_breakdown_ago">%1$s ago</string>
+
+    <!-- Sample values for the picker preview, not shown anywhere else. -->
+    <string name="widget_preview_name">Birthday</string>
+    <string name="widget_preview_days">12 days left</string>
+    <string name="widget_preview_date">October 16, 2026</string>
+    <string name="widget_preview_clock" translatable="false">3:48:23</string>
 </resources>

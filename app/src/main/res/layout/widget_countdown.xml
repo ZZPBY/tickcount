@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One layout for every size, on purpose.
+
+  Swapping layout files on resize is what froze the widget on some launchers: their
+  AppWidgetHost does not re-inflate when the layout id changes, so every later
+  action lands on an id the current view hierarchy does not contain and is dropped
+  silently — permanently, until the widget is deleted and added again. A constant
+  root means a resize is an ordinary visibility change like any other.
+
+  The two containers are the two arrangements. `widget_column` starts visible
+  because it is the one that carries the most information; a narrow widget hides
+  its outer rows rather than switching files (see CountdownWidgets.arrange).
+
+  Rows carry layout_weight so they divide the whole widget between them instead of
+  clustering in the middle, and each text autosizes into the band it was given.
+  That is what stops a tall widget from being a small block of text surrounded by
+  empty space.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="8dp">
+
+    <!-- The one-line arrangement: name, countdown, clock. -->
+    <LinearLayout
+        android:id="@+id/widget_row"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/row_name"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:autoSizeMaxTextSize="20sp"
+            android:autoSizeMinTextSize="8sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
+            android:ellipsize="end"
+            android:gravity="center_vertical|start"
+            android:maxLines="1"
+            android:textColor="@color/widget_text_secondary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/row_days"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="3"
+            android:autoSizeMaxTextSize="20sp"
+            android:autoSizeMinTextSize="8sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/widget_text_primary"
+            android:textStyle="bold" />
+
+        <Chronometer
+            android:id="@+id/row_clock"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="4"
+            android:autoSizeMaxTextSize="30sp"
+            android:autoSizeMinTextSize="9sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/widget_text_primary"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- The stacked arrangement: name, countdown, clock, target date. -->
+    <LinearLayout
+        android:id="@+id/widget_column"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/col_name"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="10"
+            android:autoSizeMaxTextSize="22sp"
+            android:autoSizeMinTextSize="8sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/widget_text_secondary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/col_days"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="13"
+            android:autoSizeMaxTextSize="30sp"
+            android:autoSizeMinTextSize="9sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/widget_text_primary"
+            android:textStyle="bold" />
+
+        <Chronometer
+            android:id="@+id/col_clock"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="17"
+            android:autoSizeMaxTextSize="52sp"
+            android:autoSizeMinTextSize="12sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/widget_text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/col_date"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="10"
+            android:autoSizeMaxTextSize="16sp"
+            android:autoSizeMinTextSize="8sp"
+            android:autoSizeStepGranularity="1sp"
+            android:autoSizeTextType="uniform"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/widget_text_secondary" />
+    </LinearLayout>
+</FrameLayout>

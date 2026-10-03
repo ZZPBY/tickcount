@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget metadata. Deliberately free of anything newer than minSdk 27: an
+  attribute above the minimum is a lint NewApi *error*, and the Android 12+
+  extras (description, previewLayout, targetCellWidth/Height) live in the -v31
+  variant beside this file instead.
+
+  SIZING. The launcher works out how many cells to occupy from a size in dp, using
+  roughly `70 * cells - 30`: 110dp is two cells, 250dp is four, and one cell is
+  40dp. These must agree with targetCellWidth/Height in the -v31 file, because
+  launchers differ about which pair they read. Declaring 110x40 here while the
+  Android 12+ file asked for 4x2 is exactly why the same widget came up as 2x1 on
+  vivo's launcher and 4x2 on Nova: both were being told something different, and
+  each believed a different one.
+
+  minWidth/minHeight are the size a new instance starts at — 4x2. minResize* is how
+  far the user may then drag it down, which stays at 2x1 so the small sizes are
+  still reachable.
+
+  30 minutes is the floor Android allows for updatePeriodMillis. It is only needed
+  to re-derive the whole-day count at each midnight; the seconds are ticked by the
+  Chronometer itself, without waking the app.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="io.github.zzpby.tickcount.ui.widget.CountdownWidgetConfigActivity"
+    android:initialLayout="@layout/widget_countdown"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The widget's own rounded panel. A plain shape rather than a Material one: the
+  launcher inflates this outside the app's theme, so theme attributes would not
+  resolve.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="16dp" />
+    <solid android:color="@color/widget_background" />
+</shape>

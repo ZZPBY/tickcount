@@ -29,6 +29,7 @@ AGENTS.md
 .tools/git/
 .tools/签名密钥文件/
 .tools/apk输出目录/
+.tools/组件图片/
 
 # OS noise
 .DS_Store

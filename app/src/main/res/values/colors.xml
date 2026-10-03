@@ -3,4 +3,14 @@
     <color name="window_background">#FFFBFE</color>
     <!-- The launcher icon is white with black text, as requested. -->
     <color name="ic_launcher_background">#FFFFFFFF</color>
+
+    <!--
+      The home-screen widget. These repeat the theme's surfaceContainer and
+      onSurface/onSurfaceVariant values because a widget is inflated by the
+      launcher, outside this app's MaterialTheme, so it cannot read them from
+      there. Keep in step with ui/theme/Color.kt.
+    -->
+    <color name="widget_background">#F1EFF7</color>
+    <color name="widget_text_primary">#1B1B21</color>
+    <color name="widget_text_secondary">#46464F</color>
 </resources>

@@ -5,6 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.ui.widget.CountdownWidgets
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,6 +42,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val visibleMonth: StateFlow<YearMonth> = _visibleMonth.asStateFlow()
 
     init {
+        // Placed widgets are redrawn on every launch. It keeps them in step after the
+        // app has been away, and it doubles as the way out of a launcher that stopped
+        // telling the widget its size: opening the app pushes the current arrangement
+        // back out, without the user having to delete the widget and add it again.
+        //
+        // Off the main thread because it reads the store and talks to the widget
+        // service once per placed widget, neither of which belongs in a constructor.
+        viewModelScope.launch(Dispatchers.IO) {
+            CountdownWidgets.refreshAll(application)
+        }
+
         viewModelScope.launch {
             while (isActive) {
                 _now.value = ZonedDateTime.now()
@@ -97,6 +110,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private fun persist(events: Map<LocalDate, CountdownEvent>) {
         _events.value = events
         store.save(events)
+        // Any placed widget is showing one of these countdowns and has no way of
+        // knowing one was renamed, moved, or removed.
+        CountdownWidgets.refreshAll(getApplication())
     }
 
     /** Spreads new countdowns across the accent palette instead of reusing one colour. */

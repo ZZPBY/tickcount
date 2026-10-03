@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="window_background">#101014</color>
+
+    <!-- See values/colors.xml: the widget cannot inherit the Compose theme. -->
+    <color name="widget_background">#1E1F25</color>
+    <color name="widget_text_primary">#E4E1E9</color>
+    <color name="widget_text_secondary">#C7C5D0</color>
 </resources>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ extras. Kept apart from the base file so the app still lints clean
+  at minSdk 27: these attributes do not exist before API 31.
+
+  targetCellWidth/Height is the modern way to ask for a starting size and the size
+  here matches minWidth/minHeight in the base file on purpose — a launcher that
+  reads only one of the two must still arrive at 4x2.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:configure="io.github.zzpby.tickcount.ui.widget.CountdownWidgetConfigActivity"
+    android:description="@string/widget_description"
+    android:initialLayout="@layout/widget_countdown"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:previewLayout="@layout/widget_countdown_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

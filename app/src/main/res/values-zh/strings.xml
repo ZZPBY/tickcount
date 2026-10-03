@@ -72,4 +72,34 @@
     <string name="about_body">在日历上点一天、起个名字，上面那行就会数到那天还有多久；那天过去之后，它继续往下数。</string>
     <string name="about_privacy">不要任何权限、不联网、无统计。</string>
     <string name="about_version">版本 %1$s</string>
+
+    <!-- 桌面小组件。选择器里的名字取自 app_name，不在这里重复。 -->
+    <string name="widget_description">把你选的那一天显示在桌面，时分秒实时跳动。</string>
+    <string name="widget_config_title">选择倒数日</string>
+    <string name="widget_config_empty">还没有倒数日，请先在应用里添加一个。</string>
+    <!-- 中文没有单复数变化，一个 other 就够 -->
+    <plurals name="widget_days_left">
+        <item quantity="other">还有 %1$d 天</item>
+    </plurals>
+    <plurals name="widget_days_ago">
+        <item quantity="other">已过去 %1$d 天</item>
+    </plurals>
+    <string name="widget_tomorrow">明天</string>
+    <string name="widget_today">今天</string>
+    <!-- 大尺寸小组件把天数拆成「1年1个月4天」。中文的年/月/天自带分隔，直接相连即可 -->
+    <plurals name="widget_years">
+        <item quantity="other">%1$d年</item>
+    </plurals>
+    <plurals name="widget_months">
+        <item quantity="other">%1$d个月</item>
+    </plurals>
+    <plurals name="widget_breakdown_days">
+        <item quantity="other">%1$d天</item>
+    </plurals>
+    <string name="widget_breakdown_left">还有 %1$s</string>
+    <string name="widget_breakdown_ago">已过去 %1$s</string>
+    <!-- 选择器预览里的示例内容，不在别处显示 -->
+    <string name="widget_preview_name">生日</string>
+    <string name="widget_preview_days">还有 12天</string>
+    <string name="widget_preview_date">2026年10月16日 星期五</string>
 </resources>
