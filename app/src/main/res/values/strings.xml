@@ -80,7 +80,7 @@
     <string name="drawer_changelog">Changelog</string>
     <string name="drawer_data">Backup &amp; data</string>
     <string name="data_export">Export a backup</string>
-    <string name="data_export_body">Write every countdown, and the appearance and language settings, to a file you choose.</string>
+    <string name="data_export_body">Write every countdown, and the appearance, sorting and language settings, to a file you choose.</string>
     <string name="data_import">Import a backup</string>
     <string name="data_import_body">Read a backup file back in. Whatever it holds is added, or put in place of what is here.</string>
     <string name="data_encrypt">Encrypt with a password</string>

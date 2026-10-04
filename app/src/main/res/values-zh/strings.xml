@@ -75,7 +75,7 @@
     <string name="drawer_changelog">更新日志</string>
     <string name="drawer_data">数据管理</string>
     <string name="data_export">导出备份</string>
-    <string name="data_export_body">把所有倒数日、外观和语言设置写进一个你指定的文件。</string>
+    <string name="data_export_body">把所有倒数日，以及外观、排序和语言设置，写进一个你指定的文件。</string>
     <string name="data_import">导入备份</string>
     <string name="data_import_body">读回一个备份文件，内容可以追加进来，也可以直接替换掉现有数据。</string>
     <string name="data_encrypt">用密码加密</string>
