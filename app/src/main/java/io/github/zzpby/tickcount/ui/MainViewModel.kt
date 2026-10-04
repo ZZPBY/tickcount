@@ -5,8 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import io.github.zzpby.tickcount.data.AppLanguage
 import io.github.zzpby.tickcount.data.AppSettings
+import io.github.zzpby.tickcount.data.Backup
+import io.github.zzpby.tickcount.data.BackupCodec
+import io.github.zzpby.tickcount.data.BackupCrypto
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.data.ImportMode
+import io.github.zzpby.tickcount.data.ImportOutcome
 import io.github.zzpby.tickcount.data.SettingsStore
 import io.github.zzpby.tickcount.data.ThemePreset
 import io.github.zzpby.tickcount.domain.SortOrder
@@ -21,6 +26,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZonedDateTime
+import javax.crypto.AEADBadTagException
 
 /**
  * Owns the whole app state: the saved countdowns, the month the calendar is
@@ -137,6 +143,65 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // Any placed widget is showing one of these countdowns and has no way of
         // knowing one was renamed, re-timed, moved, or removed.
         CountdownWidgets.refreshAll(getApplication())
+    }
+
+    // -------------------------------------------------------------- backup
+
+    /**
+     * The whole app as one file, encrypted only when [password] is given.
+     *
+     * Encryption is the caller's choice rather than the default: a forgotten password
+     * cannot be recovered from anywhere, because there is no server and no account to
+     * recover it from.
+     */
+    fun exportBackup(password: String?): String {
+        val document = BackupCodec.encode(Backup(_events.value, _settings.value))
+        return if (password.isNullOrEmpty()) {
+            document
+        } else {
+            BackupCrypto.encrypt(document, password.toCharArray())
+        }
+    }
+
+    /** Puts a backup back, replacing or merging according to [mode]. */
+    fun importBackup(text: String, password: String?, mode: ImportMode): ImportOutcome {
+        val document = try {
+            if (BackupCrypto.isEncrypted(text)) {
+                val given = password ?: return ImportOutcome.WrongPassword
+                BackupCrypto.decrypt(text, given.toCharArray())
+            } else {
+                text
+            }
+        } catch (e: AEADBadTagException) {
+            // GCM authenticates as it decrypts, so a wrong password fails the tag rather
+            // than yielding plausible nonsense.
+            return ImportOutcome.WrongPassword
+        } catch (e: Exception) {
+            return ImportOutcome.Unreadable
+        }
+
+        val restored = try {
+            BackupCodec.decode(document)
+        } catch (e: Exception) {
+            return ImportOutcome.NotABackup
+        }
+
+        val events = when (mode) {
+            ImportMode.REPLACE -> restored.events
+            // Same id means the same countdown, so the file wins; anything else is
+            // added alongside what is already here.
+            ImportMode.MERGE -> {
+                val byId = _events.value.associateBy { it.id }.toMutableMap()
+                restored.events.forEach { byId[it.id] = it }
+                byId.values.toList()
+            }
+        }
+
+        persist(events)
+        _settings.value = restored.settings
+        settingsStore.save(restored.settings)
+
+        return ImportOutcome.Applied(mode, events.size)
     }
 
     // ------------------------------------------------------------------ theme

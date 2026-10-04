@@ -18,6 +18,11 @@ lifecycle = "2.11.0"
 junit = "4.13.2"
 
 [libraries]
+# A real org.json for the unit tests. What Android puts on that classpath is a stub that
+# throws on every call, so the store's reading half — and the backup format built on top
+# of it — could not be tested without this. Test-only, and never reaches the APK.
+json = { module = "org.json:json", version = "20260814" }
+
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 

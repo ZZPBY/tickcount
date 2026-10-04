@@ -228,6 +228,11 @@ fun TickCountApp(viewModel: MainViewModel = viewModel()) {
                         onCustomHue = viewModel::chooseCustomHue,
                     )
 
+                    screen == AppScreen.DATA -> DataScreen(
+                        onExport = viewModel::exportBackup,
+                        onImport = viewModel::importBackup,
+                    )
+
                     screen == AppScreen.CHANGELOG -> ChangelogScreen()
 
                     else -> ProjectIntroScreen(

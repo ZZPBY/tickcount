@@ -167,8 +167,8 @@ android {
         targetSdk = 36
         // Bumped together with versionName: 1.0.1 already shipped as version code
         // 2, and Play rejects a version code it has seen before.
-        versionCode = 6
-        versionName = "1.0.5"
+        versionCode = 7
+        versionName = "1.0.6"
     }
 
     signingConfigs {
@@ -271,4 +271,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
+    testImplementation(libs.json)
 }

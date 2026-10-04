@@ -73,6 +73,30 @@
     <string name="drawer_calendar">日历</string>
     <string name="drawer_language">语言</string>
     <string name="drawer_changelog">更新日志</string>
+    <string name="drawer_data">数据管理</string>
+    <string name="data_export">导出备份</string>
+    <string name="data_export_body">把所有倒数日、外观和语言设置写进一个你指定的文件。</string>
+    <string name="data_import">导入备份</string>
+    <string name="data_import_body">读回一个备份文件，内容可以追加进来，也可以直接替换掉现有数据。</string>
+    <string name="data_encrypt">用密码加密</string>
+    <string name="data_password">密码</string>
+    <string name="data_password_warning">密码忘了没有任何找回途径，文件也就永远打不开了。</string>
+    <string name="data_need_password">这个备份已加密</string>
+    <string name="data_need_password_body">请输入备份时设置的密码。</string>
+    <string name="data_mode_title">怎么导入？</string>
+    <string name="data_mode_replace">替换全部</string>
+    <string name="data_mode_replace_body">设备上现有的数据会被丢弃，由文件内容取而代之。</string>
+    <string name="data_mode_merge">合并</string>
+    <string name="data_mode_merge_body">保留现有的倒数日；文件里同一个的会覆盖掉它们。</string>
+    <!-- 中文没有单复数变化，一个 other 就够 -->
+    <plurals name="data_applied">
+        <item quantity="other">已导入，现在共 %1$d 条倒数日。</item>
+    </plurals>
+    <string name="data_exported">备份已写入。</string>
+    <string name="data_write_failed">文件写入失败。</string>
+    <string name="data_wrong_password">密码不对，打不开这个文件。</string>
+    <string name="data_not_a_backup">这不是 TickCount 的备份文件。</string>
+    <string name="data_unreadable">文件读不出来。</string>
     <string name="changelog_installed">当前安装的版本</string>
     <string name="changelog_missing">更新日志读取失败。</string>
     <string name="settings_project_intro">项目介绍</string>

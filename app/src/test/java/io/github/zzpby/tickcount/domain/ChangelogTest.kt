@@ -1,5 +1,6 @@
 package io.github.zzpby.tickcount.domain
 
+import io.github.zzpby.tickcount.BuildConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -89,7 +90,10 @@ class ChangelogTest {
         val releases = parseChangelog(file.readText())
 
         assertTrue("no releases came out", releases.size >= 4)
-        assertEquals("1.0.5", releases.first().version)
+        // The newest section has to be the version being built. A hard-coded version here
+        // would go stale on every bump; comparing against the build's own version instead
+        // turns this into a check that bumping one was not forgotten in the other.
+        assertEquals(BuildConfig.VERSION_NAME, releases.first().version)
         assertTrue("the newest release has no entries", releases.first().lines.size > 5)
     }
 }

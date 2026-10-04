@@ -5,12 +5,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,9 +42,30 @@ enum class AppScreen(val labelRes: Int) {
     HOME(R.string.drawer_home),
     CALENDAR(R.string.drawer_calendar),
     APPEARANCE(R.string.settings_appearance),
+    DATA(R.string.drawer_data),
     CHANGELOG(R.string.drawer_changelog),
     INTRO(R.string.settings_project_intro),
 }
+
+/**
+ * Whether this destination opens a group, and so is drawn with a gap above it.
+ *
+ * Which entries start a group is a fact about [AppScreen] rather than about the drawer, so
+ * it is stated here and the drawing code just asks. Appearance opens the settings, after
+ * the two screens you browse; the changelog opens the two you read, after the one that
+ * writes.
+ */
+private val AppScreen.startsGroup: Boolean
+    get() = this == AppScreen.APPEARANCE || this == AppScreen.CHANGELOG
+
+/**
+ * The gap between two groups.
+ *
+ * Sized against the 4dp between two rows inside a group — four times that, and equal to the
+ * 12dp the column already leaves at its top and bottom, so the ends and the seams read as
+ * the same kind of pause.
+ */
+private val GroupSpacing = 12.dp
 
 /**
  * The panel that slides in from the left.
@@ -49,9 +75,14 @@ enum class AppScreen(val labelRes: Int) {
  * width this one is specified to take. Laying it out directly also keeps it a plain
  * child of the screen rather than a window of its own.
  *
- * The language sits between Appearance and the changelog rather than being a screen of its
- * own: it is one choice, and a screen for it would be a tap and a back press to change one
- * word.
+ * The language sits between Appearance and data management rather than being a screen of
+ * its own: it is one choice, and a screen for it would be a tap and a back press to change
+ * one word.
+ *
+ * The rows come in three groups — what you browse, what you set up, what you read — and the
+ * gaps between them are the only thing saying so. Every row is otherwise the same weight,
+ * and a flat list of seven would leave the reader to guess where one kind ends and the next
+ * begins.
  */
 @Composable
 fun AppDrawerContent(
@@ -67,11 +98,24 @@ fun AppDrawerContent(
         shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
         tonalElevation = 2.dp,
     ) {
-        Column(modifier = Modifier.padding(vertical = 12.dp)) {
+        Column(
+            modifier = Modifier
+                // The panel is drawn edge to edge, and as a sibling of the Scaffold rather
+                // than a child of it, it is handed none of the insets the Scaffold applies
+                // to its own content. Without this the top row is drawn twelve dp below the
+                // top of the window and sits under the status bar.
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(vertical = 12.dp)
+                // Seven rows and two gaps are taller than a window in landscape or in split
+                // screen. A Column that cannot scroll would not clip them either: it would
+                // measure the last ones to nothing and they would simply vanish.
+                .verticalScroll(rememberScrollState()),
+        ) {
             AppScreen.entries.forEach { screen ->
+                if (screen.startsGroup) Spacer(Modifier.height(GroupSpacing))
                 // The language is not a screen of its own, so it is drawn between two
                 // of them rather than being an entry in the list above.
-                if (screen == AppScreen.CHANGELOG) {
+                if (screen == AppScreen.DATA) {
                     DrawerRow(
                         label = stringResource(R.string.drawer_language),
                         trailing = stringResource(language.labelRes),

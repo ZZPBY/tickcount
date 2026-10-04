@@ -10,9 +10,10 @@ see how long is left — or how long it has been.
 
 ## Features
 
-- **Drawer navigation** — the menu button at the top left opens a half-screen drawer
-  holding Home, Calendar, Appearance, a language switch, the changelog and About this
-  project.
+- **Drawer navigation** — the menu button at the top left opens a half-screen drawer whose
+  entries come in three groups: Home and Calendar to browse, then Appearance, the language
+  switch and Backup & data to set things up, and finally the changelog and About this
+  project to read.
 - **Countdown list** — one rounded card per countdown on the home screen: name, tags and
   date on the left, days remaining on the right.
 - **Pin to the top** — switch it on in a countdown's own screen and it leads the list
@@ -41,6 +42,9 @@ see how long is left — or how long it has been.
   choice stays put. The colours come from Tailwind CSS.
 - **Bilingual** — follows the system language, or pick Chinese or English in the drawer.
   Date formats are localised too.
+- **Backup and restore** — in Backup & data, every countdown and setting can be written to a
+  file and read back; an import either replaces what is here or merges into it. An export
+  can be encrypted with a password, using AES-256-GCM, and a wrong password says so.
 - **No permissions, no network, no analytics.**
 - One module, no third-party libraries, `minSdk` 27 (Android 8.1).
 
@@ -115,8 +119,11 @@ app/src/main/java/io/github/zzpby/tickcount/
 ├── MainActivity.kt              edge-to-edge host + the app theme, bar icons included
 ├── data/                        the model and how it is stored
 │   ├── CountdownEvent.kt        the model: id / date / time / tags / colour / pinned
-│   ├── EventStore.kt            the JSON store, including migration from older formats
-│   └── SettingsStore.kt         the stored theme, sort order and language
+│   ├── EventCodec.kt            reading and writing the records, migrations included
+│   ├── EventStore.kt            keeping that document in SharedPreferences
+│   ├── SettingsStore.kt         the stored theme, sort order and language
+│   ├── Backup.kt                the backup file's shape, and how an import went
+│   └── BackupCrypto.kt          password encryption for a backup (PBKDF2 + AES-GCM)
 ├── domain/                      pure logic, covered by unit tests
 │   ├── Countdown.kt             the y/mo/d/h/m/s split and the dash placeholder
 │   ├── CalendarMath.kt          building the month grid
@@ -138,6 +145,7 @@ app/src/main/java/io/github/zzpby/tickcount/
     ├── EventEditorDialog.kt     new or edit: name, tags, date, time, colour
     ├── DeleteConfirmDialog.kt   the confirmation before a delete
     ├── AppearanceScreen.kt      appearance: four presets and a custom hue
+    ├── DataScreen.kt            data: export, import, and the optional password
     ├── ChangelogScreen.kt       the changelog, taken from the repository's own file
     ├── ProjectIntroScreen.kt    the introduction, taken from this file
     ├── calendar/                the hand-drawn month grid and the month picker
