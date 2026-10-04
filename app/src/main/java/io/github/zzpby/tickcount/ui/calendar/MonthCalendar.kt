@@ -47,6 +47,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
+/** How many countdown dots fit under a day number before they stop being legible. */
+private const val MAX_DOTS = 3
+
 /**
  * The month grid.
  *
@@ -57,9 +60,9 @@ import java.util.Locale
 @Composable
 fun MonthCalendar(
     month: YearMonth,
-    selectedDate: LocalDate,
+    selectedDate: LocalDate?,
     today: LocalDate,
-    events: Map<LocalDate, CountdownEvent>,
+    events: Map<LocalDate, List<CountdownEvent>>,
     onSelect: (LocalDate) -> Unit,
     onStepMonth: (Long) -> Unit,
     onMonthClick: () -> Unit,
@@ -173,9 +176,9 @@ private fun WeekDayHeader(locale: Locale) {
 private fun MonthGrid(
     month: YearMonth,
     locale: Locale,
-    selectedDate: LocalDate,
+    selectedDate: LocalDate?,
     today: LocalDate,
-    events: Map<LocalDate, CountdownEvent>,
+    events: Map<LocalDate, List<CountdownEvent>>,
     onSelect: (LocalDate) -> Unit,
 ) {
     val cells = remember(month, locale) { monthCells(month, firstDayOfWeek(locale)) }
@@ -187,12 +190,11 @@ private fun MonthGrid(
                 horizontalArrangement = Arrangement.spacedBy(0.dp),
             ) {
                 week.forEach { cell ->
-                    val event = events[cell.date]
                     DayCell(
                         cell = cell,
                         isSelected = cell.date == selectedDate,
                         isToday = cell.date == today,
-                        accent = event?.let { eventAccent(it.colorIndex) },
+                        accents = events[cell.date].orEmpty().map { eventAccent(it.colorHue) },
                         onClick = { onSelect(cell.date) },
                         modifier = Modifier.weight(1f),
                     )
@@ -207,7 +209,7 @@ private fun DayCell(
     cell: CalendarCell,
     isSelected: Boolean,
     isToday: Boolean,
-    accent: Color?,
+    accents: List<Color>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -255,15 +257,27 @@ private fun DayCell(
             modifier = Modifier.clearAndSetSemantics { },
         )
 
-        if (accent != null) {
-            Box(
-                Modifier
+        if (accents.isNotEmpty()) {
+            // Up to three dots, so a day holding several countdowns looks different
+            // from a day holding one. A fourth would not fit under the number.
+            Row(
+                modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 5.dp)
-                    .size(5.dp)
-                    .background(if (isSelected) colorScheme.onPrimary else accent, CircleShape)
-                    .clearAndSetSemantics { }
-            )
+                    .clearAndSetSemantics { },
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                accents.take(MAX_DOTS).forEach { accent ->
+                    Box(
+                        Modifier
+                            .size(5.dp)
+                            .background(
+                                if (isSelected) colorScheme.onPrimary else accent,
+                                CircleShape,
+                            )
+                    )
+                }
+            }
         }
     }
 }

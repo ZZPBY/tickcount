@@ -20,7 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,7 +56,7 @@ fun MonthYearPickerDialog(
     onSelect: (YearMonth) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var year by remember(initial) { mutableStateOf(initial.year) }
+    var year by remember(initial) { mutableIntStateOf(initial.year) }
     val locale = currentLocale()
     val monthLabels = remember(locale) {
         Month.entries.map { it.getDisplayName(TextStyle.SHORT, locale) }

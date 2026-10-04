@@ -1,95 +1,35 @@
 package io.github.zzpby.tickcount.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
-
-private val LightColors = lightColorScheme(
-    primary = LightPrimary,
-    onPrimary = LightOnPrimary,
-    primaryContainer = LightPrimaryContainer,
-    onPrimaryContainer = LightOnPrimaryContainer,
-    secondary = LightSecondary,
-    onSecondary = LightOnSecondary,
-    secondaryContainer = LightSecondaryContainer,
-    onSecondaryContainer = LightOnSecondaryContainer,
-    tertiary = LightTertiary,
-    onTertiary = LightOnTertiary,
-    tertiaryContainer = LightTertiaryContainer,
-    onTertiaryContainer = LightOnTertiaryContainer,
-    error = LightError,
-    onError = LightOnError,
-    errorContainer = LightErrorContainer,
-    onErrorContainer = LightOnErrorContainer,
-    background = LightBackground,
-    onBackground = LightOnBackground,
-    surface = LightSurface,
-    onSurface = LightOnSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant,
-    surfaceContainer = LightSurfaceContainer,
-    surfaceContainerHigh = LightSurfaceContainerHigh,
-    outline = LightOutline,
-    outlineVariant = LightOutlineVariant,
-)
-
-private val DarkColors = darkColorScheme(
-    primary = DarkPrimary,
-    onPrimary = DarkOnPrimary,
-    primaryContainer = DarkPrimaryContainer,
-    onPrimaryContainer = DarkOnPrimaryContainer,
-    secondary = DarkSecondary,
-    onSecondary = DarkOnSecondary,
-    secondaryContainer = DarkSecondaryContainer,
-    onSecondaryContainer = DarkOnSecondaryContainer,
-    tertiary = DarkTertiary,
-    onTertiary = DarkOnTertiary,
-    tertiaryContainer = DarkTertiaryContainer,
-    onTertiaryContainer = DarkOnTertiaryContainer,
-    error = DarkError,
-    onError = DarkOnError,
-    errorContainer = DarkErrorContainer,
-    onErrorContainer = DarkOnErrorContainer,
-    background = DarkBackground,
-    onBackground = DarkOnBackground,
-    surface = DarkSurface,
-    onSurface = DarkOnSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant,
-    surfaceContainer = DarkSurfaceContainer,
-    surfaceContainerHigh = DarkSurfaceContainerHigh,
-    outline = DarkOutline,
-    outlineVariant = DarkOutlineVariant,
-)
+import io.github.zzpby.tickcount.data.AppSettings
+import io.github.zzpby.tickcount.data.SettingsStore
 
 /**
- * Material 3 theme.
+ * Material 3 theme, built from whichever hue the user chose.
  *
- * On Android 12+ the palette is derived from the user's wallpaper unless
- * [dynamicColor] is turned off; before that (and on devices without the feature)
- * the hand-tuned indigo scheme above is used.
+ * Deliberately without `dynamicColor`: the point of the appearance setting is that
+ * the palette is something the user picked, and colours taken from the wallpaper
+ * are precisely the ones they cannot pick. The Android 12+ branch that used to
+ * read them is gone, along with the hand-written indigo fallback it sat beside —
+ * every scheme now comes out of [schemeFor].
+ *
+ * [settings] is nullable so that a screen which only wants the app's colours — the
+ * widget picker, say — can write `TickCountTheme { }` and have the stored choice
+ * read for it. A default argument cannot do that, because reading it needs
+ * `remember`, and a default argument is not a composable scope.
  */
 @Composable
 fun TickCountTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    settings: AppSettings? = null,
     content: @Composable () -> Unit,
 ) {
     val context = LocalContext.current
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColors
-        else -> LightColors
-    }
+    val resolved = settings ?: remember(context) { SettingsStore(context).load() }
+    val colorScheme = remember(resolved) { schemeFor(resolved) }
 
     MaterialTheme(
         colorScheme = colorScheme,
@@ -97,3 +37,14 @@ fun TickCountTheme(
         content = content,
     )
 }
+
+/**
+ * True when the scheme in force is a dark one, decided from the scheme rather than
+ * from the settings.
+ *
+ * Callers that colour something by hand — an event's own hue, which needs a
+ * different lightness on each side — then work the same whichever way the theme
+ * was chosen, and without having to be handed the settings.
+ */
+@Composable
+fun isDarkScheme(): Boolean = MaterialTheme.colorScheme.surface.luminance() < 0.5f

@@ -59,7 +59,10 @@ class CountdownWidgetConfigActivity : ComponentActivity() {
             return
         }
 
-        val events = EventStore(this).load().values.sortedBy { it.epochDay }
+        // Soonest first, and same-day countdowns by their time, because that is the
+        // order someone picking one is thinking in.
+        val events = EventStore(this).load()
+            .sortedWith(compareBy({ it.epochDay }, { it.time }, { it.title }))
 
         setContent {
             TickCountTheme {
@@ -69,8 +72,8 @@ class CountdownWidgetConfigActivity : ComponentActivity() {
                 ) {
                     WidgetConfigScreen(
                         events = events,
-                        onPick = { date ->
-                            CountdownWidgets.saveDate(this, appWidgetId, date)
+                        onPick = { eventId ->
+                            CountdownWidgets.saveEventId(this, appWidgetId, eventId)
                             CountdownWidgets.update(this, appWidgetId)
                             setResult(
                                 RESULT_OK,
@@ -89,7 +92,7 @@ class CountdownWidgetConfigActivity : ComponentActivity() {
 @Composable
 private fun WidgetConfigScreen(
     events: List<CountdownEvent>,
-    onPick: (LocalDate) -> Unit,
+    onPick: (String) -> Unit,
     onCancel: () -> Unit,
 ) {
     Column(
@@ -121,7 +124,7 @@ private fun WidgetConfigScreen(
             ) {
                 val formatter = rememberDateFormatter(R.string.date_format_full)
                 events.forEach { event ->
-                    WidgetConfigRow(event, formatter, onClick = { onPick(event.date) })
+                    WidgetConfigRow(event, formatter, onClick = { onPick(event.id) })
                 }
             }
         }

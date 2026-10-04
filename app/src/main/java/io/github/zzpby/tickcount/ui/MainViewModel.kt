@@ -3,8 +3,13 @@ package io.github.zzpby.tickcount.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import io.github.zzpby.tickcount.data.AppLanguage
+import io.github.zzpby.tickcount.data.AppSettings
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.data.SettingsStore
+import io.github.zzpby.tickcount.data.ThemePreset
+import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.ui.widget.CountdownWidgets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -18,27 +23,35 @@ import java.time.YearMonth
 import java.time.ZonedDateTime
 
 /**
- * Owns the whole screen state: the saved countdowns, the currently selected date,
- * the month being displayed, and the clock.
+ * Owns the whole app state: the saved countdowns, the month the calendar is
+ * showing, and the clock.
  *
- * The clock lives here rather than in the composition so that a rotation or a
- * recomposition never restarts or stutters it, and so there is exactly one timer
- * in the process.
+ * The clock lives here rather than in a composition so that rotating the device
+ * never restarts or stutters it, and so there is exactly one timer in the process.
+ *
+ * Countdowns are held as a list rather than a date-keyed map because a day may hold
+ * more than one, which is also why every lookup is by id.
  */
 class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val store = EventStore(application)
 
+    /**
+     * Read before anything else, because the theme is applied above this view model
+     * and has to be right on the first frame rather than one frame later.
+     */
+    private val settingsStore = SettingsStore(application)
+
     private val _events = MutableStateFlow(store.load())
-    val events: StateFlow<Map<LocalDate, CountdownEvent>> = _events.asStateFlow()
+    val events: StateFlow<List<CountdownEvent>> = _events.asStateFlow()
+
+    private val _settings = MutableStateFlow(settingsStore.load())
+    val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
     private val _now = MutableStateFlow(ZonedDateTime.now())
     val now: StateFlow<ZonedDateTime> = _now.asStateFlow()
 
-    private val _selectedDate = MutableStateFlow(initialSelection(_events.value))
-    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
-
-    private val _visibleMonth = MutableStateFlow(YearMonth.from(_selectedDate.value))
+    private val _visibleMonth = MutableStateFlow(YearMonth.now())
     val visibleMonth: StateFlow<YearMonth> = _visibleMonth.asStateFlow()
 
     init {
@@ -64,11 +77,104 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    /** Selects [date] and scrolls the calendar to the month containing it. */
-    fun select(date: LocalDate) {
-        _selectedDate.value = date
-        _visibleMonth.value = YearMonth.from(date)
+    // ------------------------------------------------------------- countdowns
+
+    fun event(id: String?): CountdownEvent? =
+        id?.let { wanted -> _events.value.firstOrNull { it.id == wanted } }
+
+    /** The countdowns on [date], earliest time first, which is the order a day reads in. */
+    fun eventsOn(date: LocalDate): List<CountdownEvent> =
+        _events.value
+            .filter { it.date == date }
+            .sortedWith(compareBy({ it.time }, { it.title }))
+
+    fun eventsByDate(): Map<LocalDate, List<CountdownEvent>> = _events.value.groupBy { it.date }
+
+    /** Adds [event], or replaces the stored one carrying the same id. */
+    fun saveEvent(event: CountdownEvent) {
+        val index = _events.value.indexOfFirst { it.id == event.id }
+        val updated = if (index >= 0) {
+            _events.value.toMutableList().also { it[index] = event }
+        } else {
+            _events.value + event
+        }
+        persist(updated)
     }
+
+    fun removeEvent(id: String) {
+        if (_events.value.none { it.id == id }) return
+        persist(_events.value.filterNot { it.id == id })
+    }
+
+    /**
+     * Pins or unpins a countdown, which is what keeps it at the top of any list it
+     * appears in.
+     */
+    fun togglePin(id: String) {
+        val event = _events.value.firstOrNull { it.id == id } ?: return
+        saveEvent(event.copy(pinned = !event.pinned))
+    }
+
+    /**
+     * A blank countdown on [date], ready for the editor.
+     *
+     * The id is minted here rather than on save so that the editor, the delete
+     * confirmation and the widget all refer to the same thing from the start. The
+     * colour is left unset: the default is the theme's own, and nothing is assigned
+     * on the user's behalf. The added-at stamp is taken now, because that is the
+     * moment it is being added.
+     */
+    fun draftEvent(date: LocalDate): CountdownEvent = CountdownEvent(
+        id = CountdownEvent.newId(),
+        date = date,
+        title = "",
+        createdAt = System.currentTimeMillis(),
+    )
+
+    private fun persist(events: List<CountdownEvent>) {
+        _events.value = events
+        store.save(events)
+        // Any placed widget is showing one of these countdowns and has no way of
+        // knowing one was renamed, re-timed, moved, or removed.
+        CountdownWidgets.refreshAll(getApplication())
+    }
+
+    // ------------------------------------------------------------------ theme
+
+    fun chooseTheme(preset: ThemePreset) {
+        updateSettings(_settings.value.copy(preset = preset))
+    }
+
+    /**
+     * Stores a mixed hue. The preset is left alone, because the strip is only on
+     * screen while [ThemePreset.CUSTOM] is already the choice.
+     */
+    fun chooseCustomHue(hue: Float) {
+        updateSettings(_settings.value.copy(customHue = hue))
+    }
+
+    /**
+     * The order the home list is drawn in. Kept beside the theme because it is the
+     * same kind of thing: a preference that outlives the process.
+     */
+    fun chooseSortOrder(order: SortOrder) {
+        updateSettings(_settings.value.copy(sortOrder = order))
+    }
+
+    /**
+     * The language the interface is in. The activity watches this and rebuilds itself,
+     * because the strings come from resources and those are fixed once it has started.
+     */
+    fun chooseLanguage(language: AppLanguage) {
+        updateSettings(_settings.value.copy(language = language))
+    }
+
+    private fun updateSettings(next: AppSettings) {
+        _settings.value = next
+        settingsStore.save(next)
+    }
+
+    // ------------------------------------------------------------------ month
 
     fun showMonth(month: YearMonth) {
         _visibleMonth.value = month
@@ -79,55 +185,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun goToToday() {
-        select(LocalDate.now())
-    }
-
-    /**
-     * Creates or renames the countdown on [date]. An all-blank title removes the
-     * countdown, which makes the dialog's "clear the text" gesture do the obvious
-     * thing.
-     */
-    fun saveEvent(date: LocalDate, title: String) {
-        val trimmed = title.trim().take(CountdownEvent.MAX_TITLE_LENGTH)
-        if (trimmed.isEmpty()) {
-            removeEvent(date)
-            return
-        }
-        val existing = _events.value[date]
-        val updated = CountdownEvent(
-            date = date,
-            title = trimmed,
-            colorIndex = existing?.colorIndex ?: nextColorIndex(),
-        )
-        persist(_events.value + (date to updated))
-    }
-
-    fun removeEvent(date: LocalDate) {
-        if (date !in _events.value) return
-        persist(_events.value - date)
-    }
-
-    private fun persist(events: Map<LocalDate, CountdownEvent>) {
-        _events.value = events
-        store.save(events)
-        // Any placed widget is showing one of these countdowns and has no way of
-        // knowing one was renamed, moved, or removed.
-        CountdownWidgets.refreshAll(getApplication())
-    }
-
-    /** Spreads new countdowns across the accent palette instead of reusing one colour. */
-    private fun nextColorIndex(): Int = _events.value.size % CountdownEvent.COLOR_COUNT
-
-    private companion object {
-        /**
-         * Opens on whatever the user most likely cares about: the next countdown
-         * that has not happened yet, otherwise the most recent one that has.
-         */
-        fun initialSelection(events: Map<LocalDate, CountdownEvent>): LocalDate {
-            val today = LocalDate.now()
-            val upcoming = events.keys.filter { !it.isBefore(today) }.minOrNull()
-            val recent = events.keys.filter { it.isBefore(today) }.maxOrNull()
-            return upcoming ?: recent ?: today
-        }
+        _visibleMonth.value = YearMonth.now()
     }
 }

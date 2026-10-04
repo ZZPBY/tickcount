@@ -10,15 +10,14 @@
     <!-- 操作 -->
     <string name="action_today">今天</string>
     <string name="action_this_month">本月</string>
-    <string name="action_add">设为倒数日</string>
-    <string name="action_edit">改名</string>
+    <string name="action_edit">编辑</string>
     <string name="action_delete">删除</string>
     <string name="action_save">保存</string>
     <string name="action_cancel">取消</string>
-
-    <!-- 展开倒数日列表那一栏的无障碍说明 -->
-    <string name="action_expand_list">展开全部倒数日</string>
-    <string name="action_collapse_list">收起倒数日列表</string>
+    <string name="action_ok">确定</string>
+    <string name="action_open_menu">打开菜单</string>
+    <string name="action_back">返回</string>
+    <string name="action_sort">排序</string>
 
     <!-- 年月选择器里年份按钮的无障碍说明 -->
     <string name="action_year_back">上一年</string>
@@ -26,17 +25,11 @@
     <string name="action_year_back_ten">往前十年</string>
     <string name="action_year_forward_ten">往后十年</string>
 
-    <!-- 倒数日 -->
+    <!-- 事件详细画面上方那行标题 -->
     <string name="label_no_countdown">还没有倒数日</string>
     <string name="label_countdown_left">还有</string>
     <string name="label_today_elapsed">今天已过</string>
     <string name="label_countdown_ago">已过去</string>
-
-    <!--
-      没设置倒数日时，占住状态文字那一行的位置，这样给某天命名或清空时，
-      下面的倒计时行不会上下移动。
-    -->
-    <string name="label_countdown_tbd">待定</string>
 
     <!--
       单行倒数日格式。六个参数依次是 年/月/日/时/分/秒，已经补好零、
@@ -46,10 +39,20 @@
 
     <!-- 编辑对话框 -->
     <string name="dialog_new_title">新建倒数日</string>
-    <string name="dialog_edit_title">修改名称</string>
+    <string name="dialog_edit_title">编辑倒数日</string>
     <string name="dialog_pick_month_title">跳转到</string>
     <string name="field_name">名称</string>
     <string name="field_name_hint">生日、考试、旅行…</string>
+    <string name="field_tags">标签</string>
+    <string name="field_tags_hint">输入后点右边的 +</string>
+    <string name="field_date">日期</string>
+    <string name="field_time">时间</string>
+    <string name="field_all_day">全天</string>
+    <string name="field_exact_minute">精确到分钟</string>
+    <string name="field_color">自定义颜色</string>
+    <string name="field_hue">色相</string>
+    <string name="field_pinned">置顶</string>
+    <string name="label_pinned">置顶</string>
     <string name="dialog_clear_hint">清空名称将删除这个倒数日。</string>
 
     <!--
@@ -62,14 +65,58 @@
     <!-- 日期格式 -->
     <string name="month_year_format">yyyy年M月</string>
     <string name="date_format_full">yyyy年M月d日 EEEE</string>
+    <string name="date_format_short">yyyy年M月d日</string>
+    <string name="time_format">HH:mm</string>
 
-    <!-- 顶栏，以及它打开的两个框 -->
-    <string name="action_about">关于</string>
-    <string name="action_changelog">更新日志</string>
-    <string name="action_close">关闭</string>
+    <!-- 抽屉，以及它打开的各个画面 -->
+    <string name="drawer_home">主页</string>
+    <string name="drawer_calendar">日历</string>
+    <string name="drawer_language">语言</string>
+    <string name="drawer_changelog">更新日志</string>
+    <string name="changelog_installed">当前安装的版本</string>
     <string name="changelog_missing">更新日志读取失败。</string>
+    <string name="settings_project_intro">项目介绍</string>
+    <string name="language_system">跟随系统</string>
+    <string name="settings_appearance">外观与显示</string>
+
+    <!-- 五个主题，以及给最后一个调色的色相条 -->
+    <string name="theme_white">白</string>
+    <string name="theme_black">黑</string>
+    <string name="theme_blue">蓝</string>
+    <string name="theme_green">绿</string>
+    <string name="theme_custom">自定义</string>
+    <string name="appearance_presets">主题色</string>
+    <string name="appearance_custom_hue">拖动选择色相</string>
+    <string name="appearance_custom_hint">拖的时候整个应用会立刻换色，这个画面就是预览。</string>
+    <string name="appearance_surfaces">各层深浅</string>
+    <string name="appearance_background">页面底色</string>
+    <string name="appearance_panel">面板</string>
+    <string name="appearance_card">卡片</string>
+    <string name="home_empty">还没有要数的日子。\n点右上角的 + 新建一个。</string>
+    <string name="home_no_matches">没有匹配「%1$s」的倒数日。</string>
+    <string name="calendar_pick_a_day">点一天，看那天的倒数日。</string>
+    <string name="calendar_day_empty">这一天还没有倒数日。\n点右上角的 + 新建一个。</string>
+    <string name="intro_github_title">Github 项目地址</string>
+    <string name="intro_copied">已复制</string>
+    <string name="intro_go">跳转</string>
+    <string name="search_hint">搜索</string>
+    <string name="search_scope_name">名字</string>
+    <string name="search_scope_date">日期</string>
+    <string name="search_scope_time">时间</string>
+    <string name="sort_date_asc">按设定时间 · 升序</string>
+    <string name="sort_date_desc">按设定时间 · 降序</string>
+    <string name="sort_added">按添加时间 · 新的在前</string>
+    <string name="list_yesterday">昨天</string>
+    <!-- 没有单复数变化，一个 other 就够 -->
+    <plurals name="list_days_left">
+        <item quantity="other">还剩 %1$d 天</item>
+    </plurals>
+    <plurals name="list_days_ago">
+        <item quantity="other">已过 %1$d 天</item>
+    </plurals>
+
+    <!-- 项目介绍。原先「关于」弹窗里的文字搬到了这里 -->
     <string name="about_tagline">一个极简、纯离线的安卓倒数日日历。</string>
-    <string name="about_body">在日历上点一天、起个名字，上面那行就会数到那天还有多久；那天过去之后，它继续往下数。</string>
     <string name="about_privacy">不要任何权限、不联网、无统计。</string>
     <string name="about_version">版本 %1$s</string>
 

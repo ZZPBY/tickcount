@@ -1,9 +1,11 @@
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -45,39 +47,37 @@ keystorePropertiesFile?.let { file ->
 val hasReleaseKeystore = keystorePropertiesFile != null
 
 /**
- * Copies the repository-root changelog into a directory the variant API adopts as
+ * Copies the repository's own documents into a directory the variant API adopts as
  * generated assets.
  *
- * A plain Copy task will not do. AGP 9 refuses Provider instances in the older
- * SourceSet API, and wiring a resolved directory into `sourceSets` leaves every
- * task that reads assets — the merge, and the lint model among them — with no
- * declared dependency on the producer. It is a whack-a-mole that
- * `addGeneratedSourceDirectory` exists to end.
+ * The project introduction is built from the README's sections and the changelog screen
+ * from the changelog, rather than from copies of either, so editing one in the repository
+ * is all it takes. There are three files because the introduction follows the app's
+ * language; which one is read, and which sections, lives in the app — where a unit test
+ * can reach it — so this task only has to move them.
  */
-abstract class CopyChangelogTask : DefaultTask() {
-    @get:InputFile
-    abstract val sourceFile: RegularFileProperty
+abstract class CopyDocumentsTask : DefaultTask() {
+    @get:InputFiles
+    abstract val sourceFiles: ConfigurableFileCollection
 
     @get:OutputDirectory
     abstract val outputDir: DirectoryProperty
 
     @TaskAction
-    fun copyChangelog() {
-        val from = sourceFile.get().asFile
+    fun copyDocuments() {
         val into = outputDir.get().asFile
         into.mkdirs()
-        from.copyTo(into.resolve(from.name), overwrite = true)
+        sourceFiles.files.forEach { it.copyTo(into.resolve(it.name), overwrite = true) }
     }
 }
 
-// The changelog lives at the repository root so it is readable on GitHub, and is
-// copied into the APK's assets at build time so the in-app dialog and that file
-// can never disagree. Generated into the build directory rather than committed a
-// second time under src/main/assets. The file name is written with \u escapes to
-// keep this script pure ASCII, for the same reason as the keystore path above.
-val copyChangelog = tasks.register<CopyChangelogTask>("copyChangelog") {
-    sourceFile.set(rootProject.file("\u66F4\u65B0\u65E5\u5FD7.txt"))
-    outputDir.set(layout.buildDirectory.dir("generated/changelogAssets"))
+val copyDocuments = tasks.register<CopyDocumentsTask>("copyDocuments") {
+    sourceFiles.from(
+        rootProject.file("README.md"),
+        rootProject.file("README.en.md"),
+        rootProject.file("\u66F4\u65B0\u65E5\u5FD7.txt"),
+    )
+    outputDir.set(layout.buildDirectory.dir("generated/documentAssets"))
 }
 
 /**
@@ -167,8 +167,8 @@ android {
         targetSdk = 36
         // Bumped together with versionName: 1.0.1 already shipped as version code
         // 2, and Play rejects a version code it has seen before.
-        versionCode = 5
-        versionName = "1.0.4"
+        versionCode = 6
+        versionName = "1.0.5"
     }
 
     signingConfigs {
@@ -218,6 +218,17 @@ android {
         buildConfig = true
     }
 
+    bundle {
+        language {
+            // The interface language can be changed inside the app, so every language
+            // has to be in the download. With the default split, the resources for a
+            // language the device is not set to are left out, and the switch would
+            // silently fall back to the default. An APK carries them all regardless;
+            // this is what keeps a bundle honest.
+            enableSplit = false
+        }
+    }
+
     lint {
         abortOnError = false
     }
@@ -229,8 +240,8 @@ android {
 androidComponents {
     onVariants { variant ->
         variant.sources.assets?.addGeneratedSourceDirectory(
-            copyChangelog,
-            CopyChangelogTask::outputDir,
+            copyDocuments,
+            CopyDocumentsTask::outputDir,
         )
     }
 }

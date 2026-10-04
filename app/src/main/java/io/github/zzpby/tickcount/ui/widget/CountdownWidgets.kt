@@ -11,6 +11,7 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
+import androidx.core.content.edit
 import io.github.zzpby.tickcount.MainActivity
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.EventStore
@@ -56,18 +57,22 @@ object CountdownWidgets {
 
     // ------------------------------------------------------------- placement
 
-    /** The countdown a given widget instance was configured to show. */
-    fun savedDate(context: Context, appWidgetId: Int): LocalDate? =
-        prefs(context).getLong(key(appWidgetId), Long.MIN_VALUE)
-            .takeIf { it != Long.MIN_VALUE }
-            ?.let(LocalDate::ofEpochDay)
+    /**
+     * The countdown a given widget instance was configured to show.
+     *
+     * Stored as the countdown's id rather than its date, so that editing a
+     * countdown's date — or putting a second one on the same day — leaves the widget
+     * pointing at the same countdown.
+     */
+    fun savedEventId(context: Context, appWidgetId: Int): String? =
+        prefs(context).getString(key(appWidgetId), null)
 
-    fun saveDate(context: Context, appWidgetId: Int, date: LocalDate) {
-        prefs(context).edit().putLong(key(appWidgetId), date.toEpochDay()).apply()
+    fun saveEventId(context: Context, appWidgetId: Int, eventId: String) {
+        prefs(context).edit { putString(key(appWidgetId), eventId) }
     }
 
     fun forget(context: Context, appWidgetId: Int) {
-        prefs(context).edit().remove(key(appWidgetId)).apply()
+        prefs(context).edit { remove(key(appWidgetId)) }
     }
 
     private fun key(appWidgetId: Int) = "widget_$appWidgetId"
@@ -110,8 +115,8 @@ object CountdownWidgets {
         val events = EventStore(context).load()
         // A widget whose countdown was deleted falls back to the soonest one still
         // standing, rather than going blank.
-        val event = savedDate(context, appWidgetId)?.let { events[it] }
-            ?: events.values.minByOrNull { it.epochDay }
+        val event = events.firstOrNull { it.id == savedEventId(context, appWidgetId) }
+            ?: events.minByOrNull { it.epochDay }
 
         arrange(views, shape)
         if (event == null) {

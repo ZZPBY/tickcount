@@ -8,10 +8,8 @@
   SIZING. The launcher works out how many cells to occupy from a size in dp, using
   roughly `70 * cells - 30`: 110dp is two cells, 250dp is four, and one cell is
   40dp. These must agree with targetCellWidth/Height in the -v31 file, because
-  launchers differ about which pair they read. Declaring 110x40 here while the
-  Android 12+ file asked for 4x2 is exactly why the same widget came up as 2x1 on
-  vivo's launcher and 4x2 on Nova: both were being told something different, and
-  each believed a different one.
+  launchers differ about which pair they read — and one that reads only a single
+  pair must still arrive at 4x2 rather than at half of it.
 
   minWidth/minHeight are the size a new instance starts at — 4x2. minResize* is how
   far the user may then drag it down, which stays at 2x1 so the small sizes are

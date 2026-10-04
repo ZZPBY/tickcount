@@ -84,20 +84,28 @@ private fun padToWidth(value: Long, width: Int): String {
 }
 
 /**
- * Works out the countdown for [date] as observed at [now].
- *
- * The countdown targets **00:00 local time on [date]**, which is the only
- * definition under which "how long until the 6th" is unambiguous. Once that
- * midnight has passed the same numbers are reported as elapsed time instead, so
- * the display simply switches from "Time left" to "Time since".
+ * Works out the countdown for a bare date, which targets **00:00 local time** on
+ * that date — the only definition under which "how long until the 6th" is
+ * unambiguous without a time of day.
  */
-fun countdownTo(date: LocalDate, now: ZonedDateTime): Countdown {
-    val target = date.atStartOfDay(now.zone)
-    return when {
-        target.isAfter(now) -> Countdown(CountdownPhase.FUTURE, decompose(now, target))
-        now.toLocalDate() == date -> Countdown(CountdownPhase.TODAY, decompose(target, now))
-        else -> Countdown(CountdownPhase.PAST, decompose(target, now))
-    }
+fun countdownTo(date: LocalDate, now: ZonedDateTime): Countdown =
+    countdownTo(date.atStartOfDay(now.zone), now)
+
+/**
+ * Works out the countdown to an exact instant, as observed at [now].
+ *
+ * Once that instant has passed the same numbers are reported as elapsed time
+ * instead, so the display simply switches from "Time left" to "Time since".
+ *
+ * [CountdownPhase.TODAY] is about the calendar day rather than the instant: a
+ * countdown that came and went this morning is still *today*, and counts up from
+ * its own moment rather than being called past.
+ */
+fun countdownTo(target: ZonedDateTime, now: ZonedDateTime): Countdown = when {
+    target.isAfter(now) -> Countdown(CountdownPhase.FUTURE, decompose(now, target))
+    now.toLocalDate() == target.toLocalDate() ->
+        Countdown(CountdownPhase.TODAY, decompose(target, now))
+    else -> Countdown(CountdownPhase.PAST, decompose(target, now))
 }
 
 /**
