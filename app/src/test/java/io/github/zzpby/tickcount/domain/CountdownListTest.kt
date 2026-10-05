@@ -40,7 +40,7 @@ class CountdownListTest {
     }
 
     @Test
-    fun `entries come out oldest first`() {
+    fun `entries come out nearest first, with anything already past below`() {
         val events = listOf(
             event(LocalDate.of(2026, 12, 31), "new year"),
             event(LocalDate.of(2026, 10, 1), "birthday"),
@@ -49,7 +49,9 @@ class CountdownListTest {
 
         val titles = countdownList(events, today).map { it.event.title }
 
-        assertEquals(listOf("meeting", "birthday", "new year"), titles)
+        // The meeting is ten days behind the fixture's today, so it sorts below the
+        // two still ahead of it rather than leading the list as it used to.
+        assertEquals(listOf("birthday", "new year", "meeting"), titles)
     }
 
     @Test
@@ -118,13 +120,13 @@ class CountdownListTest {
             event(today.plusDays(1), "future"),
         )
 
-        val flags = countdownList(events, today).map { it.isPast }
+        val flags = countdownList(events, today).associate { it.event.title to it.isPast }
 
-        assertEquals(listOf(true, false, false), flags)
+        assertEquals(mapOf("past" to true, "now" to false, "future" to false), flags)
     }
 
     @Test
-    fun `past entries stay in the list instead of being dropped`() {
+    fun `past entries stay in the list, below the ones still ahead`() {
         val events = listOf(
             event(LocalDate.of(2020, 1, 1), "long gone"),
             event(LocalDate.of(2026, 10, 1), "upcoming"),
@@ -133,12 +135,13 @@ class CountdownListTest {
         val entries = countdownList(events, today)
 
         assertEquals(2, entries.size)
-        assertTrue(entries.first().isPast)
-        assertFalse(entries.last().isPast)
+        assertEquals(listOf("upcoming", "long gone"), entries.map { it.event.title })
+        assertFalse(entries.first().isPast)
+        assertTrue(entries.last().isPast)
     }
 
     @Test
-    fun `an all-past list is ordered oldest first and fully flagged`() {
+    fun `an all-past list runs most recent first and is fully flagged`() {
         val events = listOf(
             event(LocalDate.of(2026, 9, 20), "b"),
             event(LocalDate.of(2026, 9, 10), "a"),
@@ -146,8 +149,64 @@ class CountdownListTest {
 
         val entries = countdownList(events, today)
 
-        assertEquals(listOf("a", "b"), entries.map { it.event.title })
+        assertEquals(listOf("b", "a"), entries.map { it.event.title })
         assertTrue(entries.all { it.isPast })
+    }
+
+    @Test
+    fun `the heading is flagged on the first past row and nowhere else`() {
+        val events = listOf(
+            event(LocalDate.of(2026, 10, 1), "ahead"),
+            event(LocalDate.of(2026, 9, 10), "older"),
+            event(LocalDate.of(2026, 9, 20), "newer"),
+        )
+
+        val entries = countdownList(events, today)
+
+        assertEquals(listOf("ahead", "newer", "older"), entries.map { it.event.title })
+        assertEquals(listOf(false, true, false), entries.map { it.opensPastSection })
+    }
+
+    @Test
+    fun `a list with nothing past carries no heading flag`() {
+        val events = listOf(
+            event(LocalDate.of(2026, 10, 1), "ahead"),
+            event(LocalDate.of(2026, 12, 1), "further ahead"),
+        )
+
+        assertTrue(countdownList(events, today).none { it.opensPastSection })
+    }
+
+    @Test
+    fun `a pinned past countdown leads the list without carrying the heading`() {
+        val events = listOf(
+            event(LocalDate.of(2020, 1, 1), "memorial").copy(pinned = true),
+            event(LocalDate.of(2026, 10, 1), "ahead"),
+            event(LocalDate.of(2026, 9, 10), "gone"),
+        )
+
+        val entries = countdownList(events, today)
+
+        assertEquals(listOf("memorial", "ahead", "gone"), entries.map { it.event.title })
+        // The heading belongs to the section, not to the pinned row sitting above it.
+        assertEquals(listOf(false, false, true), entries.map { it.opensPastSection })
+    }
+
+    @Test
+    fun `the past section runs most recent first in every order`() {
+        val events = listOf(
+            event(LocalDate.of(2026, 9, 1), "oldest"),
+            event(LocalDate.of(2026, 9, 20), "newest"),
+            event(LocalDate.of(2026, 10, 1), "ahead"),
+            event(LocalDate.of(2026, 12, 1), "further ahead"),
+        )
+
+        val ascending = countdownList(events, today, SortOrder.DATE_ASC).map { it.event.title }
+        val descending = countdownList(events, today, SortOrder.DATE_DESC).map { it.event.title }
+
+        // The order governs the part still ahead; the past part is a record either way.
+        assertEquals(listOf("ahead", "further ahead", "newest", "oldest"), ascending)
+        assertEquals(listOf("further ahead", "ahead", "newest", "oldest"), descending)
     }
 
     // ------------------------------------------------------------- sort orders
@@ -188,7 +247,7 @@ class CountdownListTest {
     }
 
     @Test
-    fun `added order puts the newest addition first, whatever its date`() {
+    fun `added order puts the newest addition first among the ones still ahead`() {
         val events = listOf(
             event(LocalDate.of(2026, 10, 1), "added first", addedAt = 100L),
             event(LocalDate.of(2030, 1, 1), "added second", addedAt = 200L),
@@ -197,7 +256,9 @@ class CountdownListTest {
 
         val titles = countdownList(events, today, SortOrder.ADDED).map { it.event.title }
 
-        assertEquals(listOf("added last", "added second", "added first"), titles)
+        // "Added last" is the newest addition and would lead on that count alone, but its
+        // day is behind us, so it sits under the heading with the rest of the past.
+        assertEquals(listOf("added second", "added first", "added last"), titles)
     }
 
     @Test

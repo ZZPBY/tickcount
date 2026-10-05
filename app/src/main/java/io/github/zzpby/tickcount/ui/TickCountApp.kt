@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -27,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
@@ -52,6 +55,8 @@ import io.github.zzpby.tickcount.domain.countdownList
 import io.github.zzpby.tickcount.ui.calendar.MonthYearPickerDialog
 import io.github.zzpby.tickcount.ui.components.PlusIcon
 import io.github.zzpby.tickcount.ui.components.SortIcon
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import java.time.LocalDate
 
 /** Sentinel for "no day chosen", which is not a valid epoch day. */
@@ -66,7 +71,11 @@ private const val NO_DAY = Long.MIN_VALUE
  * list — so a back stack would be more machinery than the thing it models.
  */
 @Composable
-fun TickCountApp(viewModel: MainViewModel = viewModel()) {
+fun TickCountApp(
+    viewModel: MainViewModel = viewModel(),
+    /** Countdowns something outside the app asked to open — a home-screen widget, today. */
+    openRequests: Flow<String> = emptyFlow(),
+) {
     val events by viewModel.events.collectAsStateWithLifecycle()
     val now by viewModel.now.collectAsStateWithLifecycle()
     val visibleMonth by viewModel.visibleMonth.collectAsStateWithLifecycle()
@@ -79,6 +88,7 @@ fun TickCountApp(viewModel: MainViewModel = viewModel()) {
     var calendarEpochDay by rememberSaveable { mutableLongStateOf(NO_DAY) }
     var pendingDeleteId by rememberSaveable { mutableStateOf<String?>(null) }
     var languageOpen by rememberSaveable { mutableStateOf(false) }
+    var actionsForId by rememberSaveable { mutableStateOf<String?>(null) }
 
     // Held here rather than in the screens so that opening a countdown and coming
     // back leaves the search as it was. The calendar keeps its own, because it is
@@ -127,6 +137,18 @@ fun TickCountApp(viewModel: MainViewModel = viewModel()) {
         editorIsNew = false
         editorId = id
         editorOpen = true
+    }
+
+    // A widget names the countdown it is showing, and tapping it asks for that one.
+    // Collected rather than read once, so tapping the same widget twice opens it twice.
+    // A request for a countdown that has since been deleted is simply dropped.
+    LaunchedEffect(Unit) {
+        openRequests.collect { id ->
+            if (viewModel.event(id) != null) {
+                screenName = AppScreen.HOME.name
+                detailId = id
+            }
+        }
     }
 
     // Enabled while there is anywhere to go back to; disabled lets the system have
@@ -203,6 +225,7 @@ fun TickCountApp(viewModel: MainViewModel = viewModel()) {
                         scope = searchScope,
                         onScopeChange = { searchScopeName = it.name },
                         onOpen = { detailId = it },
+                        onLongPress = { actionsForId = it },
                     )
 
                     screen == AppScreen.CALENDAR -> CalendarScreen(
@@ -220,6 +243,7 @@ fun TickCountApp(viewModel: MainViewModel = viewModel()) {
                         onMonthClick = { monthPickerOpen = true },
                         onToday = viewModel::goToToday,
                         onOpenEvent = { detailId = it },
+                        onLongPressEvent = { actionsForId = it },
                     )
 
                     screen == AppScreen.APPEARANCE -> AppearanceScreen(
@@ -230,7 +254,8 @@ fun TickCountApp(viewModel: MainViewModel = viewModel()) {
 
                     screen == AppScreen.DATA -> DataScreen(
                         onExport = viewModel::exportBackup,
-                        onImport = viewModel::importBackup,
+                        onRead = viewModel::readBackup,
+                        onApply = viewModel::applyBackup,
                     )
 
                     screen == AppScreen.CHANGELOG -> ChangelogScreen()
@@ -343,6 +368,80 @@ fun TickCountApp(viewModel: MainViewModel = viewModel()) {
             onDismiss = { pendingDeleteId = null },
         )
     }
+
+    val actionsEvent = viewModel.event(actionsForId)
+    if (actionsEvent != null) {
+        EventActionsDialog(
+            name = actionsEvent.title,
+            pinned = actionsEvent.pinned,
+            onPin = {
+                viewModel.togglePin(actionsEvent.id)
+                actionsForId = null
+            },
+            onEdit = {
+                actionsForId = null
+                startEditEvent(actionsEvent.id)
+            },
+            // The dialog closes first for the same reason the editor's does: the
+            // confirmation is the next question, and stacking two would bury the name.
+            onDelete = {
+                actionsForId = null
+                pendingDeleteId = actionsEvent.id
+            },
+            onDismiss = { actionsForId = null },
+        )
+    }
+}
+
+/**
+ * What a long press on a card offers.
+ *
+ * The three things that used to need the countdown's own screen: pin it, change it, or
+ * do away with it. Opening a countdown to pin it was a step that existed only because
+ * there was nowhere else to put the switch.
+ */
+@Composable
+private fun EventActionsDialog(
+    name: String,
+    pinned: Boolean,
+    onPin: () -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(name) },
+        text = {
+            Column {
+                ActionRow(
+                    label = stringResource(
+                        if (pinned) R.string.action_unpin else R.string.field_pinned
+                    ),
+                    onClick = onPin,
+                )
+                ActionRow(label = stringResource(R.string.action_edit), onClick = onEdit)
+                ActionRow(label = stringResource(R.string.action_delete), onClick = onDelete)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}
+
+/** One of those actions: a whole row is the target, not just the word in it. */
+@Composable
+private fun ActionRow(label: String, onClick: () -> Unit) {
+    Text(
+        text = label,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+    )
 }
 
 private fun String.toScope(): SearchScope =

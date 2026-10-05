@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Widget metadata for the list widget. Free of anything newer than minSdk 27 for the same
+  reason as the single widget's: an attribute above the minimum is a lint NewApi *error*,
+  and the Android 12+ extras live in the -v31 variant beside this file.
+
+  No `configure` attribute: this widget shows whatever is coming next, so there is nothing
+  to ask the user before it appears. That is also why updating it every half hour is enough
+  — it counts whole days, so half an hour late at midnight is not noticeable.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/widget_upcoming"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

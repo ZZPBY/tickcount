@@ -10,6 +10,9 @@
     <string name="action_today">Today</string>
     <string name="action_this_month">This month</string>
     <string name="action_edit">Edit</string>
+    <string name="action_unpin">Unpin</string>
+    <string name="action_show_password">Show password</string>
+    <string name="action_hide_password">Hide password</string>
     <string name="action_delete">Delete</string>
     <string name="action_save">Save</string>
     <string name="action_cancel">Cancel</string>
@@ -71,6 +74,8 @@
     <string name="month_year_format">MMMM yyyy</string>
     <string name="date_format_full">EEEE, MMMM d, yyyy</string>
     <string name="date_format_short">MMM d, yyyy</string>
+    <!-- A line of text followed by a time: a card's date, or a widget's day word -->
+    <string name="text_with_time">%1$s %2$s</string>
     <string name="time_format">HH:mm</string>
 
     <!-- The drawer, and the screens behind it -->
@@ -85,14 +90,23 @@
     <string name="data_import_body">Read a backup file back in. Whatever it holds is added, or put in place of what is here.</string>
     <string name="data_encrypt">Encrypt with a password</string>
     <string name="data_password">Password</string>
+    <string name="data_password_repeat">Enter it again</string>
+    <string name="data_password_mismatch">The two do not match.</string>
     <string name="data_password_warning">There is no way to recover a forgotten password, and no way to open the file without it.</string>
     <string name="data_need_password">This backup is encrypted</string>
     <string name="data_need_password_body">Enter the password it was saved with.</string>
     <string name="data_mode_title">Import how?</string>
-    <string name="data_mode_replace">Replace everything</string>
+    <string name="data_mode_replace">Overwrite</string>
     <string name="data_mode_replace_body">What is on this device now is discarded, and the file takes its place.</string>
     <string name="data_mode_merge">Merge</string>
     <string name="data_mode_merge_body">Countdowns already here are kept; any the file also holds replace them.</string>
+    <!--
+      Counts, not sentences: "new" and "overwritten" are adjectives here, so there is no
+      plural to agree with, and the label shape keeps lint from reading them as one.
+    -->
+    <string name="data_preview_discarded">Discarded: %1$d</string>
+    <string name="data_preview_added">New: %1$d</string>
+    <string name="data_preview_overwritten">Overwritten: %1$d</string>
     <plurals name="data_applied">
         <item quantity="one">Imported — %1$d countdown in total.</item>
         <item quantity="other">Imported — %1$d countdowns in total.</item>
@@ -126,6 +140,7 @@
     <string name="appearance_card">Cards</string>
     <string name="home_empty">Nothing to count down to yet.\nTap + in the top right to add one.</string>
     <string name="home_no_matches">Nothing matches “%1$s”.</string>
+    <string name="home_past_section">Past</string>
     <string name="calendar_pick_a_day">Tap a day to see what it holds.</string>
     <string name="calendar_day_empty">Nothing on this day yet.\nTap + in the top right to add one.</string>
     <string name="intro_github_title">GitHub project</string>
@@ -135,8 +150,8 @@
     <string name="search_scope_name">Name</string>
     <string name="search_scope_date">Date</string>
     <string name="search_scope_time">Time</string>
-    <string name="sort_date_asc">Target date · soonest first</string>
-    <string name="sort_date_desc">Target date · furthest first</string>
+    <string name="sort_date_asc">By date · nearest first</string>
+    <string name="sort_date_desc">By date · furthest first</string>
     <string name="sort_added">Date added · newest first</string>
     <string name="list_yesterday">Yesterday</string>
     <plurals name="list_days_left">
@@ -168,6 +183,11 @@
       through the manifest, so it is not repeated here.
     -->
     <string name="widget_description">The countdown to your chosen day, ticking live on the home screen.</string>
+    <string name="widget_name_single">TickCount · Single countdown</string>
+    <string name="widget_name_list">TickCount · Countdown list</string>
+    <string name="widget_upcoming_description">What is coming next, one countdown a row.</string>
+    <string name="widget_upcoming_header">Coming up</string>
+    <string name="widget_upcoming_empty">Nothing coming up</string>
     <string name="widget_config_title">Choose a countdown</string>
     <string name="widget_config_empty">No countdowns yet. Add one in TickCount first.</string>
     <plurals name="widget_days_left">
@@ -204,6 +224,10 @@
     <!-- Sample values for the picker preview, not shown anywhere else. -->
     <string name="widget_preview_name">Birthday</string>
     <string name="widget_preview_days">12 days left</string>
+    <string name="widget_preview_name_second">Exam</string>
+    <string name="widget_preview_days_second">3 days left</string>
+    <string name="widget_preview_name_third">Trip</string>
+    <string name="widget_preview_days_third">21 days left</string>
     <string name="widget_preview_date">October 16, 2026</string>
     <string name="widget_preview_clock" translatable="false">3:48:23</string>
 </resources>

@@ -190,4 +190,45 @@ class BackupTest {
         assertFalse(sealed.contains("hunter2"))
         assertFalse(sealed.contains("评审"))
     }
+
+    // -------------------------------------------------------------- what it would do
+
+    @Test
+    fun `a file of new countdowns would add all of them`() {
+        val preview = previewOf(backup(), existing = listOf(event("c")))
+
+        assertEquals(2, preview.added)
+        assertEquals(0, preview.overwritten)
+        assertEquals(1, preview.discarded)
+    }
+
+    @Test
+    fun `a countdown the device already holds counts as overwritten, not added`() {
+        val preview = previewOf(backup(), existing = listOf(event("a"), event("c")))
+
+        assertEquals(1, preview.added)
+        assertEquals(1, preview.overwritten)
+        assertEquals(2, preview.discarded)
+    }
+
+    @Test
+    fun `importing into an empty app discards nothing and adds everything`() {
+        val preview = previewOf(backup(), existing = emptyList())
+
+        assertEquals(2, preview.added)
+        assertEquals(0, preview.overwritten)
+        assertEquals(0, preview.discarded)
+    }
+
+    @Test
+    fun `a file of what is already here would only overwrite`() {
+        val preview = previewOf(backup(), existing = listOf(event("a"), event("b")))
+
+        assertEquals(0, preview.added)
+        assertEquals(2, preview.overwritten)
+        assertEquals(2, preview.discarded)
+    }
+
+    private fun event(id: String) =
+        CountdownEvent(id = id, date = LocalDate.of(2026, 5, 1), title = "别的")
 }

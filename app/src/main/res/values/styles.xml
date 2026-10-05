@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The list widget's rows.
+
+  Shared out rather than repeated four times in the layout, because the four rows have to
+  stay identical for the widget to look like a list.
+
+  The row height here is the number `upcomingRowsFor` divides by, and that is all it is used
+  for now: the rows themselves are weighted, so they divide up whatever height the widget
+  actually has rather than stacking a fixed 24dp each from the top and leaving the rest of
+  the widget blank. A widget with room for four countdowns and only two of them used to be
+  two rows of text above an empty strip.
+-->
+<resources>
+
+    <style name="WidgetTickCountRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="WidgetTickCountRowTitle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">@color/widget_text_primary</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="WidgetTickCountRowDays">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/widget_text_secondary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

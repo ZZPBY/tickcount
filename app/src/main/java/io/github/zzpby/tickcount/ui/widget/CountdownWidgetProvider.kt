@@ -44,7 +44,9 @@ class CountdownWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         if (CountdownWidgets.isTick(intent)) {
-            CountdownWidgets.refreshAll(context)
+            // Both kinds, because the alarm is armed once for the app rather than once per
+            // widget, and the list widget's day counts go stale at the same midnight.
+            refreshAllWidgets(context)
         }
     }
 }

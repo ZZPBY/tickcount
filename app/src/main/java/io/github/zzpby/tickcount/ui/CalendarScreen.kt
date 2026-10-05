@@ -48,6 +48,7 @@ fun CalendarScreen(
     onMonthClick: () -> Unit,
     onToday: () -> Unit,
     onOpenEvent: (String) -> Unit,
+    onLongPressEvent: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dateFormatter = rememberDateFormatter(R.string.date_format_full)
@@ -113,6 +114,7 @@ fun CalendarScreen(
                             today = today,
                             detailText = entry.event.time?.format(timeFormatter) ?: allDay,
                             onClick = { onOpenEvent(entry.event.id) },
+                            onLongClick = { onLongPressEvent(entry.event.id) },
                         )
                     }
                 }

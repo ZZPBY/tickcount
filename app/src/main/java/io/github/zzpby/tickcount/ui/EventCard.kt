@@ -2,7 +2,7 @@ package io.github.zzpby.tickcount.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +47,7 @@ fun EventCard(
      */
     detailText: String,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val event = entry.event
@@ -74,7 +75,9 @@ fun EventCard(
                 }
             )
             .border(1.dp, scheme.outlineVariant, shaped)
-            .clickable(onClick = onClick)
+            // A long press is the way to the three things a countdown's own screen does
+            // without the trip into it; a tap still opens that screen.
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = 16.dp, vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -22,6 +22,7 @@ import io.github.zzpby.tickcount.domain.matchesQuery
 import io.github.zzpby.tickcount.domain.searchText
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 /**
  * Every countdown in one list, with a search box above it.
@@ -39,6 +40,7 @@ fun HomeScreen(
     scope: SearchScope,
     onScopeChange: (SearchScope) -> Unit,
     onOpen: (String) -> Unit,
+    onLongPress: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val dateFormatter = rememberDateFormatter(R.string.date_format_short)
@@ -80,16 +82,54 @@ fun HomeScreen(
                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 2.dp),
             ) {
                 items(visible, key = { it.event.id }) { entry ->
+                    if (entry.opensPastSection) {
+                        PastSectionHeading()
+                    }
                     EventCard(
                         entry = entry,
                         today = today,
-                        detailText = dateText(entry),
+                        detailText = cardDetail(entry, dateText(entry), timeFormatter),
                         onClick = { onOpen(entry.event.id) },
+                        onLongClick = { onLongPress(entry.event.id) },
                     )
                 }
             }
         }
     }
+}
+
+/**
+ * The heading over the countdowns whose day has gone by.
+ *
+ * They are still listed — being able to look back is half of what a countdown is for —
+ * but they are no longer mixed in with what is coming, which is what the list is read
+ * for.
+ */
+@Composable
+private fun PastSectionHeading(modifier: Modifier = Modifier) {
+    Text(
+        text = stringResource(R.string.home_past_section),
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier.padding(start = 4.dp, top = 16.dp, bottom = 6.dp),
+    )
+}
+
+/**
+ * What a card says under the name: the date, and the time when the countdown names one.
+ *
+ * The home list is where a countdown is read without opening it, so leaving the time out
+ * made one set to 09:30 look exactly like an all-day one. The calendar's own list still
+ * shows the time alone, because every card there shares the date in the grid above it.
+ */
+@Composable
+private fun cardDetail(
+    entry: CountdownListEntry,
+    dateText: String,
+    timeFormatter: DateTimeFormatter,
+): String {
+    val time = entry.event.time ?: return dateText
+    return stringResource(R.string.text_with_time, dateText, time.format(timeFormatter))
 }
 
 /** A centred line of explanation, for a list that has nothing to show. */

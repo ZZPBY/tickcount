@@ -29,21 +29,37 @@
         </activity>
 
         <!--
-          The home-screen widget. No permission is involved: the launcher talks to
-          this receiver through AppWidgetManager, and the midnight refresh uses
-          AlarmManager.setAndAllowWhileIdle — the inexact variant, which needs no
-          alarm permission.
+          The two home-screen widgets. No permission is involved in either: the launcher
+          talks to these receivers through AppWidgetManager, and the midnight refresh uses
+          AlarmManager.setAndAllowWhileIdle — the inexact variant, which needs no alarm
+          permission.
+
+          Each carries its own name, because a picker offering two entries both called
+          TickCount would be asking the user to guess.
         -->
         <receiver
             android:name=".ui.widget.CountdownWidgetProvider"
             android:exported="false"
-            android:label="@string/app_name">
+            android:label="@string/widget_name_single">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/countdown_widget_info" />
+        </receiver>
+
+        <!-- Nothing to configure: it shows whatever is coming next. -->
+        <receiver
+            android:name=".ui.widget.UpcomingWidgetProvider"
+            android:exported="false"
+            android:label="@string/widget_name_list">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/upcoming_widget_info" />
         </receiver>
 
         <!-- Started by the launcher, so this one does have to be exported. -->

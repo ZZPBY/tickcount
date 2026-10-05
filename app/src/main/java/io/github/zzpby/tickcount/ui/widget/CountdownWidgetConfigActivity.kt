@@ -123,8 +123,13 @@ private fun WidgetConfigScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 val formatter = rememberDateFormatter(R.string.date_format_full)
+                val timeFormatter = rememberDateFormatter(R.string.time_format)
                 events.forEach { event ->
-                    WidgetConfigRow(event, formatter, onClick = { onPick(event.id) })
+                    WidgetConfigRow(
+                        event = event,
+                        dateLine = dateLine(event, formatter, timeFormatter),
+                        onClick = { onPick(event.id) },
+                    )
                 }
             }
         }
@@ -139,10 +144,28 @@ private fun WidgetConfigScreen(
     }
 }
 
+/**
+ * The date a countdown is on, with its time after it when it names one.
+ *
+ * The list is what someone picks from, so a countdown set to 09:30 has to look different
+ * from an all-day one here — otherwise the only way to tell them apart is to pick one and
+ * read the widget.
+ */
+@Composable
+private fun dateLine(
+    event: CountdownEvent,
+    formatter: DateTimeFormatter,
+    timeFormatter: DateTimeFormatter,
+): String {
+    val date = event.date.format(formatter)
+    val time = event.time ?: return date
+    return stringResource(R.string.text_with_time, date, time.format(timeFormatter))
+}
+
 @Composable
 private fun WidgetConfigRow(
     event: CountdownEvent,
-    formatter: DateTimeFormatter,
+    dateLine: String,
     onClick: () -> Unit,
 ) {
     Surface(
@@ -160,7 +183,7 @@ private fun WidgetConfigRow(
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = event.date.format(formatter),
+                text = dateLine,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

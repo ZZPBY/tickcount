@@ -6,22 +6,59 @@ import org.json.JSONObject
 /** What an import should do with what is already on the device. */
 enum class ImportMode { REPLACE, MERGE }
 
-/** How an import went, for the screen to report. */
-sealed interface ImportOutcome {
-    data class Applied(val mode: ImportMode, val count: Int) : ImportOutcome
+/**
+ * How reading a backup file went, before anything has been applied.
+ *
+ * Reading is its own step rather than the first half of applying, because a file has to be
+ * opened, and a password accepted, before there is any sense in asking what to do with it.
+ */
+sealed interface ReadOutcome {
+    /**
+     * The file opened, and holds a backup — together with what putting it back would do
+     * to what is on the device now, which is what the screen asks about next.
+     */
+    data class Read(val backup: Backup, val preview: ImportPreview) : ReadOutcome
 
     /** The file is encrypted and the password did not open it. */
-    data object WrongPassword : ImportOutcome
+    data object WrongPassword : ReadOutcome
 
     /** The file is not a TickCount backup at all. */
-    data object NotABackup : ImportOutcome
+    data object NotABackup : ReadOutcome
 
     /** A backup, but one that cannot be read — truncated, or written by something else. */
-    data object Unreadable : ImportOutcome
+    data object Unreadable : ReadOutcome
 }
+
+/** What an import would do, counted before it is allowed to do it. */
+data class ImportPreview(
+    /** Undecided: what the file would bring in that is not here already, or that is. */
+    val added: Int,
+    val overwritten: Int,
+    /** What is on the device now, which replacing would throw away. */
+    val discarded: Int,
+)
 
 /** Everything a backup carries: the countdowns, and how the app was set up. */
 data class Backup(val events: List<CountdownEvent>, val settings: AppSettings)
+
+/**
+ * What putting [backup] back would do to [existing], for the dialog to say before the
+ * user commits to it.
+ *
+ * Both modes are counted at once because the dialog offers both at once: the point is to
+ * show what each would do to *this* device, rather than describing replace and merge in
+ * the abstract and letting the user find out which one they wanted afterwards. A same-id
+ * countdown counts as overwritten — that is the rule merging follows.
+ */
+fun previewOf(backup: Backup, existing: List<CountdownEvent>): ImportPreview {
+    val here = existing.mapTo(mutableSetOf()) { it.id }
+    val overwritten = backup.events.count { it.id in here }
+    return ImportPreview(
+        added = backup.events.size - overwritten,
+        overwritten = overwritten,
+        discarded = existing.size,
+    )
+}
 
 /**
  * The backup file's shape.

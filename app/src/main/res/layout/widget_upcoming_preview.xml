@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  What the widget picker shows for the list widget on Android 12+, where a live preview
+  replaces the app icon.
+
+  Fixed text, like the single widget's preview: this layout is inflated once by the
+  launcher and never updated, so it is a picture of the widget rather than a working one.
+  Three rows, which is what the default 4x2 size has room for.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:maxLines="1"
+        android:text="@string/widget_upcoming_header"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <LinearLayout style="@style/WidgetTickCountRow">
+
+        <TextView
+            style="@style/WidgetTickCountRowTitle"
+            android:text="@string/widget_preview_name" />
+
+        <TextView
+            style="@style/WidgetTickCountRowDays"
+            android:text="@string/widget_preview_days" />
+    </LinearLayout>
+
+    <LinearLayout style="@style/WidgetTickCountRow">
+
+        <TextView
+            style="@style/WidgetTickCountRowTitle"
+            android:text="@string/widget_preview_name_second" />
+
+        <TextView
+            style="@style/WidgetTickCountRowDays"
+            android:text="@string/widget_preview_days_second" />
+    </LinearLayout>
+
+    <LinearLayout style="@style/WidgetTickCountRow">
+
+        <TextView
+            style="@style/WidgetTickCountRowTitle"
+            android:text="@string/widget_preview_name_third" />
+
+        <TextView
+            style="@style/WidgetTickCountRowDays"
+            android:text="@string/widget_preview_days_third" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ extras for the list widget, kept apart from the base file so the app still
+  lints clean at minSdk 27: these attributes do not exist before API 31.
+
+  A 4x2 starting size, matching minWidth/minHeight in the base file, so a launcher that
+  reads only one of the two pairs still arrives at the same widget.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_upcoming_description"
+    android:initialLayout="@layout/widget_upcoming"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:previewLayout="@layout/widget_upcoming_preview"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen" />

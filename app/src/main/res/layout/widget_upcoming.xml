@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The list widget's one layout: a heading and four fixed rows.
+
+  RemoteViews has no recycling and no measuring, so the choice is fixed rows or no rows at
+  all. A row a widget is too short for is hidden rather than squashed — see
+  `upcomingRowsFor`, which works out how many fit — and the ids are addressed one by one
+  because there is no adapter to fill them.
+
+  The text sizes are fixed here, unlike the single-countdown widget, which stretches its
+  text to fill whatever room it has. A list is read a row at a time, and a row that grew to
+  fill the widget would leave the others with nothing.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/upcoming_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/upcoming_header"
+        android:layout_width="match_parent"
+        android:layout_height="18dp"
+        android:maxLines="1"
+        android:text="@string/widget_upcoming_header"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="11sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/upcoming_row_1"
+        style="@style/WidgetTickCountRow">
+
+        <TextView
+            android:id="@+id/upcoming_title_1"
+            style="@style/WidgetTickCountRowTitle" />
+
+        <TextView
+            android:id="@+id/upcoming_days_1"
+            style="@style/WidgetTickCountRowDays" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/upcoming_row_2"
+        style="@style/WidgetTickCountRow">
+
+        <TextView
+            android:id="@+id/upcoming_title_2"
+            style="@style/WidgetTickCountRowTitle" />
+
+        <TextView
+            android:id="@+id/upcoming_days_2"
+            style="@style/WidgetTickCountRowDays" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/upcoming_row_3"
+        style="@style/WidgetTickCountRow">
+
+        <TextView
+            android:id="@+id/upcoming_title_3"
+            style="@style/WidgetTickCountRowTitle" />
+
+        <TextView
+            android:id="@+id/upcoming_days_3"
+            style="@style/WidgetTickCountRowDays" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/upcoming_row_4"
+        style="@style/WidgetTickCountRow">
+
+        <TextView
+            android:id="@+id/upcoming_title_4"
+            style="@style/WidgetTickCountRowTitle" />
+
+        <TextView
+            android:id="@+id/upcoming_days_4"
+            style="@style/WidgetTickCountRowDays" />
+    </LinearLayout>
+
+    <!-- Shown instead of the rows when there is nothing left to count down to. It takes the
+         space the rows would have, so the message sits in the middle of the widget rather
+         than at the top of an empty one. -->
+    <TextView
+        android:id="@+id/upcoming_empty"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="@string/widget_upcoming_empty"
+        android:textColor="@color/widget_text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone" />
+</LinearLayout>

@@ -12,10 +12,11 @@ import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import androidx.core.content.edit
+import io.github.zzpby.tickcount.EXTRA_OPEN_EVENT
 import io.github.zzpby.tickcount.MainActivity
 import io.github.zzpby.tickcount.R
+import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
-import io.github.zzpby.tickcount.domain.CountdownPhase
 import io.github.zzpby.tickcount.domain.CountdownUnit
 import io.github.zzpby.tickcount.domain.UnitCount
 import io.github.zzpby.tickcount.domain.WidgetCountdown
@@ -24,7 +25,6 @@ import io.github.zzpby.tickcount.domain.breakdownOf
 import io.github.zzpby.tickcount.domain.countdownTo
 import io.github.zzpby.tickcount.domain.widgetCountdownFor
 import io.github.zzpby.tickcount.domain.widgetShapeFor
-import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -122,70 +122,54 @@ object CountdownWidgets {
         if (event == null) {
             renderEmpty(context, views)
         } else {
-            render(context, views, event.title, event.date)
+            render(context, views, event, shape)
         }
 
-        views.setOnClickPendingIntent(R.id.widget_root, openApp(context, appWidgetId))
+        views.setOnClickPendingIntent(
+            R.id.widget_root,
+            openApp(context, appWidgetId, eventId = event?.id),
+        )
         manager.updateAppWidget(appWidgetId, views)
         scheduleMidnightTick(context)
     }
 
     /**
-     * The widget's size in dp, taken from whichever source actually reported one.
+     * Fills both arrangements in, so that a resize has nothing to do but flip visibility.
      *
-     * The bundle handed to `onAppWidgetOptionsChanged` is the freshest, but nothing
-     * guarantees it carries these keys. Trusting it alone — as this did — means a
-     * launcher that sends a partial bundle reads as 0x0, which [widgetShapeFor] takes
-     * to mean "not measured yet" and answers with the stacked arrangement every time.
-     * The widget then stops changing with its size, for good, which is exactly the
-     * symptom a partial bundle would produce on a device we cannot debug.
+     * Every id written here exists in the single layout whether or not its arrangement is
+     * the one on screen.
      *
-     * So each dimension walks the candidates and keeps the first one above zero. The
-     * maximum is the last resort, because some launchers fill that in and leave the
-     * minimum at zero.
+     * A countdown that names a time says so on the widget, and where depends on the shape:
+     * the stacked arrangement has a date line to put it on, and the others have only the
+     * day word, so it goes there instead. Without this the widget counted to half past nine
+     * while showing nothing but a date — the arithmetic and the words disagreed.
      */
-    private fun widgetSize(
-        manager: AppWidgetManager,
-        appWidgetId: Int,
-        options: Bundle?,
-    ): Pair<Int, Int> {
-        val stored = manager.getAppWidgetOptions(appWidgetId)
-
-        fun dimension(min: String, max: String): Int = sequenceOf(
-            options?.getInt(min),
-            stored.getInt(min),
-            options?.getInt(max),
-            stored.getInt(max),
-        ).filterNotNull().firstOrNull { it > 0 } ?: 0
-
-        return dimension(
-            AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH,
-            AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH,
-        ) to dimension(
-            AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT,
-            AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT,
-        )
-    }
-
     private fun render(
         context: Context,
         views: RemoteViews,
-        title: String,
-        date: LocalDate,
+        event: CountdownEvent,
+        shape: WidgetShape,
     ) {
         val now = ZonedDateTime.now()
-        val countdown = widgetCountdownFor(date, now)
+        val countdown = widgetCountdownFor(event.date, now, event.time)
+        val target = event.target(now.zone)
+        val time = event.time?.format(widgetFormatter(context, R.string.time_format))
 
-        // Both arrangements are filled in on every update, not just the visible one.
-        // All of these ids exist in the single layout, so writing the hidden half
-        // costs nothing and leaves a resize with nothing to do but flip visibility.
-        views.setTextViewText(R.id.row_name, title)
-        views.setTextViewText(R.id.col_name, title)
+        views.setTextViewText(R.id.row_name, event.title)
+        views.setTextViewText(R.id.col_name, event.title)
         // The stacked arrangement has room to spell the countdown out in calendar
         // units; the one-line arrangement keeps the single day total.
-        views.setTextViewText(R.id.row_days, dayLabel(context, countdown.days, countdown.phase))
-        views.setTextViewText(R.id.col_days, calendarLabel(context, date, now, countdown))
-        views.setTextViewText(R.id.col_date, date.format(dateFormatter(context)))
+        views.setTextViewText(R.id.row_days, withTime(context, dayLabel(context, countdown), time))
+        views.setTextViewText(
+            R.id.col_days,
+            withTime(
+                context,
+                calendarLabel(context, target, now, countdown),
+                // Nothing to add here: the date line below carries it.
+                time.takeIf { shape != WidgetShape.STACK },
+            ),
+        )
+        views.setTextViewText(R.id.col_date, dateLabel(context, event, time))
 
         // The Chronometer is anchored to the nearer midnight, never to the target
         // itself: counting to a date months away would render as thousands of
@@ -198,6 +182,27 @@ object CountdownWidgets {
             views.setChronometerCountDown(id, countdown.countingDown)
         }
     }
+
+    /** "明天 09:30" — the time only where the shape has nowhere else to put it. */
+    private fun withTime(context: Context, label: String, time: String?): String =
+        if (time == null) label else context.getString(R.string.text_with_time, label, time)
+
+    /**
+     * The line under the countdown's name: the date, and the time it names.
+     *
+     * The weekday gives way to the time rather than sitting beside it. A widget is short of
+     * width, and for a countdown set to half past nine, "09:30" says more than "Friday".
+     */
+    private fun dateLabel(context: Context, event: CountdownEvent, time: String?): String =
+        if (time == null) {
+            event.date.format(widgetFormatter(context, R.string.date_format_full))
+        } else {
+            context.getString(
+                R.string.text_with_time,
+                event.date.format(widgetFormatter(context, R.string.date_format_short)),
+                time,
+            )
+        }
 
     private fun renderEmpty(context: Context, views: RemoteViews) {
         val message = context.getString(R.string.label_no_countdown)
@@ -217,17 +222,28 @@ object CountdownWidgets {
         views.setViewVisibility(R.id.col_name, View.VISIBLE)
     }
 
-    private fun dayLabel(context: Context, days: Long, phase: CountdownPhase): String = when {
-        phase == CountdownPhase.TODAY -> context.getString(R.string.widget_today)
-        // Fewer than 24 hours to a midnight means the target is tomorrow.
-        phase == CountdownPhase.FUTURE && days == 0L -> context.getString(R.string.widget_tomorrow)
+    /**
+     * How far off the countdown is, in the words a person would use.
+     *
+     * Today is today whether its moment is still ahead or has just gone by — only the clock
+     * changes direction — and tomorrow is tomorrow at any hour of today, because the count
+     * is in calendar days like the list's.
+     */
+    private fun dayLabel(context: Context, countdown: WidgetCountdown): String = when {
+        countdown.days == 0L -> context.getString(R.string.widget_today)
+        countdown.countingDown && countdown.days == 1L -> context.getString(R.string.widget_tomorrow)
         // A plural resource rather than a plain string: English needs "1 day left",
         // and Chinese carries a single `other` form.
-        phase == CountdownPhase.FUTURE -> context.resources.getQuantityString(
-            R.plurals.widget_days_left, days.toInt(), days,
+        countdown.countingDown -> context.resources.getQuantityString(
+            R.plurals.widget_days_left,
+            countdown.days.toInt(),
+            countdown.days,
         )
+
         else -> context.resources.getQuantityString(
-            R.plurals.widget_days_ago, days.toInt(), days,
+            R.plurals.widget_days_ago,
+            (-countdown.days).toInt(),
+            (-countdown.days),
         )
     }
 
@@ -241,22 +257,21 @@ object CountdownWidgets {
      */
     private fun calendarLabel(
         context: Context,
-        date: LocalDate,
+        target: ZonedDateTime,
         now: ZonedDateTime,
         countdown: WidgetCountdown,
     ): String = when {
-        countdown.phase == CountdownPhase.TODAY -> context.getString(R.string.widget_today)
-        countdown.phase == CountdownPhase.FUTURE && countdown.days == 0L ->
-            context.getString(R.string.widget_tomorrow)
+        countdown.days == 0L -> context.getString(R.string.widget_today)
+        countdown.countingDown && countdown.days == 1L -> context.getString(R.string.widget_tomorrow)
         else -> {
-            val spelled = spelledOut(context, breakdownOf(countdownTo(date, now).parts))
-            // Only reachable if every unit came out zero, which the phases above
+            val spelled = spelledOut(context, breakdownOf(countdownTo(target, now).parts))
+            // Only reachable if every unit came out zero, which the cases above
             // should have caught; the total is a safe thing to fall back to.
             if (spelled.isEmpty()) {
-                dayLabel(context, countdown.days, countdown.phase)
+                dayLabel(context, countdown)
             } else {
                 context.getString(
-                    if (countdown.phase == CountdownPhase.FUTURE) {
+                    if (countdown.countingDown) {
                         R.string.widget_breakdown_left
                     } else {
                         R.string.widget_breakdown_ago
@@ -342,16 +357,4 @@ object CountdownWidgets {
 
     /** True when a broadcast is the midnight tick rather than a framework update. */
     fun isTick(intent: Intent?) = intent?.action == KEY_ACTION_TICK
-
-    private fun openApp(context: Context, appWidgetId: Int) = PendingIntent.getActivity(
-        context,
-        appWidgetId,
-        Intent(context, MainActivity::class.java),
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-    )
-
-    private fun dateFormatter(context: Context): DateTimeFormatter {
-        val locale = context.resources.configuration.locales[0]
-        return DateTimeFormatter.ofPattern(context.getString(R.string.date_format_full), locale)
-    }
 }

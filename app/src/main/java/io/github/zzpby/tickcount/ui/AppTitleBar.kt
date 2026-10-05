@@ -5,10 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,6 +44,14 @@ enum class TitleBarNavigation { MENU, BACK }
  *
  * The name is centred by the layout rather than by padding, so it stays in the
  * middle of the *screen* whether or not the right-hand slot has anything in it.
+ *
+ * The bar is hand-drawn rather than Material's `TopAppBar`, so it has to claim its insets
+ * for itself: without that the whole bar is laid out from the top of the window, and its
+ * button, name and actions are drawn underneath the clock and the system icons. Top and
+ * sides are taken — the sides matter in landscape, where a cutout sits beside the button —
+ * but not the bottom, which belongs to the screen below. The inset is taken outside the
+ * 56dp, so the bar is as tall as it looks plus the strip the system keeps, and the screen
+ * underneath starts where the bar really ends.
  */
 @Composable
 fun AppTitleBar(
@@ -50,8 +63,13 @@ fun AppTitleBar(
 ) {
     Box(
         modifier = modifier
+            .windowInsetsPadding(
+                WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+            )
             .fillMaxWidth()
-            .height(56.dp),
+            // A floor, not a fixed height: at a large system font the name has to be able
+            // to push the bar taller rather than be clipped by it.
+            .heightIn(min = 56.dp),
     ) {
         LeadingButton(
             navigation = navigation,
