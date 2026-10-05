@@ -8,7 +8,7 @@ see how long is left — or how long it has been.
 
 [中文说明](README.md)
 
-**Under 2 MB · No permissions · Fully offline · No ads · No account · Open source**
+**About 2 MB · No permissions · Fully offline · No ads · No account · Open source**
 
 <p align="center">
   <img src="docs/screenshot-home.png" width="200" alt="Home: days left for each countdown, the past below" />
@@ -64,6 +64,8 @@ see how long is left — or how long it has been.
 - **About this project** — read the project's own introduction without leaving the app: its
   features, how the countdown reads, the home-screen widget, plus the repository address,
   ready to copy or to open.
+- **Large fonts** — the title bar, the drawer and the cards keep clear of the status bar and
+  grow with the system font scale, so nothing is squeezed.
 - **No permissions, no network, no analytics.**
 - One module, no third-party runtime libraries, `minSdk` 27 (Android 8.1).
 
