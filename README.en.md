@@ -23,31 +23,30 @@ see how long is left — or how long it has been.
   data to set things up, and finally Changelog and About this project to read. Language sits
   on its own at the foot of the drawer.
 - **Countdown list** — one rounded card per countdown on the home screen: name, tags and
-  date on the left — with the time after the date when the countdown names one — days
+  date on the left — with the time after it for a countdown that names a time — days
   remaining on the right. What has already gone by sits at the foot of the list, under a
-  heading of its own.
+  **Past** heading of its own.
 - **Pin to the top** — switch it on in a countdown's own screen and it leads the list
   however the list is sorted.
-- **Sorting** — the button at the top right of a list orders it by **date, nearest first**,
-  **date, furthest first**, or **date added, newest first**. The choice is remembered. It
-  governs the part still ahead; the past section always runs most recent first.
+- **Sorting** — the button at the top right of a list offers **By date · nearest first**,
+  **By date · furthest first**, and **Date added · newest first**. The choice is remembered.
+  It governs the part still ahead; the past section always runs most recent first.
 - **Search** — a box above the list, with a control on the right inside it that switches
-  between **name** (which includes tags), **date** and **time**.
-- **To the minute** — a countdown can cover a whole day, or be set to an exact hour and
-  minute.
+  between **Name** (which includes tags), **Date** and **Time**.
+- **Exact minute** — a countdown can be set to “All day”, or to an exact hour and minute.
 - **Multiple tags** — as many per countdown as you like.
-- **Your own colour** — each countdown can have one, mixed on a hue strip in the editor.
-  Leave it unset and it takes the theme's colour.
+- **Own colour** — each countdown can have one, mixed on a hue strip in the editor. Leave it
+  unset and it takes the theme's colour.
 - **Countdown screen** — tap a card to open it: the full years, months, days, hours,
   minutes and seconds breakdown, plus the date, the time and the tags.
 - **Calendar** — a hand-drawn month grid, with up to three dots on a day that holds
   several countdowns. Tap a day and its countdowns are listed underneath, with the same
-  search and sort; the + at the top right adds one on that day, and Today beside the month
-  title jumps back to the current month.
+  search and sort; the + at the top right adds a countdown on that day, and Today beside the
+  month title jumps back to the current month.
 - **Fast month switching** — tap the month title for a year-and-month picker with This
-  month, ±1 year and ±10 year buttons.
+  month, and buttons that step the year by 1 and by 10.
 - **Delete asks first** — pressing Delete does not take effect until you confirm.
-- **Long press a card** — pin it, change it or delete it without opening it first.
+- **Long-press a card** — pin it, edit it or delete it without opening it first.
 - **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
   screen, ticking to the second. **Countdown list** shows what is coming next, one to a row.
   Both adapt to their size, and neither asks for a permission.
@@ -57,25 +56,25 @@ see how long is left — or how long it has been.
 - **Bilingual** — follows the system language, or you can pick Chinese or English in the
   drawer. Date formats are localised too.
 - **Backup and restore** — in Backup & data, every countdown, and the appearance, sorting
-  and language settings, can be written to a file and read back; an import either overwrites
-  everything or merges into what is here, and says how many it would add or overwrite before
-  you choose. An export can be encrypted with a password — asked for twice, with an eye
-  beside each field to check it — using AES-256-GCM.
-- **Changelog** — every release is listed in the drawer, with the installed one marked.
+  and language settings, can be written to a file and read back. An export can be encrypted
+  with AES-256-GCM and a password — asked for twice, with an eye beside each field to check
+  it. An import asks for that password first, then asks **Overwrite** or **Merge**, and says
+  how many countdowns it would discard, add or overwrite before it does any of them.
+- **Changelog** — every release is listed in the drawer, with the installed version marked.
 - **About this project** — read the project's own introduction without leaving the app: its
-  features, how the countdown reads and the widget, plus the repository address, ready to
-  copy or to open.
+  features, how the countdown reads, the home-screen widget, plus the repository address,
+  ready to copy or to open.
 - **No permissions, no network, no analytics.**
 - One module, no third-party runtime libraries, `minSdk` 27 (Android 8.1).
 
 ## How the countdown reads
 
-The target is **00:00 local time on the chosen date**, or the countdown's own time when it
-names one. Once that moment has passed, the same arithmetic runs backwards, and the label
-changes from “Time left” to “Time since”; on the target day itself it reads “Elapsed today”.
+The target is **00:00 local time on the chosen date**, or the exact time of day it is set
+to. Once that moment has passed, the same arithmetic runs backwards, and the label changes
+from “Time left” to “Time since”; on the target day itself it reads “Elapsed today”.
 
-Leading fields that have not started counting yet are filled with dashes, so how far off a
-date is can be read at a glance:
+Leading fields that have not started counting yet are filled with dashes, so you can see at
+a glance how far off a date is:
 
 | Time left | Shown as |
 |---|---|
@@ -89,24 +88,24 @@ whole day even if it is actually 23 or 25 hours long.
 
 ## Home-screen widget
 
-Long-press an empty spot on the home screen → Widgets, and there are two to choose from.
+Long-press an empty spot on the home screen → Widgets: there are two to choose from.
 
-**TickCount · Single countdown** — pick a countdown as well; the list shows each one's time,
-so two countdowns on the same day can be told apart before the widget is placed. It starts at
-4×2 and rearranges itself as you drag: made short and wide, it becomes one row of name, days
-and clock; made larger, it adds the target date and splits the days into “1 year 1 month 4
-days”. Tapping it opens that countdown. A countdown that names a time is counted to that
-time here too, and says so — on the date line, or after the days in the shapes that have no
-date line — so the widget and the countdown screen agree. The seconds are driven by the
-system itself, without waking the app.
+**TickCount · Single countdown** — pick a countdown as well; the picker shows the date and,
+where it has one, the time, so two countdowns with the same name can be told apart before the
+widget is placed. It starts at 4×2 and rearranges itself as you drag: made short and wide, it
+becomes one row of name, days and clock; made larger, it adds the target date and splits the
+days into “1 year 1 month 4 days”. Tapping it opens that countdown. A countdown that names a
+time is counted to that time here too, and says so — on the date line, or after the days in
+the layouts that have no date line — so the widget and the countdown screen agree. The
+seconds are driven by the system itself, without waking the app.
 
 **TickCount · Countdown list** — nothing to pick: it lists what is coming next on its own,
 one to a row, nearest first, and tapping a row opens that countdown. A countdown that names
-a time says so after the days — “Today 09:30”. The default 4×2 holds three rows and a taller
-widget holds four, and the rows share the height between them; with nothing coming up it says
-so.
+a time says so after the days — “Today 09:30”. The default 4×2 holds three rows; a taller
+widget holds up to four, and the rows share the height between them; with nothing coming up
+it says so.
 
-Neither asks for a permission.
+**Neither asks for a permission.**
 
 ## Download
 
@@ -187,10 +186,10 @@ app/src/main/java/io/github/zzpby/tickcount/
 ```
 
 The countdown arithmetic, list ordering, search matching, the widget's day split and what
-its list picks, changelog parsing, backup encoding and encryption, README section extraction
-and the Markdown parser are all covered by the unit tests in `app/src/test/`, along with
-month lengths, leap days, year boundaries, both daylight-saving changes, and the “today is
-not past” boundary that is so easy to get wrong by a day.
+its list picks, changelog parsing, backup encoding and decoding, and encryption, README
+section extraction and the Markdown parser are all covered by the unit tests in
+`app/src/test/`, along with month lengths, leap days, year boundaries, both daylight-saving
+changes, and the “today is not past” boundary that is so easy to get wrong by a day.
 
 ## App icon
 
@@ -220,8 +219,8 @@ as you decide; the app has no way to send it anywhere.
 The app declares no permissions, makes no network requests, and contains no analytics or
 advertising. There is a link to this repository in the introduction; tapping it opens the
 address in the browser, because TickCount has no network ability of its own and no
-`INTERNET` permission. That data leaves the device only if Android's own cloud backup is on,
-which is what `res/xml/backup_rules.xml` decides.
+`INTERNET` permission. The stored data leaves the device only if Android's own cloud backup
+is on, which is what `res/xml/backup_rules.xml` decides.
 
 ## Licence
 
