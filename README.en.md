@@ -11,8 +11,8 @@ see how long is left — or how long it has been.
 **Under 2 MB · No permissions · Fully offline · No ads · No account · Open source**
 
 <p align="center">
-  <img src="docs/screenshot-home.png" width="200" alt="Home: days left, and what has gone by" />
-  <img src="docs/screenshot-calendar.png" width="200" alt="The calendar and a day's countdowns" />
+  <img src="docs/screenshot-home.png" width="200" alt="Home: days left for each countdown, the past below" />
+  <img src="docs/screenshot-calendar.png" width="200" alt="The calendar and that day's countdowns" />
   <img src="docs/screenshot-widgets.png" width="240" alt="Both home-screen widgets" />
 </p>
 
@@ -48,7 +48,7 @@ see how long is left — or how long it has been.
   month, ±1 year and ±10 year buttons.
 - **Delete asks first** — pressing Delete does not take effect until you confirm.
 - **Long press a card** — pin it, change it or delete it without opening it first.
-- **Home-screen widgets** — two of them. **Single countdown** puts one day on the home
+- **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
   screen, ticking to the second. **Countdown list** shows what is coming next, one to a row.
   Both adapt to their size, and neither asks for a permission.
 - **Themes** — white, black, blue and green, or mix your own on a hue strip. The app does
@@ -58,9 +58,9 @@ see how long is left — or how long it has been.
   drawer. Date formats are localised too.
 - **Backup and restore** — in Backup & data, every countdown, and the appearance, sorting
   and language settings, can be written to a file and read back; an import either overwrites
-  everything or merges into what is here, and says how many of each it would do before you
-  choose. An export can be encrypted with a password — asked for twice, with an eye beside
-  each field to check it — using AES-256-GCM.
+  everything or merges into what is here, and says how many it would add or overwrite before
+  you choose. An export can be encrypted with a password — asked for twice, with an eye
+  beside each field to check it — using AES-256-GCM.
 - **Changelog** — every release is listed in the drawer, with the installed one marked.
 - **About this project** — read the project's own introduction without leaving the app: its
   features, how the countdown reads and the widget, plus the repository address, ready to
@@ -70,8 +70,8 @@ see how long is left — or how long it has been.
 
 ## How the countdown reads
 
-The target is **00:00 local time on the chosen date**, or the time the countdown names, when
-it names one. Once that moment has passed, the same arithmetic runs backwards, and the label
+The target is **00:00 local time on the chosen date**, or the countdown's own time when it
+names one. Once that moment has passed, the same arithmetic runs backwards, and the label
 changes from “Time left” to “Time since”; on the target day itself it reads “Elapsed today”.
 
 Leading fields that have not started counting yet are filled with dashes, so how far off a
@@ -92,9 +92,9 @@ whole day even if it is actually 23 or 25 hours long.
 Long-press an empty spot on the home screen → Widgets, and there are two to choose from.
 
 **TickCount · Single countdown** — pick a countdown as well; the list shows each one's time,
-so two on the same day are told apart before the widget is placed. It starts at 4×2 and
-rearranges itself as you drag: made short and wide, it becomes one row of name, days and
-clock; made larger, it adds the target date and splits the days into “1 year 1 month 4
+so two countdowns on the same day can be told apart before the widget is placed. It starts at
+4×2 and rearranges itself as you drag: made short and wide, it becomes one row of name, days
+and clock; made larger, it adds the target date and splits the days into “1 year 1 month 4
 days”. Tapping it opens that countdown. A countdown that names a time is counted to that
 time here too, and says so — on the date line, or after the days in the shapes that have no
 date line — so the widget and the countdown screen agree. The seconds are driven by the
@@ -220,8 +220,8 @@ as you decide; the app has no way to send it anywhere.
 The app declares no permissions, makes no network requests, and contains no analytics or
 advertising. There is a link to this repository in the introduction; tapping it opens the
 address in the browser, because TickCount has no network ability of its own and no
-`INTERNET` permission. The list leaves the device only if Android's own cloud backup is
-on, which is what `res/xml/backup_rules.xml` decides.
+`INTERNET` permission. That data leaves the device only if Android's own cloud backup is on,
+which is what `res/xml/backup_rules.xml` decides.
 
 ## Licence
 
