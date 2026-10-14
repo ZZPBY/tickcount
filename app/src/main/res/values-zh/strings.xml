@@ -55,6 +55,24 @@
     <string name="field_color">自定义颜色</string>
     <string name="field_hue">色相</string>
     <string name="field_pinned">置顶</string>
+
+    <!--
+      一键批量添加。上面选的时间会由每一条一起带走，所以这里只问隔多久、要几条。
+    -->
+    <string name="field_batch">一键添加多个</string>
+    <string name="field_batch_interval">间隔天数</string>
+    <string name="field_batch_count">个数</string>
+    <!-- 输入的数字会额外添加几条、最后一条落在哪天，添加之前先说出来 -->
+    <plurals name="field_batch_preview">
+        <item quantity="other">额外添加 %1$d 条，最后一条 %2$s</item>
+    </plurals>
+    <string name="field_batch_hint">上面选的日期也会添加一条，之后每条都间隔上面填的天数。</string>
+    <string name="dialog_batch_title">添加这几个倒数日？</string>
+    <!-- 整批的条数，含上面正在填的那一条，因为添加完列表里就是这么多 -->
+    <plurals name="dialog_batch_message">
+        <item quantity="other">共 %1$d 条，最后一条是 %2$s。</item>
+    </plurals>
+    <string name="action_add">添加</string>
     <string name="label_pinned">置顶</string>
     <string name="dialog_clear_hint">清空名称将删除这个倒数日。</string>
 

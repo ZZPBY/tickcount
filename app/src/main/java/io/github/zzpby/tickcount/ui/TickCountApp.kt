@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -49,12 +50,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.AppLanguage
+import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.domain.SearchScope
 import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.domain.countdownList
 import io.github.zzpby.tickcount.ui.calendar.MonthYearPickerDialog
 import io.github.zzpby.tickcount.ui.components.PlusIcon
 import io.github.zzpby.tickcount.ui.components.SortIcon
+import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import java.time.LocalDate
@@ -89,6 +92,13 @@ fun TickCountApp(
     var pendingDeleteId by rememberSaveable { mutableStateOf<String?>(null) }
     var languageOpen by rememberSaveable { mutableStateOf(false) }
     var actionsForId by rememberSaveable { mutableStateOf<String?>(null) }
+
+    // The batch the editor handed over, waiting on one more question before it is added.
+    // Held here rather than in the editor because the editor closes first: the confirmation
+    // is the next question, and two dialogs stacked would bury the name being confirmed.
+    // Not `rememberSaveable`: the list is what the question is about, and a process death
+    // with the question on screen is a question worth asking again from the start.
+    var pendingBatch by remember { mutableStateOf<List<CountdownEvent>?>(null) }
 
     // Held here rather than in the screens so that opening a countdown and coming
     // back leaves the search as it was. The calendar keeps its own, because it is
@@ -171,23 +181,34 @@ fun TickCountApp(
             topBar = {
                 AppTitleBar(
                     title = when {
+                        editorOpen -> stringResource(
+                            if (editorIsNew) R.string.dialog_new_title else R.string.dialog_edit_title
+                        )
                         detailEvent != null -> detailEvent.title
                         screen == AppScreen.HOME -> stringResource(R.string.app_name)
                         else -> stringResource(screen.labelRes)
                     },
-                    // Every screen but a countdown's own is a drawer destination, so
-                    // the button opens the drawer; that one goes back to its list.
-                    navigation = if (detailEvent != null) {
+                    // Editing a countdown is a step into it, like its own screen: the button
+                    // goes back to whatever list it came from rather than opening the drawer.
+                    navigation = if (detailEvent != null || editorOpen) {
                         TitleBarNavigation.BACK
                     } else {
                         TitleBarNavigation.MENU
                     },
                     onNavigate = {
-                        if (detailEvent != null) detailId = null else drawerOpen = true
+                        when {
+                            editorOpen -> editorOpen = false
+                            detailEvent != null -> detailId = null
+                            else -> drawerOpen = true
+                        }
                     },
                     modifier = Modifier.padding(horizontal = 12.dp),
                 ) {
                     when {
+                        // The editor saves from its own header row: it is a whole screen now,
+                        // and the slot here belongs to one action over a list.
+                        editorOpen -> Unit
+
                         detailEvent != null -> TextButton(onClick = { startEditEvent(detailEvent.id) }) {
                             Text(stringResource(R.string.action_edit))
                         }
@@ -211,6 +232,35 @@ fun TickCountApp(
         ) { insets ->
             Box(modifier = Modifier.padding(insets)) {
                 when {
+                    // The editor is a screen of its own, with the screen's own title bar
+                    // above it. It was a dialog until the batch section made it taller than a
+                    // dialog can be: a dialog is sized by its content, so the fields that
+                    // appeared and disappeared inside it resized the window, which re-measured
+                    // the content, and the two chased each other every frame.
+                    editorOpen -> EventEditorScreen(
+                        initial = editorEvent!!,
+                        isNew = editorIsNew,
+                        onSave = { edited ->
+                            viewModel.saveEvent(edited)
+                            editorOpen = false
+                        },
+                        onSaveMany = { batch ->
+                            editorOpen = false
+                            pendingBatch = batch
+                        },
+                        // Editing is the only way in with a delete: a countdown that does not
+                        // exist yet has nothing to delete. The editor steps aside first, the
+                        // same way it did while it was a dialog: the confirmation is the next
+                        // question, and it belongs over the list rather than over the form.
+                        onDelete = editorEvent.takeIf { !editorIsNew }?.let {
+                            {
+                                editorOpen = false
+                                pendingDeleteId = it.id
+                            }
+                        },
+                        onDismiss = { editorOpen = false },
+                    )
+
                     detailEvent != null -> EventDetailScreen(
                         event = detailEvent,
                         now = now,
@@ -333,24 +383,20 @@ fun TickCountApp(
         )
     }
 
-    if (editorEvent != null) {
-        EventEditorDialog(
-            initial = editorEvent,
-            isNew = editorIsNew,
-            onSave = { edited ->
-                viewModel.saveEvent(edited)
-                editorOpen = false
-            },
-            // The editor closes first: the confirmation is the next question, and
-            // stacking two dialogs would bury the name being confirmed.
-            onDelete = editorEvent.takeIf { !editorIsNew }?.let {
-                {
-                    editorOpen = false
-                    pendingDeleteId = it.id
-                }
-            },
-            onDismiss = { editorOpen = false },
-        )
+    // The batch as it will be: how many countdowns, and the day the last one lands on.
+    pendingBatch?.let { batch ->
+        val lastDate = batch.lastOrNull()?.date
+        if (lastDate != null) {
+            BatchConfirmDialog(
+                count = batch.size,
+                lastDate = lastDate,
+                onConfirm = {
+                    viewModel.saveEvents(batch)
+                    pendingBatch = null
+                },
+                onDismiss = { pendingBatch = null },
+            )
+        }
     }
 
     // Only rendered while the countdown still exists, so one that has already gone
@@ -425,6 +471,49 @@ private fun EventActionsDialog(
             }
         },
         confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}
+
+/**
+ * The one question a batch add asks before it adds anything.
+ *
+ * It leads with the two things that make a batch a batch rather than a single countdown:
+ * how many are about to appear, and the day the last of them lands on. Both are read off the
+ * list that will be saved rather than off the two fields that produced it, so the answer
+ * cannot describe something other than what the button does.
+ *
+ * The count is the whole batch, the countdown that was filled in included — that is what the
+ * list will hold after this, and it is the number someone is agreeing to.
+ */
+@Composable
+private fun BatchConfirmDialog(
+    count: Int,
+    lastDate: LocalDate,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val dateFormatter = rememberDateFormatter(R.string.date_format_full)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.dialog_batch_title)) },
+        text = {
+            Text(
+                text = pluralStringResource(
+                    R.plurals.dialog_batch_message,
+                    count,
+                    count,
+                    lastDate.format(dateFormatter),
+                ),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) { Text(stringResource(R.string.action_add)) }
+        },
+        dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )

@@ -56,6 +56,27 @@
     <string name="field_color">Own colour</string>
     <string name="field_hue">Hue</string>
     <string name="field_pinned">Pin to the top</string>
+
+    <!--
+      Adding several countdowns at once. The time of day chosen above is carried by every
+      one of them, so this asks only how far apart they are and how many there are.
+    -->
+    <string name="field_batch">Add several at once</string>
+    <string name="field_batch_interval">Days between</string>
+    <string name="field_batch_count">How many</string>
+    <!-- The count and the date range the entered numbers would add, before they add it. -->
+    <plurals name="field_batch_preview">
+        <item quantity="one">%1$d more, ending %2$s</item>
+        <item quantity="other">%1$d more, ending %2$s</item>
+    </plurals>
+    <string name="field_batch_hint">The date above is added as well, and each one after it is the same countdown that many days later.</string>
+    <string name="dialog_batch_title">Add these countdowns?</string>
+    <!-- The whole batch, the countdown being filled in included: that is what the list holds afterwards. -->
+    <plurals name="dialog_batch_message">
+        <item quantity="one">%1$d countdown in all, ending %2$s.</item>
+        <item quantity="other">%1$d countdowns in all, ending %2$s.</item>
+    </plurals>
+    <string name="action_add">Add</string>
     <string name="label_pinned">PINNED</string>
     <string name="dialog_clear_hint">Clearing the name removes this countdown.</string>
 

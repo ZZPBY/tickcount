@@ -1,5 +1,6 @@
 package io.github.zzpby.tickcount.ui
 
+import android.content.ClipData
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,15 +26,17 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.toClipEntry
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,6 +50,7 @@ import io.github.zzpby.tickcount.ui.components.MarkdownText
 import io.github.zzpby.tickcount.ui.components.currentLocale
 import io.github.zzpby.tickcount.ui.components.parseMarkdown
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.FileNotFoundException
 
 /**
@@ -142,7 +146,8 @@ fun ProjectIntroScreen(onOpenLink: () -> Unit, modifier: Modifier = Modifier) {
 private fun GithubCard(onOpen: () -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val shaping = RoundedCornerShape(18.dp)
-    val clipboard = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
     val url = stringResource(R.string.about_link_url)
 
     var copied by remember { mutableStateOf(false) }
@@ -191,7 +196,14 @@ private fun GithubCard(onOpen: () -> Unit) {
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
                     .clickable {
-                        clipboard.setText(AnnotatedString(url))
+                        // The clipboard is written through a coroutine because the current
+                        // API is suspending. The label is null because that is what the
+                        // deprecated one-liner this replaced put on the clip — a label is
+                        // only ever shown by clipboard inspectors, and changing it here
+                        // would be a difference nobody asked for.
+                        scope.launch {
+                            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(null, url)))
+                        }
                         copied = true
                     }
                     .padding(vertical = 3.dp),

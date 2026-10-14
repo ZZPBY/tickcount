@@ -7,15 +7,20 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -40,12 +45,17 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
+import io.github.zzpby.tickcount.domain.MAX_BATCH_COUNT
+import io.github.zzpby.tickcount.domain.MAX_BATCH_STEP_DAYS
+import io.github.zzpby.tickcount.domain.batchOf
 import io.github.zzpby.tickcount.ui.components.HueSlider
 import io.github.zzpby.tickcount.ui.components.PlusIcon
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
@@ -58,22 +68,37 @@ import java.time.ZoneOffset
  * Names a countdown, gives it any number of tags, and picks the moment it counts
  * to — either the whole day, or an exact minute.
  *
- * The several fields are local state rather than a copy of a stored countdown:
- * nothing is written until Save, so dismissing really does discard. [initial]
- * carries the id through untouched, which is what lets the home-screen widget stay
- * bound to a countdown whose date has been changed.
+ * A screen rather than a dialog, because of the keyboard and the batch. A dialog is sized by
+ * its content, so anything inside it that changes height — a section appearing, a keyboard
+ * taking a share of the window — resizes the window, which re-measures the content, which
+ * resizes the window again. That loop is what made this form flicker: the fields jumped
+ * between two arrangements every frame. A screen has the window it has, and its own scrolling
+ * is the only thing that moves, so there is nothing left to oscillate.
  *
- * Clearing the name is treated as "remove this countdown", which keeps the dialog
- * down to one primary action and matches what people expect from a rename box.
+ * The several fields are local state rather than a copy of a stored countdown:
+ * nothing is written until Save, so leaving really does discard. [initial] carries the id
+ * through untouched, which is what lets the home-screen widget stay bound to a countdown
+ * whose date has been changed.
+ *
+ * Clearing the name is treated as "remove this countdown", which keeps the screen down to one
+ * primary action and matches what people expect from a rename box.
+ *
+ * A new countdown can also be added as a *batch*: one answer about the gap between them and
+ * one about how many, and a string of days comes out carrying the same name, time, tags and
+ * colour. It is offered only while adding, because what it does is add countdowns — an edit
+ * screen that quietly produced nine more of the thing being edited would be a trap.
  */
 @SuppressLint("MutableCollectionMutableState")
 @Composable
-fun EventEditorDialog(
+fun EventEditorScreen(
     initial: CountdownEvent,
     isNew: Boolean,
     onSave: (CountdownEvent) -> Unit,
+    /** Asked instead of [onSave] when the batch switch is on: the whole batch, first in. */
+    onSaveMany: (List<CountdownEvent>) -> Unit,
     onDelete: (() -> Unit)?,
     onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var title by rememberSaveable(initial.id) { mutableStateOf(initial.title) }
     // An ArrayList because that is what a Bundle can carry across a rotation, and
@@ -95,15 +120,137 @@ fun EventEditorDialog(
     var coloured by rememberSaveable(initial.id) { mutableStateOf(initial.colorHue != null) }
     var hue by rememberSaveable(initial.id) { mutableFloatStateOf(initial.colorHue ?: DEFAULT_HUE) }
 
+    // The batch: whether it is on, and the two numbers that describe it. Held as the text
+    // that was typed rather than as an Int, so that clearing a field to type another number
+    // in is not read as a zero — see `intOr` below.
+    var batch by rememberSaveable(initial.id) { mutableStateOf(false) }
+    var batchStepText by rememberSaveable(initial.id) { mutableStateOf(DEFAULT_BATCH_STEP) }
+    var batchCountText by rememberSaveable(initial.id) { mutableStateOf(DEFAULT_BATCH_COUNT) }
+
     val date = LocalDate.ofEpochDay(epochDay)
     val dateFormatter = rememberDateFormatter(R.string.date_format_full)
     val timeFormatter = rememberDateFormatter(R.string.time_format)
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(if (isNew) R.string.dialog_new_title else R.string.dialog_edit_title)) },
-        text = {
-            Column {
+    val batchStep = intOr(batchStepText, DEFAULT_BATCH_STEP_NUMBER)
+    val batchCount = intOr(batchCountText, DEFAULT_BATCH_COUNT_NUMBER)
+
+    /** What has been filled in so far, as the one countdown the batch will copy. */
+    fun filledIn(): CountdownEvent = initial.copy(
+        title = title.trim(),
+        tags = tags.toList(),
+        date = date,
+        time = if (timed) LocalTime.of(minuteOfDay / 60, minuteOfDay % 60) else null,
+        colorHue = hue.takeIf { coloured },
+    )
+
+    /**
+     * The batch the two number fields describe, or nothing while either of them is still
+     * empty — there is no such thing as half a countdown.
+     *
+     * Rebuilt whenever anything the batch is made of changes, and not otherwise. That keeps
+     * the ids stable while the preview is on screen: a list minted afresh on every frame
+     * could not be saved as the batch that was shown before it was added.
+     */
+    val futures = remember(
+        batchStepText,
+        batchCountText,
+        title,
+        tags,
+        epochDay,
+        timed,
+        minuteOfDay,
+        hue,
+        coloured,
+        initial,
+    ) {
+        if (batchStepText.isEmpty() || batchCountText.isEmpty()) {
+            emptyList()
+        } else {
+            batchOf(
+                filledIn(),
+                stepDays = batchStep,
+                count = batchCount,
+                createdAt = initial.createdAt,
+            )
+        }
+    }
+
+    // The batch as it stands, which is both what the last day on the preview line is read
+    // from and what the screen goes on to add. Empty while the switch is off, and while
+    // editing rather than adding — a batch adds countdowns, and an edit screen that quietly
+    // produced nine more of the thing being edited would be a trap.
+    val batchEvents = if (batch && isNew) futures else emptyList()
+
+    /**
+     * The whole batch, the countdown being filled in included, or null while there is not
+     * one to add.
+     *
+     * Null while either number field is empty: with nothing said about the gap or the count
+     * there is nothing to add, and the button that adds it stays disabled rather than
+     * guessing a number on the user's behalf.
+     */
+    val wholeBatch = if (batchEvents.isNotEmpty()) listOf(filledIn()) + batchEvents else null
+
+    Column(modifier = modifier.fillMaxSize()) {
+        // The screen's own actions, along the top: save on the right where the title bar's
+        // action slot sits on every other screen, and delete on the left where a form of this
+        // kind usually keeps the destructive one — out of the way of the thumb that is saving.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (onDelete != null) {
+                TextButton(onClick = onDelete) {
+                    Text(
+                        text = stringResource(R.string.action_delete),
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+
+            Spacer(Modifier.width(4.dp))
+
+            TextButton(
+                // A blank name with existing tags would be a countdown with nothing
+                // to show, so the name is the one field that has to be there. A batch
+                // also has to be whole before it can be added.
+                enabled = title.isNotBlank() && (!batch || wholeBatch != null),
+                onClick = {
+                    val batch = wholeBatch
+                    if (batch == null) {
+                        onSave(filledIn())
+                    } else {
+                        onSaveMany(batch)
+                    }
+                },
+            ) {
+                Text(
+                    stringResource(
+                        if (batch && isNew) R.string.action_add else R.string.action_save
+                    )
+                )
+            }
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        // Everything below the actions scrolls. On a screen rather than in a dialog, this is
+        // the only thing that ever moves: the fields can be as tall as they like, and the
+        // screen does not change size underneath them.
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+        ) {
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it.take(CountdownEvent.MAX_TITLE_LENGTH) },
@@ -183,42 +330,72 @@ fun EventEditorDialog(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-            }
-        },
-        confirmButton = {
-            TextButton(
-                // A blank name with existing tags would be a countdown with nothing
-                // to show, so the name is the one field that has to be there.
-                enabled = title.isNotBlank(),
-                onClick = {
-                    onSave(
-                        initial.copy(
-                            title = title.trim(),
-                            tags = tags.toList(),
-                            date = date,
-                            time = if (timed) LocalTime.of(minuteOfDay / 60, minuteOfDay % 60) else null,
-                            colorHue = hue.takeIf { coloured },
-                        )
-                    )
-                },
-            ) { Text(stringResource(R.string.action_save)) }
-        },
-        dismissButton = {
-            Row {
-                if (onDelete != null) {
-                    TextButton(onClick = onDelete) {
+
+                // Adding several at once is offered where a countdown is being added, and
+                // never while one is being edited: what it does is add countdowns.
+                if (isNew) {
+                    Spacer(Modifier.height(14.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(Modifier.height(11.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
                         Text(
-                            text = stringResource(R.string.action_delete),
-                            color = MaterialTheme.colorScheme.error,
+                            text = stringResource(R.string.field_batch),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Switch(checked = batch, onCheckedChange = { batch = it })
+                    }
+
+                    if (batch) {
+                        Spacer(Modifier.height(10.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            BatchNumberField(
+                                value = batchStepText,
+                                onValueChange = { batchStepText = it },
+                                label = stringResource(R.string.field_batch_interval),
+                                maximum = MAX_BATCH_STEP_DAYS,
+                                imeAction = ImeAction.Next,
+                                modifier = Modifier.weight(1f),
+                            )
+                            BatchNumberField(
+                                value = batchCountText,
+                                onValueChange = { batchCountText = it },
+                                label = stringResource(R.string.field_batch_count),
+                                maximum = MAX_BATCH_COUNT,
+                                imeAction = ImeAction.Done,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+
+                        batchEvents.lastOrNull()?.let { last ->
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = pluralStringResource(
+                                    R.plurals.field_batch_preview,
+                                    batchEvents.size,
+                                    batchEvents.size,
+                                    last.date.format(dateFormatter),
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = stringResource(R.string.field_batch_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.action_cancel))
-                }
             }
-        },
-    )
+    }
 
     if (datePickerOpen) {
         DatePickerSheet(
@@ -241,6 +418,41 @@ fun EventEditorDialog(
             onDismiss = { timePickerOpen = false },
         )
     }
+}
+
+/**
+ * One of the batch's two numbers: the gap between entries, or how many there are.
+ *
+ * A text field typed into rather than a stepper, because a gap is often a number nobody
+ * wants to reach by tapping — 30 days, 365 days. Input is filtered to digits and refused
+ * outright above [maximum]: a value that is out of range is not stored, so the number on
+ * screen is always the number the batch will use.
+ */
+@Composable
+private fun BatchNumberField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    maximum: Int,
+    imeAction: ImeAction,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { typed ->
+            val digits = typed.filter { it.isDigit() }.take(4)
+            if (digits.isEmpty() || digits.toIntOrNull()?.let { it <= maximum } == true) {
+                onValueChange(digits)
+            }
+        },
+        label = { Text(label) },
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = imeAction,
+        ),
+        modifier = modifier,
+    )
 }
 
 /**
@@ -387,3 +599,25 @@ private const val DEFAULT_MINUTE = 9 * 60
 
 /** Where the colour switch lands when it is turned on without a colour having been mixed. */
 private const val DEFAULT_HUE = 222f
+
+/**
+ * What the batch fields hold when they are first shown: a gap of two days and two more of
+ * the same countdown.
+ *
+ * Small numbers, because the fields are what the switch reveals and a batch of two is what
+ * someone reaching for the switch is most likely to want. Any other gap or count is typed.
+ */
+private const val DEFAULT_BATCH_STEP = "2"
+private const val DEFAULT_BATCH_STEP_NUMBER = 2
+private const val DEFAULT_BATCH_COUNT = "2"
+private const val DEFAULT_BATCH_COUNT_NUMBER = 2
+
+/**
+ * [text] as a number, or [fallback] while it is empty.
+ *
+ * The fields are digit-filtered as they are typed into, so an empty one is the only thing
+ * that can fail to parse — and it means "not answered yet", which the preview reads as
+ * nothing to add rather than as a zero. A cleared field therefore disables Add instead of
+ * quietly adding a countdown a day for the next two days.
+ */
+private fun intOr(text: String, fallback: Int): Int = text.toIntOrNull() ?: fallback
