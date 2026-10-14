@@ -6,7 +6,7 @@
 A minimal, fully offline countdown calendar for Android. Tap a day, give it a name, and
 see how long is left — or how long it has been.
 
-[中文说明](README.md)
+[Chinese](README.md)
 
 **About 2 MB · No permissions · Fully offline · No ads · No account · Open source**
 
