@@ -125,6 +125,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * Adds several countdowns at once, which is what the editor's batch add produces.
+     *
+     * One write and one round of widget refreshes for the whole batch rather than one per
+     * countdown: the document is rewritten whole on every save, so saving them one at a time
+     * would rewrite it — and redraw every placed widget — a hundred times over for a single
+     * answer from the user.
+     */
+    fun saveEvents(events: List<CountdownEvent>) {
+        if (events.isEmpty()) return
+        val byId = _events.value.associateBy { it.id }.toMutableMap()
+        events.forEach { byId[it.id] = it }
+        persist(byId.values.toList())
+    }
+
+    /**
      * Pins or unpins a countdown, which is what keeps it at the top of any list it
      * appears in.
      */
