@@ -3,6 +3,19 @@
 build/
 !gradle/wrapper/gradle-wrapper.jar
 
+# A second Gradle user home, made inside the project rather than beside it.
+#
+# A confined environment can only write under the project, and a Gradle that
+# cannot write its own home cannot start at all: the wrapper's lock file lives in
+# GRADLE_USER_HOME, which the instructions put outside this directory. Running the
+# unpacked distribution with `-g .gradle-home` builds without that permission, at
+# the cost of downloading the dependencies a second time. Kept so the next build is
+# incremental; safe to delete whole, and never committed.
+.gradle-home/
+# The same arrangement for ANDROID_USER_HOME, which AGP also writes to. Holds the
+# debug keystore this project's own debug builds are signed with.
+.android-home/
+
 # Android Studio / IntelliJ
 .idea/
 *.iml
@@ -30,6 +43,9 @@ AGENTS.md
 .tools/签名密钥文件/
 .tools/apk输出目录/
 .tools/组件图片/
+# Bug reports: screenshots and screen recordings of what went wrong on a device.
+# Local evidence, not part of the project — the images the READMEs show live in docs/.
+.tools/问题/
 
 # OS noise
 .DS_Store

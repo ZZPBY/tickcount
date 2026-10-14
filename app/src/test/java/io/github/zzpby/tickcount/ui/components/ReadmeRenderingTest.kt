@@ -27,6 +27,16 @@ class ReadmeRenderingTest {
     /** The languages the introduction can be shown in. */
     private val tags = listOf("zh", "en")
 
+    /**
+     * Where the countdown line's own section sits in `introDocumentFor`'s list.
+     *
+     * Named here because it is the only section either document gives a table to, and the
+     * test below is about the table. A section inserted above it moves this number, which is
+     * the one thing about this test that is coupled to the order in [introDocumentFor] — the
+     * headings themselves differ by language and cannot be matched by name from here.
+     */
+    private val countdownSection = 2
+
     private fun document(tag: String) = introDocumentFor(tag)
 
     private fun file(tag: String) = File(root, document(tag).asset)
@@ -74,7 +84,14 @@ class ReadmeRenderingTest {
     @Test
     fun `the table comes through in both languages`() {
         tags.forEach { tag ->
-            val reading = readmeSections(file(tag).readText(), listOf(document(tag).sections[1]))
+            // Read from the countdown section by position rather than by heading: the
+            // headings differ between the two languages, so a name that matched one of them
+            // would silently select nothing in the other — which is how this test first
+            // broke when a section was added above the table.
+            val reading = readmeSections(
+                file(tag).readText(),
+                listOf(document(tag).sections[countdownSection]),
+            )
             assertTrue(
                 "$tag: the table is missing",
                 parseMarkdown(reading).any { it is MarkdownBlock.Table },

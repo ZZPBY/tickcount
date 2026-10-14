@@ -18,56 +18,68 @@ see how long is left — or how long it has been.
 
 ## Features
 
-- **Drawer navigation** — the menu button at the top left opens a half-screen drawer whose
-  entries come in three groups: Home and Calendar to browse, then Appearance and Backup &
-  data to set things up, and finally Changelog and About this project to read. Language sits
-  on its own at the foot of the drawer.
-- **Countdown list** — one rounded card per countdown on the home screen: name, tags and
-  date on the left — with the time after it for a countdown that names a time — days
-  remaining on the right. What has already gone by sits at the foot of the list, under a
-  **Past** heading of its own.
-- **Pin to the top** — switch it on in a countdown's own screen and it leads the list
-  however the list is sorted.
-- **Sorting** — the button at the top right of a list offers **By date · nearest first**,
-  **By date · furthest first**, and **Date added · newest first**. The choice is remembered.
-  It governs the part still ahead; the past section always runs most recent first.
-- **Search** — a box above the list, with a control on the right inside it that switches
-  between **Name** (which includes tags), **Date** and **Time**.
-- **Exact minute** — a countdown can be set to “All day”, or to an exact hour and minute.
-- **Multiple tags** — as many per countdown as you like.
-- **Own colour** — each countdown can have one, mixed on a hue strip in the editor. Leave it
-  unset and it takes the theme's colour.
-- **Countdown screen** — tap a card to open it: the full years, months, days, hours,
-  minutes and seconds breakdown, plus the date, the time and the tags.
-- **Calendar** — a hand-drawn month grid, with up to three dots on a day that holds
-  several countdowns. Tap a day and its countdowns are listed underneath, with the same
-  search and sort; the + at the top right adds a countdown on that day, and Today beside the
-  month title jumps back to the current month.
-- **Fast month switching** — tap the month title for a year-and-month picker with This
-  month, and buttons that step the year by 1 and by 10.
-- **Delete asks first** — pressing Delete does not take effect until you confirm.
-- **Long-press a card** — pin it, edit it or delete it without opening it first.
+- **Drawer** — the menu at the top left opens a half-screen drawer: Home and Calendar,
+  Appearance and Backup & data, then Changelog and About this project. Language sits on its
+  own at the foot of the drawer.
+- **Countdown list** — one card each: name, tags and date — with the time after it where there
+  is one — and the days left on the right. What has gone by sits at the foot of the list,
+  under a **Past** heading.
+- **Pinning and sorting** — a pinned countdown leads the list however it is sorted. The sort
+  button offers **By date · nearest first**, **By date · furthest first** and **Date added ·
+  newest first**, and remembers the choice. It governs the part still ahead.
+- **Search** — a box above the list, with a control on the right for searching **Name** (tags
+  included), **Date** or **Time**.
+- **Exact minute** — a countdown is either all day, or set to an exact hour and minute.
+- **Tags and colours** — as many tags as you like, and a colour of its own mixed on a hue
+  strip in the editor. Unset, it takes the theme's colour.
+- **Countdown screen** — tap a card to open it: the full years, months, days, hours, minutes
+  and seconds breakdown, plus the pin switch, the date, the time and the tags.
+- **Calendar** — a hand-drawn month grid, with up to three dots on a day that holds several
+  countdowns. Tap a day and that day's countdowns are listed underneath, with the same search
+  and sort.
+- **Fast month switching** — tap the month title for a year-and-month picker with This month,
+  and buttons that step the year by 1 and by 10.
+- **Long-press a card** — pin it, edit it or delete it without opening it first. A delete asks
+  for confirmation before it happens.
+- **Adding several at once** — while creating a countdown, switch on “Add several at once”,
+  give a gap and a count, and a run of countdowns sharing one name, tags, colour and time is
+  added together.
 - **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
-  screen, ticking to the second. **Countdown list** shows what is coming next, one to a row.
+  screen, ticking to the second. **Countdown list** shows what is coming next, one per row.
   Both adapt to their size, and neither asks for a permission.
-- **Themes** — white, black, blue and green, or mix your own on a hue strip. The app does
-  not follow the system dark setting and does not take colours from the wallpaper; a choice
-  stays put. The colours come from Tailwind CSS.
+- **Themes** — white, black, blue and green, or mix your own on a hue strip. The app does not
+  follow the system dark setting and does not take colours from the wallpaper; a choice stays
+  put. The colours come from Tailwind CSS.
 - **Bilingual** — follows the system language, or you can pick Chinese or English in the
   drawer. Date formats are localised too.
-- **Backup and restore** — in Backup & data, every countdown, and the appearance, sorting
-  and language settings, can be written to a file and read back. An export can be encrypted
-  with AES-256-GCM and a password — asked for twice, with an eye beside each field to check
-  it. An import asks for that password first, then asks **Overwrite** or **Merge**, and says
-  how many countdowns it would discard, add or overwrite before it does any of them.
-- **Changelog** — every release is listed in the drawer, with the installed version marked.
-- **About this project** — read the project's own introduction without leaving the app: its
-  features, how the countdown reads, the home-screen widget, plus the repository address,
+- **Backup and restore** — every countdown, and the appearance, sorting and language settings,
+  can be written to a file and read back. An export can be encrypted with AES-256-GCM and a
+  password; an import asks for that password first, then asks **Overwrite** or **Merge**, and
+  says how many countdowns it would add, overwrite or discard before it does any of them.
+- **Changelog and About** — every release is listed in the drawer with the installed version
+  marked, and the project's own introduction is readable in the app, with a repository address
   ready to copy or to open.
 - **Large fonts** — the title bar, the drawer and the cards keep clear of the status bar and
   grow with the system font scale, so nothing is squeezed.
-- **No permissions, no network, no analytics.**
-- One module, no third-party runtime libraries, `minSdk` 27 (Android 8.1).
+- **No permissions, no network, no analytics.** One module, no third-party runtime libraries,
+  `minSdk` 27.
+
+## Adding several at once
+
+The name, the tags, the colour and the time of day are answered once. Switch on “Add several
+at once” in the new-countdown screen and two numbers are all that is left:
+
+- **Days between** — how far apart neighbouring entries are, from 1 to 3650 days.
+- **How many** — how many more of the same countdown to add, from 1 to 100.
+
+The date chosen above is **added as well**, and every entry after it is that many days later
+than the one before. So creating “Raid night” on 14 October with a gap of 2 and a count of 3
+leaves the 14th, the 16th, the 18th and the 20th in the list: four in all.
+
+Whatever the time field says is carried by every entry in the run — all day stays all day,
+and 09:30 stays 09:30. They count as one batch, so ordering by when they were added keeps
+them together, reading forwards by date. Each is an ordinary countdown afterwards, to edit
+or delete on its own.
 
 ## How the countdown reads
 
@@ -102,7 +114,7 @@ the layouts that have no date line — so the widget and the countdown screen ag
 seconds are driven by the system itself, without waking the app.
 
 **TickCount · Countdown list** — nothing to pick: it lists what is coming next on its own,
-one to a row, nearest first, and tapping a row opens that countdown. A countdown that names
+nearest first, one per row, and tapping a row opens that countdown. A countdown that names
 a time says so after the days — “Today 09:30”. The default 4×2 holds three rows; a taller
 widget holds up to four, and the rows share the height between them; with nothing coming up
 it says so.
@@ -159,6 +171,7 @@ app/src/main/java/io/github/zzpby/tickcount/
 │   └── BackupCrypto.kt          password encryption for a backup (PBKDF2 + AES-GCM)
 ├── domain/                      pure logic, covered by unit tests
 │   ├── Countdown.kt             the y/mo/d/h/m/s split and the dash placeholder
+│   ├── BatchAdd.kt              adding several at once: one countdown spread over a gap
 │   ├── CalendarMath.kt          building the month grid
 │   ├── CountdownList.kt         ordering, sections and day distance
 │   ├── Search.kt                what the search box looks at, and what counts as a match
@@ -175,7 +188,8 @@ app/src/main/java/io/github/zzpby/tickcount/
     ├── EventCard.kt             the countdown card, shared by both lists
     ├── SearchField.kt           the search box and its scope control
     ├── EventDetailScreen.kt     one countdown's own screen
-    ├── EventEditorDialog.kt     new or edit: name, tags, date, time, colour
+    ├── EventEditorScreen.kt     new or edit (a whole screen): name, tags, date, time,
+    │                            colour, and adding several at once
     ├── DeleteConfirmDialog.kt   the confirmation before a delete
     ├── AppearanceScreen.kt      appearance: four theme presets and a custom hue
     ├── DataScreen.kt            data management: export, import, and the optional encryption

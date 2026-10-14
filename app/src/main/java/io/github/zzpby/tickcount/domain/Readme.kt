@@ -18,12 +18,17 @@ data class IntroDocument(val asset: String, val sections: List<String>)
 fun introDocumentFor(languageTag: String): IntroDocument = if (languageTag.startsWith("zh")) {
     IntroDocument(
         asset = "README.md",
-        sections = listOf("功能", "倒计时的读法", "桌面小组件"),
+        sections = listOf("功能", "一键添加多个", "倒计时的读法", "桌面小组件"),
     )
 } else {
     IntroDocument(
         asset = "README.en.md",
-        sections = listOf("Features", "How the countdown reads", "Home-screen widget"),
+        sections = listOf(
+            "Features",
+            "Adding several at once",
+            "How the countdown reads",
+            "Home-screen widget",
+        ),
     )
 }
 
