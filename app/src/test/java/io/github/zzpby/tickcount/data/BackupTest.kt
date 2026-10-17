@@ -35,7 +35,7 @@ class BackupTest {
     )
 
     private val settings = AppSettings(
-        preset = ThemePreset.GREEN,
+        preset = ThemePreset.TEAL,
         customHue = 88f,
         sortOrder = SortOrder.ADDED,
         language = AppLanguage.ENGLISH,

@@ -15,6 +15,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.domain.SearchScope
+import io.github.zzpby.tickcount.ui.components.SearchIcon
+import io.github.zzpby.tickcount.ui.components.ChevronIcon
 import io.github.zzpby.tickcount.ui.components.ChevronIcon
 
 /** The name each scope is shown under. */
@@ -58,7 +61,13 @@ fun SearchField(
         onValueChange = onQueryChange,
         placeholder = { Text(stringResource(R.string.search_hint)) },
         singleLine = true,
-        shape = RoundedCornerShape(50),
+        shape = androidx.compose.foundation.shape.CircleShape,
+        leadingIcon = {
+            SearchIcon(
+                size = 19.dp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
         trailingIcon = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (query.isNotEmpty()) {
@@ -67,6 +76,16 @@ fun SearchField(
                 ScopePicker(scope = scope, onScopeChange = onScopeChange)
             }
         },
+        // A pill of its own colour rather than an outlined box: on a page this warm, a white
+        // pill with a hairline reads as something to type in, and the accent border on focus
+        // says where the typing is going without a second outline appearing.
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            cursorColor = MaterialTheme.colorScheme.primary,
+        ),
         modifier = modifier.fillMaxWidth(),
     )
 }
@@ -98,7 +117,6 @@ private fun ClearButton(onClick: () -> Unit) {
 private fun ScopePicker(scope: SearchScope, onScopeChange: (SearchScope) -> Unit) {
     var open by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(50)
-
     Box {
         Row(
             modifier = Modifier

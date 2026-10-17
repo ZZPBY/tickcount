@@ -29,13 +29,19 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.domain.CountdownPhase
 import io.github.zzpby.tickcount.domain.countdownTo
 import io.github.zzpby.tickcount.domain.formatSlots
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
+import io.github.zzpby.tickcount.ui.theme.CardShape
+import io.github.zzpby.tickcount.ui.theme.CountdownLineTextStyle
+import io.github.zzpby.tickcount.ui.theme.PanelShape
 import io.github.zzpby.tickcount.ui.theme.eventAccent
+import io.github.zzpby.tickcount.ui.theme.hairline
+import io.github.zzpby.tickcount.ui.theme.tintWash
 import java.time.ZonedDateTime
 
 /**
@@ -76,38 +82,50 @@ fun EventDetailScreen(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(10.dp))
 
         Text(
             text = event.title,
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineLarge,
             textAlign = TextAlign.Center,
             color = accent,
         )
 
         Spacer(Modifier.height(18.dp))
 
-        Text(
-            text = heading,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(6.dp))
-        Text(
-            text = line,
-            // The six fields run to about two dozen characters, so this is as large as
-            // the line goes before it has to wrap. Wrapping is allowed rather than
-            // shrinking: the space before 时 is a natural break, and two readable
-            // lines beat one cramped one.
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
-            lineHeight = MaterialTheme.typography.headlineSmall.fontSize * 1.25f,
-        )
+        // The countdown itself, on a tint of the theme's own accent: the one block on the
+        // page that is not a card, so the number reads as the subject rather than as another
+        // row of information.
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(PanelShape)
+                .background(tintWash())
+                .padding(horizontal = 18.dp, vertical = 22.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = heading,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.height(10.dp))
+            Text(
+                text = line,
+                // The six fields run to about two dozen characters, and the panel is wide
+                // enough for them at this size: wrapping is still allowed rather than
+                // shrinking, because a slightly smaller line beats two cramped ones.
+                style = CountdownLineTextStyle.copy(
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                ),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(22.dp))
 
         // First among the cards, because it is the one thing here that changes what
         // other screens do rather than describing this countdown.
@@ -165,15 +183,13 @@ private fun DetailCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val shaping = RoundedCornerShape(18.dp)
-
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(shaping)
+            .clip(CardShape)
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, shaping)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .hairline(CardShape)
+            .padding(horizontal = 18.dp, vertical = 15.dp),
         content = content,
     )
 }

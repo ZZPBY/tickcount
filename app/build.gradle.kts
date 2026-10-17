@@ -167,8 +167,8 @@ android {
         targetSdk = 36
         // Bumped together with versionName: 1.0.1 already shipped as version code
         // 2, and Play rejects a version code it has seen before.
-        versionCode = 9
-        versionName = "1.0.8"
+        versionCode = 10
+        versionName = "1.0.9"
     }
 
     signingConfigs {

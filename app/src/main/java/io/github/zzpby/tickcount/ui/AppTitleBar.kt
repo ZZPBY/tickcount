@@ -55,7 +55,13 @@ enum class TitleBarNavigation { MENU, BACK }
  */
 @Composable
 fun AppTitleBar(
-    title: String,
+    /**
+     * The screen's name, or null to leave it out.
+     *
+     * The home screen passes null: its name is set at display size inside the screen, and a
+     * bar repeating it in small type just above the large one says the same thing twice.
+     */
+    title: String?,
     navigation: TitleBarNavigation,
     onNavigate: () -> Unit,
     modifier: Modifier = Modifier,
@@ -77,17 +83,19 @@ fun AppTitleBar(
             modifier = Modifier.align(Alignment.CenterStart),
         )
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .align(Alignment.Center)
-                // Kept clear of the two slots beside it, so a long name is
-                // ellipsised rather than drawn underneath them.
-                .padding(horizontal = 56.dp),
-        )
+        if (title != null) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    // Kept clear of the two slots beside it, so a long name is
+                    // ellipsised rather than drawn underneath them.
+                    .padding(horizontal = 56.dp),
+            )
+        }
 
         Row(
             modifier = Modifier.align(Alignment.CenterEnd),

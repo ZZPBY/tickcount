@@ -46,8 +46,10 @@ private val ThemePreset.labelRes: Int
     get() = when (this) {
         ThemePreset.WHITE -> R.string.theme_white
         ThemePreset.BLACK -> R.string.theme_black
-        ThemePreset.BLUE -> R.string.theme_blue
-        ThemePreset.GREEN -> R.string.theme_green
+        ThemePreset.TEAL -> R.string.theme_teal
+        ThemePreset.MIST -> R.string.theme_mist
+        ThemePreset.AMBER -> R.string.theme_amber
+        ThemePreset.ROSE -> R.string.theme_rose
         ThemePreset.CUSTOM -> R.string.theme_custom
     }
 

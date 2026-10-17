@@ -21,9 +21,9 @@ see how long is left — or how long it has been.
 - **Drawer** — the menu at the top left opens a half-screen drawer: Home and Calendar,
   Appearance and Backup & data, then Changelog and About this project. Language sits on its
   own at the foot of the drawer.
-- **Countdown list** — one card each: name, tags and date — with the time after it where there
-  is one — and the days left on the right. What has gone by sits at the foot of the list,
-  under a **Past** heading.
+- **Countdown list** — one card each: the days left set large on the left, and the name, tags
+  and date on the right — with the time after the date where there is one. What has gone by
+  sits at the foot of the list, under a **Past** heading.
 - **Pinning and sorting** — a pinned countdown leads the list however it is sorted. The sort
   button offers **By date · nearest first**, **By date · furthest first** and **Date added ·
   newest first**, and remembers the choice. It governs the part still ahead.
@@ -47,9 +47,12 @@ see how long is left — or how long it has been.
 - **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
   screen, ticking to the second. **Countdown list** shows what is coming next, one per row.
   Both adapt to their size, and neither asks for a permission.
-- **Themes** — white, black, blue and green, or mix your own on a hue strip. The app does not
-  follow the system dark setting and does not take colours from the wallpaper; a choice stays
-  put. The colours come from Tailwind CSS.
+- **Appearance** — large rounded cards with a hairline outline, and the day count set far
+  larger than anything else. Six themes — white, black, teal, mist blue, amber and rose — or
+  mix your own on a hue strip. White is the plain one: a white page with near-black ink. Teal
+  keeps the warm paper page. The other three, and a mixed hue, tint the page, the panels and
+  the outlines to match their accent. The app does not follow the system dark setting and does
+  not take colours from the wallpaper; a choice stays put.
 - **Bilingual** — follows the system language, or you can pick Chinese or English in the
   drawer. Date formats are localised too.
 - **Backup and restore** — every countdown, and the appearance, sorting and language settings,
@@ -186,19 +189,20 @@ app/src/main/java/io/github/zzpby/tickcount/
     ├── HomeScreen.kt            the countdown list
     ├── CalendarScreen.kt        the month grid, and the chosen day's countdowns
     ├── EventCard.kt             the countdown card, shared by both lists
+    ├── SortButton.kt            the sort pill: choosing how a list is ordered
     ├── SearchField.kt           the search box and its scope control
     ├── EventDetailScreen.kt     one countdown's own screen
     ├── EventEditorScreen.kt     new or edit (a whole screen): name, tags, date, time,
     │                            colour, and adding several at once
     ├── DeleteConfirmDialog.kt   the confirmation before a delete
-    ├── AppearanceScreen.kt      appearance: four theme presets and a custom hue
+    ├── AppearanceScreen.kt      appearance: six theme presets and a custom hue
     ├── DataScreen.kt            data management: export, import, and the optional encryption
     ├── ChangelogScreen.kt       the changelog, taken from `更新日志.txt` in the repository
     ├── ProjectIntroScreen.kt    the introduction, taken from this file
     ├── calendar/                the hand-drawn month grid and the month picker
-    ├── components/              Canvas icons, the hue strip, the Markdown renderer, localised formats
+    ├── components/              Canvas icons (the search one too), the hue strip, the Markdown renderer, localised formats
     ├── widget/                  the two home-screen widgets: drawing, receivers, config screen
-    └── theme/                   the Material 3 palettes (Tailwind colour values) and the typography
+    └── theme/                   the palettes, the type scale, and the shared shape and spacing tokens
 ```
 
 The countdown arithmetic, list ordering, search matching, the widget's day split and what

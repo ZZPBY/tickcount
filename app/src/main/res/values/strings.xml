@@ -149,8 +149,10 @@
     <!-- The five palettes, and the strip that mixes the last one -->
     <string name="theme_white">White</string>
     <string name="theme_black">Black</string>
-    <string name="theme_blue">Blue</string>
-    <string name="theme_green">Green</string>
+    <string name="theme_teal">Teal</string>
+    <string name="theme_mist">Mist blue</string>
+    <string name="theme_amber">Amber</string>
+    <string name="theme_rose">Rose</string>
     <string name="theme_custom">Custom</string>
     <string name="appearance_presets">Theme colour</string>
     <string name="appearance_custom_hue">Pick a hue</string>
@@ -162,6 +164,24 @@
     <string name="home_empty">Nothing to count down to yet.\nTap + in the top right to add one.</string>
     <string name="home_no_matches">Nothing matches “%1$s”.</string>
     <string name="home_past_section">Past</string>
+    <!-- The line under the home screen's title: how many countdowns are still ahead. -->
+    <plurals name="home_summary">
+        <item quantity="one">%1$d countdown coming up</item>
+        <item quantity="other">%1$d countdowns coming up</item>
+    </plurals>
+    <plurals name="home_summary_past">
+        <item quantity="one">Every countdown has passed</item>
+        <item quantity="other">All %1$d countdowns have passed</item>
+    </plurals>
+    <!--
+      The three parts of a card's day count, stacked as caption / number / unit. English puts
+      the phrase together differently from Chinese, so both halves are resources: “DAYS 8
+      LEFT” reads down the stack, while Chinese reads “还有 8 天”.
+    -->
+    <string name="card_caption_future">DAYS</string>
+    <string name="card_caption_past">DAYS</string>
+    <string name="card_unit_future">LEFT</string>
+    <string name="card_unit_past">AGO</string>
     <string name="calendar_pick_a_day">Tap a day to see what it holds.</string>
     <string name="calendar_day_empty">Nothing on this day yet.\nTap + in the top right to add one.</string>
     <string name="intro_github_title">GitHub project</string>
@@ -175,14 +195,6 @@
     <string name="sort_date_desc">By date · furthest first</string>
     <string name="sort_added">Date added · newest first</string>
     <string name="list_yesterday">Yesterday</string>
-    <plurals name="list_days_left">
-        <item quantity="one">%1$d day left</item>
-        <item quantity="other">%1$d days left</item>
-    </plurals>
-    <plurals name="list_days_ago">
-        <item quantity="one">%1$d day ago</item>
-        <item quantity="other">%1$d days ago</item>
-    </plurals>
 
     <!--
       The project introduction, which is where the About box's text went when the

@@ -43,6 +43,7 @@ import io.github.zzpby.tickcount.data.ImportMode
 import io.github.zzpby.tickcount.data.ImportPreview
 import io.github.zzpby.tickcount.data.ReadOutcome
 import io.github.zzpby.tickcount.ui.components.EyeIcon
+import io.github.zzpby.tickcount.ui.theme.CardShape
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -265,7 +266,7 @@ fun DataScreen(
 
 @Composable
 private fun ActionCard(title: String, body: String, onClick: () -> Unit) {
-    val shaping = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)
+    val shaping = CardShape
 
     Column(
         modifier = Modifier

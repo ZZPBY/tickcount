@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -42,9 +40,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -56,7 +51,6 @@ import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.domain.countdownList
 import io.github.zzpby.tickcount.ui.calendar.MonthYearPickerDialog
 import io.github.zzpby.tickcount.ui.components.PlusIcon
-import io.github.zzpby.tickcount.ui.components.SortIcon
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -180,12 +174,14 @@ fun TickCountApp(
         Scaffold(
             topBar = {
                 AppTitleBar(
+                    // The home screen keeps its name for the screen itself, where it is set
+                    // at display size: the bar there is only a place to put the buttons.
                     title = when {
                         editorOpen -> stringResource(
                             if (editorIsNew) R.string.dialog_new_title else R.string.dialog_edit_title
                         )
                         detailEvent != null -> detailEvent.title
-                        screen == AppScreen.HOME -> stringResource(R.string.app_name)
+                        screen == AppScreen.HOME -> null
                         else -> stringResource(screen.labelRes)
                     },
                     // Editing a countdown is a step into it, like its own screen: the button
@@ -213,15 +209,15 @@ fun TickCountApp(
                             Text(stringResource(R.string.action_edit))
                         }
 
+                        // The order is chosen from a pill next to the search box, which is
+                        // where the list it orders can see it.
                         screen == AppScreen.HOME -> {
-                            SortMenu(settings.sortOrder, viewModel::chooseSortOrder)
                             IconButton(onClick = { startNewEvent(today) }) { PlusIcon() }
                         }
 
                         // On the calendar the plus belongs to the chosen day, and
                         // there is nothing to add to until one is chosen.
                         screen == AppScreen.CALENDAR -> {
-                            SortMenu(settings.sortOrder, viewModel::chooseSortOrder)
                             if (calendarDate != null) {
                                 IconButton(onClick = { startNewEvent(calendarDate) }) { PlusIcon() }
                             }
@@ -274,6 +270,8 @@ fun TickCountApp(
                         onQueryChange = { searchQuery = it },
                         scope = searchScope,
                         onScopeChange = { searchScopeName = it.name },
+                        sortOrder = settings.sortOrder,
+                        onSortChange = viewModel::chooseSortOrder,
                         onOpen = { detailId = it },
                         onLongPress = { actionsForId = it },
                     )
@@ -288,6 +286,7 @@ fun TickCountApp(
                         scope = calendarScope,
                         onScopeChange = { calendarScopeName = it.name },
                         sortOrder = settings.sortOrder,
+                        onSortChange = viewModel::chooseSortOrder,
                         onSelectDate = { calendarEpochDay = it.toEpochDay() },
                         onStepMonth = viewModel::stepMonth,
                         onMonthClick = { monthPickerOpen = true },
@@ -535,65 +534,6 @@ private fun ActionRow(label: String, onClick: () -> Unit) {
 
 private fun String.toScope(): SearchScope =
     runCatching { SearchScope.valueOf(this) }.getOrDefault(SearchScope.NAME)
-
-/** The name each ordering is offered under. */
-private val SortOrder.labelRes: Int
-    get() = when (this) {
-        SortOrder.DATE_ASC -> R.string.sort_date_asc
-        SortOrder.DATE_DESC -> R.string.sort_date_desc
-        SortOrder.ADDED -> R.string.sort_added
-    }
-
-/**
- * The button that chooses how a list is ordered.
- *
- * Sits beside the plus rather than inside the list, because the order is a property
- * of the screen rather than of any one countdown in it. Both lists that can be
- * ordered share it.
- */
-@Composable
-private fun SortMenu(current: SortOrder, onPick: (SortOrder) -> Unit) {
-    var open by remember { mutableStateOf(false) }
-    val description = stringResource(R.string.action_sort)
-
-    Box {
-        IconButton(
-            onClick = { open = true },
-            modifier = Modifier.semantics { contentDescription = description },
-        ) {
-            SortIcon()
-        }
-
-        DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
-            SortOrder.entries.forEach { option ->
-                val selected = option == current
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = stringResource(option.labelRes),
-                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                        )
-                    },
-                    onClick = {
-                        onPick(option)
-                        open = false
-                    },
-                    trailingIcon = {
-                        // A tick rather than a highlight, so the current choice is
-                        // legible without relying on a colour.
-                        if (selected) {
-                            Text(
-                                text = "✓",
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                    },
-                )
-            }
-        }
-    }
-}
 
 /**
  * Which language the interface is in.

@@ -1,10 +1,13 @@
 package io.github.zzpby.tickcount.ui
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,6 +49,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -59,6 +64,9 @@ import io.github.zzpby.tickcount.domain.batchOf
 import io.github.zzpby.tickcount.ui.components.HueSlider
 import io.github.zzpby.tickcount.ui.components.PlusIcon
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
+import io.github.zzpby.tickcount.ui.theme.FieldShape
+import io.github.zzpby.tickcount.ui.theme.PillShape
+import io.github.zzpby.tickcount.ui.theme.tintWash
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -216,9 +224,12 @@ fun EventEditorScreen(
                 Text(stringResource(R.string.action_cancel))
             }
 
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(6.dp))
 
-            TextButton(
+            // The one filled control on the screen: saving is what the form is for, and on a
+            // page of hairline outlines a solid pill is the only thing that reads as the way
+            // out of it.
+            Button(
                 // A blank name with existing tags would be a countdown with nothing
                 // to show, so the name is the one field that has to be there. A batch
                 // also has to be whole before it can be added.
@@ -231,6 +242,8 @@ fun EventEditorScreen(
                         onSaveMany(batch)
                     }
                 },
+                shape = PillShape,
+                contentPadding = PaddingValues(horizontal = 22.dp, vertical = 10.dp),
             ) {
                 Text(
                     stringResource(
@@ -257,6 +270,7 @@ fun EventEditorScreen(
                     label = { Text(stringResource(R.string.field_name)) },
                     placeholder = { Text(stringResource(R.string.field_name_hint)) },
                     singleLine = true,
+                    shape = FieldShape,
                     modifier = Modifier.fillMaxWidth(),
                 )
 
@@ -335,17 +349,25 @@ fun EventEditorScreen(
                 // never while one is being edited: what it does is add countdowns.
                 if (isNew) {
                     Spacer(Modifier.height(14.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(Modifier.height(11.dp))
 
+                    // On a tint of the accent, so the optional half of the form reads as
+                    // optional: everything above is what the countdown is, and this is what
+                    // can also be made out of it.
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(FieldShape)
+                            .background(tintWash())
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                    ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = stringResource(R.string.field_batch),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f),
                         )
                         Switch(checked = batch, onCheckedChange = { batch = it })
@@ -392,6 +414,7 @@ fun EventEditorScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
                     }
                 }
             }
@@ -447,6 +470,7 @@ private fun BatchNumberField(
         },
         label = { Text(label) },
         singleLine = true,
+        shape = FieldShape,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = imeAction,
@@ -481,6 +505,7 @@ private fun TagEditor(
         placeholder = { Text(stringResource(R.string.field_tags_hint)) },
         singleLine = true,
         enabled = !full,
+        shape = FieldShape,
         trailingIcon = {
             IconButton(onClick = onAdd, enabled = draft.isNotBlank() && !full) {
                 PlusIcon()
@@ -516,23 +541,28 @@ private fun TagEditor(
 private fun FieldRow(label: String, value: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        shape = MaterialTheme.shapes.medium,
+        shape = FieldShape,
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().height(48.dp),
+            modifier = Modifier.fillMaxWidth().height(54.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Spacer(Modifier.size(12.dp))
+            Spacer(Modifier.size(16.dp))
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.weight(1f))
-            Text(text = value, style = MaterialTheme.typography.bodyLarge)
-            Spacer(Modifier.size(12.dp))
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.size(16.dp))
         }
     }
 }

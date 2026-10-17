@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -94,9 +95,15 @@ fun AppDrawerContent(
 ) {
     Surface(
         modifier = modifier.fillMaxHeight(),
+        // The card colour, which is pure white in the white theme. What separates the panel
+        // from the page there is the shadow below and the rounded edge, not a different tone:
+        // a grey drawer on a white page reads as a stray piece of the old palette.
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
-        tonalElevation = 2.dp,
+        // A real shadow rather than a tonal elevation: tonal elevation tints the surface
+        // towards the primary colour, which on a white theme is a grey — the one thing this
+        // panel should not be.
+        shadowElevation = 14.dp,
     ) {
         Column(
             modifier = Modifier
@@ -159,7 +166,9 @@ private fun DrawerRow(
             .clip(RoundedCornerShape(14.dp))
             .background(
                 if (selected) MaterialTheme.colorScheme.secondaryContainer
-                else MaterialTheme.colorScheme.surfaceContainerHigh
+                // Transparent rather than a card colour, so an ordinary row is the drawer's
+                // own panel showing through and only the current destination is lifted.
+                else Color.Transparent
             )
             .clickable(onClick = onClick)
             // A floor rather than a fixed height: at a large system font the row has to

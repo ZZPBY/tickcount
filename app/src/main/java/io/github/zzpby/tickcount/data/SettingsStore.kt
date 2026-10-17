@@ -7,16 +7,19 @@ import io.github.zzpby.tickcount.domain.SortOrder
 /**
  * The palettes the app offers, plus one the user mixes themselves.
  *
- * White and black are the light and dark schemes rather than colours of their own,
- * so choosing either fixes the app's lightness and stops it following the system
- * setting. Blue and green are the light scheme with a coloured accent, and
- * [CUSTOM] takes its hue from [AppSettings.customHue].
+ * Black is the dark scheme rather than a colour of its own, so choosing it fixes the app's
+ * lightness and stops it following the system setting. White is the plain one — a white page
+ * and near-black ink. The other four are the same recipe with a hue: a comfortable saturated
+ * accent, and a page tinted with that same hue so the whole screen changes together rather
+ * than only the buttons. [CUSTOM] does the same with the hue the user mixed.
  */
 enum class ThemePreset(val dark: Boolean) {
     WHITE(false),
     BLACK(true),
-    BLUE(false),
-    GREEN(false),
+    TEAL(false),
+    MIST(false),
+    AMBER(false),
+    ROSE(false),
     CUSTOM(false),
 }
 
@@ -41,14 +44,19 @@ enum class AppLanguage(val tag: String?) {
  * it.
  */
 data class AppSettings(
-    val preset: ThemePreset = ThemePreset.WHITE,
+    val preset: ThemePreset = ThemePreset.TEAL,
     val customHue: Float = DEFAULT_HUE,
     val sortOrder: SortOrder = SortOrder.DATE_ASC,
     val language: AppLanguage = AppLanguage.SYSTEM,
 )
 
-/** Where the hue strip starts before the user has moved it: Tailwind's blue. */
-const val DEFAULT_HUE = 221f
+/**
+ * Where the hue strip starts before the user has moved it.
+ *
+ * The emerald the app's own icon and default theme are built on, so mixing a colour starts
+ * from the app's own look rather than from an unrelated blue.
+ */
+const val DEFAULT_HUE = 174f
 
 /**
  * Persists the appearance settings.
@@ -65,7 +73,7 @@ class SettingsStore(context: Context) {
     fun load(): AppSettings {
         val preset = prefs.getString(KEY_THEME, null)
             ?.let { name -> ThemePreset.entries.firstOrNull { it.name == name } }
-            ?: ThemePreset.WHITE
+            ?: ThemePreset.TEAL
         val order = prefs.getString(KEY_SORT, null)
             ?.let { name -> SortOrder.entries.firstOrNull { it.name == name } }
             ?: SortOrder.DATE_ASC

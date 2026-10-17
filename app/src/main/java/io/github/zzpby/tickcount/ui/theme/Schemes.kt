@@ -10,41 +10,21 @@ import io.github.zzpby.tickcount.data.AppSettings
 import io.github.zzpby.tickcount.data.ThemePreset
 
 /**
- * The palettes, taken from Tailwind CSS rather than mixed here.
+ * The palettes, built from a hue rather than from a fixed ramp.
  *
- * Tailwind's ramp is the most widely seen set of colours on the web, and its
- * structure is the part worth copying: a tinted page, white cards on top of it, and
- * one saturated accent. Surfaces derived from a hue by arithmetic come out pale and
- * samey — every level a slightly different tint of the same near-white — which is
- * what made the first attempt look washed out.
+ * The first palette was Tailwind's cool greys, and it made every screen read as a document:
+ * cool grey is the colour of paper that has already been printed on. These are warm instead,
+ * and the warmth follows the theme: choosing a colour tints the page, the panels and the
+ * hairlines as well as the accent, so the whole screen changes together. A page that stayed
+ * grey while the buttons changed colour was a theme applied to the controls rather than to
+ * the app.
  *
- * The page is tinted with the theme's own hue rather than being grey in every
- * palette: a blue theme with a grey page does not read as a blue theme. The grey
- * ramp still supplies the text, the outlines and the accents that have to stay
- * legible whatever the background is.
+ * White is the exception on purpose: it is the plain one, a white page with near-black ink.
+ * Black is the same idea in the other direction.
  */
-private val Gray50 = Color(0xFFF9FAFB)
-private val Gray100 = Color(0xFFF3F4F6)
-private val Gray200 = Color(0xFFE5E7EB)
-private val Gray300 = Color(0xFFD1D5DB)
-private val Gray400 = Color(0xFF9CA3AF)
-private val Gray500 = Color(0xFF6B7280)
-private val Gray600 = Color(0xFF4B5563)
-private val Gray700 = Color(0xFF374151)
-private val Gray800 = Color(0xFF1F2937)
-private val Gray900 = Color(0xFF111827)
-
-private val White = Color(0xFFFFFFFF)
-
-private val Red600 = Color(0xFFDC2626)
-
-/** The three background levels a palette uses, and the ink that goes on them. */
 private class Surfaces(
-    /** The page itself, behind everything. */
     val page: Color,
-    /** Panels: the calendar, the drawer, the settings list. */
     val panel: Color,
-    /** Cards: opaque, and the lightest step in a light palette so they lift. */
     val card: Color,
     val onPage: Color,
     val onVariant: Color,
@@ -52,130 +32,200 @@ private class Surfaces(
     val outlineVariant: Color,
 )
 
-// The page, the panel and the card. One set serves every light palette: the accent
-// is what a theme changes, and tinting the page as well made the whole screen the
-// accent's colour, which read as heavy rather than as themed.
-private val NeutralSurfaces = Surfaces(
-    page = Gray100, panel = Gray200, card = White,
-    onPage = Gray900, onVariant = Gray600, outline = Gray300, outlineVariant = Gray200,
+/**
+ * The surfaces for one hue: a page tinted clearly enough to see from across the room, cards
+ * that stay near-white so they still lift off it, and ink with the same hue in it so nothing
+ * looks like a grey that wandered in.
+ */
+private fun tintedSurfaces(hue: Float): Surfaces {
+    fun shade(chroma: Float, lightness: Float) = Color.hsl(hue, chroma, lightness)
+    return Surfaces(
+        page = shade(0.34f, 0.940f),
+        panel = shade(0.28f, 0.895f),
+        // Only a hint of the hue, so a card still separates from the page without turning
+        // into a second wash of colour.
+        card = shade(0.08f, 0.988f),
+        onPage = shade(0.22f, 0.125f),
+        onVariant = shade(0.14f, 0.370f),
+        outline = shade(0.22f, 0.835f),
+        outlineVariant = shade(0.18f, 0.900f),
+    )
+}
+
+/** White: a white page, near-black ink, and no hue anywhere. */
+private val WhiteSurfaces = Surfaces(
+    page = Color(0xFFFFFFFF),
+    panel = Color(0xFFF4F4F2),
+    card = Color(0xFFFFFFFF),
+    onPage = Color(0xFF17171A),
+    onVariant = Color(0xFF6B6B70),
+    outline = Color(0xFFE5E5E3),
+    outlineVariant = Color(0xFFEFEFF0),
 )
 
+/**
+ * The warm paper the emerald theme has always sat on.
+ *
+ * Left as it was rather than derived from the hue: this is the palette the rest of the app
+ * was designed against, and a page tinted to match the accent made the accent itself read as
+ * quieter than it does on paper.
+ */
+private val PaperSurfaces = Surfaces(
+    page = Color(0xFFF7F5F0),
+    panel = Color(0xFFEFEBE3),
+    card = Color(0xFFFFFFFF),
+    onPage = Color(0xFF1C1B18),
+    onVariant = Color(0xFF6F6A60),
+    outline = Color(0xFFE3DED3),
+    outlineVariant = Color(0xFFEFEBE2),
+)
+
+/** Black: warm near-black, so the dark theme is the same family as the light ones. */
 private val DarkSurfaces = Surfaces(
-    page = Gray900, panel = Gray800, card = Gray700,
-    onPage = Gray50, onVariant = Gray400, outline = Gray500, outlineVariant = Gray700,
+    page = Color(0xFF141311),
+    panel = Color(0xFF242320),
+    card = Color(0xFF1D1C19),
+    onPage = Color(0xFFF3F1EA),
+    onVariant = Color(0xFFA8A296),
+    outline = Color(0xFF352F28),
+    outlineVariant = Color(0xFF2A2622),
 )
 
-// ----------------------------------------------------------------- the palettes
+// ---------------------------------------------------------------- the schemes
 
-private fun lightScheme(
+private fun light(
     primary: Color,
     onPrimary: Color,
     primaryContainer: Color,
     onPrimaryContainer: Color,
-    secondaryContainer: Color,
-    onSecondaryContainer: Color,
-    tertiary: Color,
-    tertiaryContainer: Color,
-    onTertiaryContainer: Color,
     surfaces: Surfaces,
 ): ColorScheme = lightColorScheme(
     primary = primary,
     onPrimary = onPrimary,
     primaryContainer = primaryContainer,
     onPrimaryContainer = onPrimaryContainer,
-    secondary = Gray600,
-    onSecondary = White,
-    secondaryContainer = secondaryContainer,
-    onSecondaryContainer = onSecondaryContainer,
-    tertiary = tertiary,
-    onTertiary = White,
-    tertiaryContainer = tertiaryContainer,
-    onTertiaryContainer = onTertiaryContainer,
-    error = Red600,
-    onError = White,
-    errorContainer = Color(0xFFFEE2E2), // red-100
-    onErrorContainer = Color(0xFF7F1D1D), // red-900
+    // The accent is the second and third colour too: three hues on one screen was one too
+    // many, and the secondary/tertiary slots are only read by a few Material parts.
+    secondary = primary,
+    onSecondary = onPrimary,
+    secondaryContainer = primaryContainer,
+    onSecondaryContainer = onPrimaryContainer,
+    tertiary = primary,
+    onTertiary = onPrimary,
+    tertiaryContainer = primaryContainer,
+    onTertiaryContainer = onPrimaryContainer,
+    error = Color(0xFFDC2626),
+    onError = Color.White,
+    errorContainer = Color(0xFFFCE7E5),
+    onErrorContainer = Color(0xFF7A1D16),
     background = surfaces.page,
     onBackground = surfaces.onPage,
     surface = surfaces.page,
     onSurface = surfaces.onPage,
     surfaceVariant = surfaces.panel,
     onSurfaceVariant = surfaces.onVariant,
+    surfaceContainerLowest = surfaces.card,
+    surfaceContainerLow = surfaces.card,
     surfaceContainer = surfaces.panel,
     surfaceContainerHigh = surfaces.card,
+    surfaceContainerHighest = surfaces.panel,
     outline = surfaces.outline,
     outlineVariant = surfaces.outlineVariant,
+    inverseSurface = surfaces.onPage,
+    inverseOnSurface = surfaces.page,
+    scrim = Color.Black,
 )
 
-private val WhiteScheme = lightScheme(
-    primary = Gray900,
-    onPrimary = White,
-    // A step darker than the page, because this is what a settings card is filled
-    // with: the neutral palette has no hue to tint one with, so it has to be a grey
-    // that is visibly not the page rather than the grey that *is* the page.
-    primaryContainer = Gray200,
-    onPrimaryContainer = Gray900,
-    secondaryContainer = Gray200,
-    onSecondaryContainer = Gray900,
-    tertiary = Gray700,
-    tertiaryContainer = Gray200,
-    onTertiaryContainer = Gray900,
-    surfaces = NeutralSurfaces,
-)
-
-private val BlueScheme = lightScheme(
-    primary = Color(0xFF2563EB), // blue-600
-    onPrimary = White,
-    primaryContainer = Color(0xFFDBEAFE), // blue-100
-    onPrimaryContainer = Color(0xFF1E3A8A), // blue-900
-    secondaryContainer = Color(0xFFDBEAFE),
-    onSecondaryContainer = Color(0xFF1E3A8A),
-    tertiary = Color(0xFF4F46E5), // indigo-600
-    tertiaryContainer = Color(0xFFE0E7FF), // indigo-100
-    onTertiaryContainer = Color(0xFF312E81), // indigo-900
-    surfaces = NeutralSurfaces,
-)
-
-private val GreenScheme = lightScheme(
-    primary = Color(0xFF16A34A), // green-600
-    onPrimary = White,
-    primaryContainer = Color(0xFFDCFCE7), // green-100
-    onPrimaryContainer = Color(0xFF14532D), // green-900
-    secondaryContainer = Color(0xFFDCFCE7),
-    onSecondaryContainer = Color(0xFF14532D),
-    tertiary = Color(0xFF0D9488), // teal-600
-    tertiaryContainer = Color(0xFFCCFBF1), // teal-100
-    onTertiaryContainer = Color(0xFF134E4A), // teal-900
-    surfaces = NeutralSurfaces,
-)
-
-private val BlackScheme = darkColorScheme(
-    primary = Gray50,
-    onPrimary = Gray900,
-    primaryContainer = Gray700,
-    onPrimaryContainer = Gray100,
-    secondary = Gray300,
-    onSecondary = Gray800,
-    secondaryContainer = Gray700,
-    onSecondaryContainer = Gray100,
-    tertiary = Gray200,
-    onTertiary = Gray800,
-    tertiaryContainer = Gray600,
-    onTertiaryContainer = Gray50,
-    error = Color(0xFFF87171), // red-400
-    onError = Color(0xFF450A0A), // red-950
-    errorContainer = Color(0xFF991B1B), // red-800
-    onErrorContainer = Color(0xFFFEE2E2),
+private fun dark(
+    primary: Color,
+    onPrimary: Color,
+    primaryContainer: Color,
+    onPrimaryContainer: Color,
+): ColorScheme = darkColorScheme(
+    primary = primary,
+    onPrimary = onPrimary,
+    primaryContainer = primaryContainer,
+    onPrimaryContainer = onPrimaryContainer,
+    secondary = primary,
+    onSecondary = onPrimary,
+    secondaryContainer = primaryContainer,
+    onSecondaryContainer = onPrimaryContainer,
+    tertiary = Color(0xFFE7C36B),
+    onTertiary = Color(0xFF2A1F05),
+    tertiaryContainer = Color(0xFF3A2E10),
+    onTertiaryContainer = Color(0xFFF0DBA4),
+    error = Color(0xFFF87171),
+    onError = Color(0xFF450A0A),
+    errorContainer = Color(0xFF8A2018),
+    onErrorContainer = Color(0xFFFCE7E5),
     background = DarkSurfaces.page,
     onBackground = DarkSurfaces.onPage,
     surface = DarkSurfaces.page,
     onSurface = DarkSurfaces.onPage,
     surfaceVariant = DarkSurfaces.panel,
     onSurfaceVariant = DarkSurfaces.onVariant,
+    surfaceContainerLowest = DarkSurfaces.card,
+    surfaceContainerLow = DarkSurfaces.card,
     surfaceContainer = DarkSurfaces.panel,
     surfaceContainerHigh = DarkSurfaces.card,
+    surfaceContainerHighest = DarkSurfaces.panel,
     outline = DarkSurfaces.outline,
     outlineVariant = DarkSurfaces.outlineVariant,
+    inverseSurface = DarkSurfaces.onPage,
+    inverseOnSurface = DarkSurfaces.page,
+    scrim = Color.Black,
+)
+
+/**
+ * The accent of a tinted palette: saturated enough to carry a 34sp number, dark enough to
+ * read as text on the page, and not so dark that the tint above it looks like a mistake.
+ */
+private fun accentFor(hue: Float): Color = Color.hsl(hue, 0.52f, 0.36f)
+
+private fun tintFor(hue: Float): Color = Color.hsl(hue, 0.55f, 0.92f)
+
+private fun onTintFor(hue: Float): Color = Color.hsl(hue, 0.55f, 0.17f)
+
+/** A light palette built from one hue: the page and the ink both carry it. */
+private fun tinted(hue: Float): ColorScheme = light(
+    primary = accentFor(hue),
+    onPrimary = Color.White,
+    primaryContainer = tintFor(hue),
+    onPrimaryContainer = onTintFor(hue),
+    surfaces = tintedSurfaces(hue),
+)
+
+private val WhiteScheme = light(
+    primary = Color(0xFF17171A),
+    onPrimary = Color.White,
+    // A grey a step away from the panel it sits on, so a selected row and a tinted pill are
+    // still visible in the one theme that has no colour to tell them apart with.
+    primaryContainer = Color(0xFFE4E4E7),
+    onPrimaryContainer = Color(0xFF17171A),
+    surfaces = WhiteSurfaces,
+)
+
+/**
+ * The emerald the app's icon is built on, kept at the exact value it has always had: it is
+ * the palette the rest of the app was designed against.
+ */
+private val TealScheme = light(
+    primary = Color(0xFF0F766E),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFFDCEFEA),
+    onPrimaryContainer = Color(0xFF083F3B),
+    surfaces = PaperSurfaces,
+)
+
+private val MistScheme = tinted(214f)
+private val AmberScheme = tinted(28f)
+private val RoseScheme = tinted(345f)
+
+private val NightScheme = dark(
+    primary = Color(0xFF7FD6C9),
+    onPrimary = Color(0xFF05201D),
+    primaryContainer = Color(0xFF17332F),
+    onPrimaryContainer = Color(0xFFC8EDE6),
 )
 
 /** The palette [settings] asks for. */
@@ -184,61 +234,28 @@ fun schemeFor(settings: AppSettings): ColorScheme =
 
 fun schemeFor(preset: ThemePreset, customHue: Float): ColorScheme = when (preset) {
     ThemePreset.WHITE -> WhiteScheme
-    ThemePreset.BLACK -> BlackScheme
-    ThemePreset.BLUE -> BlueScheme
-    ThemePreset.GREEN -> GreenScheme
-    ThemePreset.CUSTOM -> customScheme(customHue)
-}
-
-/**
- * A palette built around one hue the user mixed: the same neutral page the named
- * palettes use, with the hue carried by the accent and its containers.
- */
-private fun customScheme(hue: Float): ColorScheme {
-    val degrees = ((hue % 360f) + 360f) % 360f
-
-    fun shade(chroma: Float, lightness: Float, shift: Float = 0f): Color =
-        Color.hsl(((degrees + shift) % 360f + 360f) % 360f, chroma, lightness)
-
-    return lightScheme(
-        primary = shade(0.72f, 0.45f),
-        onPrimary = White,
-        primaryContainer = shade(0.85f, 0.93f),
-        onPrimaryContainer = shade(0.70f, 0.22f),
-        secondaryContainer = shade(0.80f, 0.91f),
-        onSecondaryContainer = shade(0.65f, 0.24f),
-        tertiary = shade(0.60f, 0.45f, shift = 42f),
-        tertiaryContainer = shade(0.85f, 0.93f, shift = 42f),
-        onTertiaryContainer = shade(0.65f, 0.22f, shift = 42f),
-        surfaces = NeutralSurfaces,
-    )
+    ThemePreset.BLACK -> NightScheme
+    ThemePreset.TEAL -> TealScheme
+    ThemePreset.MIST -> MistScheme
+    ThemePreset.AMBER -> AmberScheme
+    ThemePreset.ROSE -> RoseScheme
+    ThemePreset.CUSTOM -> tinted(((customHue % 360f) + 360f) % 360f)
 }
 
 /**
  * The colour a countdown paints itself with, given its own [hue].
  *
- * Null means the countdown has not been given a colour, and the caller falls back to
- * the theme's own text colours — which is what keeps the default "white" from
- * becoming invisible on a light surface.
+ * Null means it was not given one, and the caller falls back to the theme's accent — which is
+ * what keeps an uncoloured countdown visible rather than leaving a hole where its dot is.
  */
 fun eventHueColor(hue: Float?, dark: Boolean): Color? = hue?.let {
-    Color.hsl(it, if (dark) 0.55f else 0.72f, if (dark) 0.68f else 0.42f)
+    Color.hsl(it, if (dark) 0.52f else 0.62f, if (dark) 0.66f else 0.40f)
 }
 
-/** How much of an event's colour is laid over the card behind it. */
-const val EVENT_WASH_ALPHA = 0.16f
+/** How much of a countdown's own colour is laid over the card behind it. */
+const val EVENT_WASH_ALPHA = 0.10f
 
-/** How much of an event's colour is laid over the card while it is selected. */
-const val EVENT_WASH_ALPHA_STRONG = 0.30f
-
-/**
- * The colour a countdown paints itself with, falling back to the theme's own accent
- * when it has not been given one.
- *
- * For the marks that have to exist either way — the calendar dots, the heading on a
- * countdown's screen — the fallback is what keeps an uncoloured countdown visible
- * rather than leaving a hole where its dot should be.
- */
+/** The colour a countdown paints itself with, falling back to the theme's accent. */
 @Composable
 fun eventAccent(hue: Float?): Color =
     eventHueColor(hue, isDarkScheme()) ?: MaterialTheme.colorScheme.primary
