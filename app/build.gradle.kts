@@ -113,7 +113,11 @@ abstract class WriteReleaseNotesTask : DefaultTask() {
     }
 
     /**
-     * Everything after [version]'s bare `x.y.z` heading, up to the next heading.
+     * Everything after [version]'s bare heading, up to the next version heading.
+     *
+     * A heading is any dotted number — `1.0.5` and the calendar `2026.10.18.2` alike. The
+     * earlier three-part pattern stopped at the wrong line once the calendar version gained
+     * its fourth number, and a release inherited the section below its own.
      *
      * The rule of dashes under each heading and the blank lines around the block are
      * dropped: the release page supplies its own spacing. An empty result means the
@@ -126,8 +130,9 @@ abstract class WriteReleaseNotesTask : DefaultTask() {
         val heading = lines.indexOfFirst { it.trim() == version }
         if (heading < 0) return ""
 
+        val versionHeading = Regex("""\d+(\.\d+)+""")
         val next = (heading + 1 until lines.size)
-            .firstOrNull { lines[it].trim().matches(Regex("""\d+\.\d+\.\d+""")) }
+            .firstOrNull { lines[it].trim().matches(versionHeading) }
             ?: lines.size
 
         return lines.subList(heading + 1, next)
