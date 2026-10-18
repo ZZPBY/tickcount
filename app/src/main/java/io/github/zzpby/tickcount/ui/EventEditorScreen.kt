@@ -68,6 +68,7 @@ import io.github.zzpby.tickcount.ui.components.HueSlider
 import io.github.zzpby.tickcount.ui.components.PlusIcon
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.FieldShape
+import io.github.zzpby.tickcount.ui.theme.hairline
 import io.github.zzpby.tickcount.ui.theme.PillShape
 import io.github.zzpby.tickcount.ui.theme.tintWash
 import java.time.Instant
@@ -305,34 +306,17 @@ fun EventEditorScreen(
                     onClick = { datePickerOpen = true },
                 )
 
-                // The colour sits directly under the date: both answer "which day is this",
-                // and the colour strip pushes the all-day / exact-minute choice away from the
-                // date it belongs to if it is put between them.
+                // Directly under the date: the lunar day is another way of saying the same
+                // day, and the all-day / exact-minute choice is about that day too, so the
+                // two belong together rather than below a strip about colour.
                 Spacer(Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.field_color),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Switch(checked = coloured, onCheckedChange = { coloured = it })
-                }
-                if (coloured) {
-                    HueSlider(hue = hue, onHueChange = { hue = it })
-                }
-                Spacer(Modifier.height(12.dp))
-                // Under the date rather than beside it in a second field: the lunar date is
-                // another way of saying the same day, and the solar one is what is actually
-                // stored.
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(FieldShape)
                         .clickable { lunarPickerOpen = true }
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .hairline(FieldShape)
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -379,6 +363,25 @@ fun EventEditorScreen(
                             .format(timeFormatter),
                         onClick = { timePickerOpen = true },
                     )
+                }
+
+                // Colour comes after the day is settled: it says how the countdown looks,
+                // not which day it is.
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.field_color),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Switch(checked = coloured, onCheckedChange = { coloured = it })
+                }
+                if (coloured) {
+                    HueSlider(hue = hue, onHueChange = { hue = it })
                 }
 
                 if (!isNew) {
