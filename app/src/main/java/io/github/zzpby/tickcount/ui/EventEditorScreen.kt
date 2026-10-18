@@ -545,7 +545,10 @@ private fun FieldRow(label: String, value: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = FieldShape,
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        // The panel colour, not the card colour: a card is white in the white and teal
+        // themes, which left the date and time rows as the only white things on a tinted
+        // page. This is the tone that moves with the theme.
+        color = MaterialTheme.colorScheme.surfaceContainer,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier.fillMaxWidth(),
     ) {
