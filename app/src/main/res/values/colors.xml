@@ -9,9 +9,25 @@
       The home-screen widget. These repeat the theme's card and ink values because a widget
       is inflated by the launcher, outside this app's MaterialTheme, so it cannot read them
       from there. Keep in step with ui/theme/Schemes.kt.
+
+      Both palettes are spelled out rather than left to values-night, because the widget can
+      be told to ignore the device's night setting: the light panel has to stay readable on
+      a dark device, and the dark one on a light device. ui/widget/WidgetSupport.kt picks
+      one at draw time. The unprefixed names below are what the layout and the picker's
+      preview start from, and they follow the device as they always have.
     -->
-    <color name="widget_background">#FFFFFFFF</color>
-    <color name="widget_outline">#FFE3DED3</color>
-    <color name="widget_text_primary">#FF1C1B18</color>
-    <color name="widget_text_secondary">#FF6F6A60</color>
+    <color name="widget_light_background">#FFFFFFFF</color>
+    <color name="widget_light_outline">#FFE3DED3</color>
+    <color name="widget_light_text_primary">#FF1C1B18</color>
+    <color name="widget_light_text_secondary">#FF6F6A60</color>
+
+    <color name="widget_dark_background">#FF1D1C19</color>
+    <color name="widget_dark_outline">#FF352F28</color>
+    <color name="widget_dark_text_primary">#FFF3F1EA</color>
+    <color name="widget_dark_text_secondary">#FFA8A296</color>
+
+    <color name="widget_background">@color/widget_light_background</color>
+    <color name="widget_outline">@color/widget_light_outline</color>
+    <color name="widget_text_primary">@color/widget_light_text_primary</color>
+    <color name="widget_text_secondary">@color/widget_light_text_secondary</color>
 </resources>

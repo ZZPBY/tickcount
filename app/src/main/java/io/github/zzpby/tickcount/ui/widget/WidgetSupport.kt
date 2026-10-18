@@ -4,19 +4,114 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
+import android.widget.RemoteViews
 import io.github.zzpby.tickcount.EXTRA_OPEN_EVENT
 import io.github.zzpby.tickcount.MainActivity
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
+import io.github.zzpby.tickcount.data.WidgetPanel
 import java.time.format.DateTimeFormatter
 
 /**
  * The parts both widgets need.
  *
  * They are drawn from the same store and open the same app, so the measurement, the tap
- * target and the refresh belong to neither of them in particular.
+ * target, the panel and the refresh belong to neither of them in particular.
  */
+
+/**
+ * The colours one widget is drawn in, once its panel choice has been resolved.
+ *
+ * Both sides of the day are carried, not only the one in force: from Android 12 the widget
+ * can name a colour for each, and the launcher picks the one that matches when it draws.
+ * That is what lets "follow the system" catch a night switch without another update from
+ * this app. [textPrimary] and [textSecondary] are the pair resolved here, for the versions
+ * that have no such action.
+ */
+internal data class WidgetPalette(
+    /** The panel drawable behind the widget. */
+    val panel: Int,
+    val textPrimary: Int,
+    val textSecondary: Int,
+    val lightTextPrimary: Int,
+    val darkTextPrimary: Int,
+    val lightTextSecondary: Int,
+    val darkTextSecondary: Int,
+)
+
+/**
+ * Turns the stored panel choice into the colours this device should actually draw.
+ *
+ * An explicit panel sends the same colour for day and night, so the launcher cannot pick
+ * the other one when the device switches; [WidgetPanel.SYSTEM] sends the pair.
+ *
+ * The background for [WidgetPanel.SYSTEM] is the one night-qualified drawable, resolved by
+ * the launcher at apply time; the explicit panels have a drawable each, because the colours
+ * they name live in the default configuration.
+ */
+internal fun widgetPalette(context: Context, panel: WidgetPanel): WidgetPalette {
+    val lightPrimary = context.getColor(R.color.widget_light_text_primary)
+    val lightSecondary = context.getColor(R.color.widget_light_text_secondary)
+    val darkPrimary = context.getColor(R.color.widget_dark_text_primary)
+    val darkSecondary = context.getColor(R.color.widget_dark_text_secondary)
+
+    val light = panel == WidgetPanel.LIGHT
+    val dark = panel == WidgetPanel.DARK
+    val night = when {
+        light -> false
+        dark -> true
+        else -> context.resources.configuration.uiMode and
+            Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    return WidgetPalette(
+        panel = when {
+            light -> R.drawable.widget_background_light
+            dark -> R.drawable.widget_background_dark
+            else -> R.drawable.widget_background
+        },
+        textPrimary = if (night) darkPrimary else lightPrimary,
+        textSecondary = if (night) darkSecondary else lightSecondary,
+        lightTextPrimary = if (dark) darkPrimary else lightPrimary,
+        darkTextPrimary = if (light) lightPrimary else darkPrimary,
+        lightTextSecondary = if (dark) darkSecondary else lightSecondary,
+        darkTextSecondary = if (light) lightSecondary else darkSecondary,
+    )
+}
+
+/**
+ * Paints [views] with [palette]: the panel behind, then the ink on top.
+ *
+ * Every colour is written on every update. A launcher reuses the view hierarchy when an
+ * update arrives with the same layout id, so a colour that is no longer sent keeps its
+ * previous value — the panel could be switched back to the system one and stay dark.
+ *
+ * From Android 12 the colour is sent as the two halves of the day rather than one resolved
+ * value; a launcher that re-applies the widget on a configuration change then repaints it
+ * on its own. Older versions have no such action, and get the colour resolved here.
+ */
+internal fun RemoteViews.applyPalette(
+    palette: WidgetPalette,
+    panelId: Int,
+    primaryIds: IntArray,
+    secondaryIds: IntArray,
+) {
+    setInt(panelId, "setBackgroundResource", palette.panel)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        primaryIds.forEach {
+            setColorInt(it, "setTextColor", palette.lightTextPrimary, palette.darkTextPrimary)
+        }
+        secondaryIds.forEach {
+            setColorInt(it, "setTextColor", palette.lightTextSecondary, palette.darkTextSecondary)
+        }
+    } else {
+        primaryIds.forEach { setTextColor(it, palette.textPrimary) }
+        secondaryIds.forEach { setTextColor(it, palette.textSecondary) }
+    }
+}
 
 /**
  * Redraws every widget the app has placed, of both kinds.

@@ -44,6 +44,9 @@ enum class AppScreen(val labelRes: Int) {
     CALENDAR(R.string.drawer_calendar),
     REMINDERS(R.string.settings_notifications),
     APPEARANCE(R.string.settings_appearance),
+    // The widgets have a page of their own rather than a section of Appearance: they are
+    // drawn on the wallpaper, not in this window, and the choice is not this theme's.
+    WIDGETS(R.string.settings_widgets),
     DATA(R.string.drawer_data),
     CHANGELOG(R.string.drawer_changelog),
     INTRO(R.string.settings_project_intro),
@@ -53,9 +56,8 @@ enum class AppScreen(val labelRes: Int) {
  * Whether this destination opens a group, and so is drawn with a gap above it.
  *
  * Which entries start a group is a fact about [AppScreen] rather than about the drawer, so
- * it is stated here and the drawing code just asks. Appearance opens the settings, after
- * the two screens you browse; the changelog opens the two you read, after the one that
- * writes.
+ * it is stated here and the drawing code just asks. Reminders opens the settings, after the
+ * two screens you browse; the changelog opens the two you read, after the one that writes.
  */
 private val AppScreen.startsGroup: Boolean
     get() = this == AppScreen.REMINDERS || this == AppScreen.CHANGELOG
@@ -116,7 +118,7 @@ fun AppDrawerContent(
                 .padding(vertical = 12.dp),
         ) {
             Column(
-                // Only the destinations scroll. Six rows and two gaps are taller than a
+                // Only the destinations scroll. Eight rows and two gaps are taller than a
                 // window in landscape or in split screen, and a Column that cannot scroll
                 // would not clip them either: it would measure the last ones to nothing and
                 // they would simply vanish. The language is outside this, so it is never one

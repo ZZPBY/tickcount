@@ -320,6 +320,12 @@ fun TickCountApp(
                         onCustomHue = viewModel::chooseCustomHue,
                     )
 
+                    screen == AppScreen.WIDGETS -> WidgetSettingsScreen(
+                        settings = settings,
+                        onPanel = viewModel::chooseWidgetPanel,
+                        onTextSize = viewModel::chooseWidgetTextSize,
+                    )
+
                     screen == AppScreen.DATA -> DataScreen(
                         onExport = viewModel::exportBackup,
                         onRead = viewModel::readBackup,

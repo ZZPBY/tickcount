@@ -143,6 +143,7 @@
     <string name="settings_project_intro">项目介绍</string>
     <string name="language_system">跟随系统</string>
     <string name="settings_appearance">外观与显示</string>
+    <string name="settings_widgets">桌面小组件</string>
 
     <!-- 五个主题，以及给最后一个调色的色相条 -->
     <string name="theme_white">白</string>
@@ -206,6 +207,17 @@
     <string name="appearance_background">页面底色</string>
     <string name="appearance_panel">面板</string>
     <string name="appearance_card">卡片</string>
+    <!-- 桌面小组件自己的外观，和应用主题分开 -->
+    <string name="widget_settings_intro">这里只管桌面上的两个小组件，应用本身的主题不受影响。</string>
+    <string name="appearance_widget_panel">面板</string>
+    <string name="appearance_widget_light">浅色</string>
+    <string name="appearance_widget_dark">深色</string>
+    <string name="appearance_widget_system">跟随系统</string>
+    <string name="appearance_widget_text_size">字号</string>
+    <string name="appearance_widget_text_small">小</string>
+    <string name="appearance_widget_text_standard">标准</string>
+    <string name="appearance_widget_text_large">大</string>
+    <string name="appearance_widget_note">单个组件会用能放下的最大字号填满自己的格子；上面的字号只作用于清单组件。</string>
     <string name="home_empty">还没有要数的日子。\n点右上角的 + 新建一个。</string>
     <string name="home_no_matches">没有匹配「%1$s」的倒数日。</string>
     <string name="home_nothing_filtered">没有符合筛选的日子。</string>

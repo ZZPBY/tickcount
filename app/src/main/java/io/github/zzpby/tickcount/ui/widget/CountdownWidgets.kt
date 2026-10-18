@@ -17,6 +17,7 @@ import io.github.zzpby.tickcount.MainActivity
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.data.SettingsStore
 import io.github.zzpby.tickcount.domain.CountdownUnit
 import io.github.zzpby.tickcount.domain.UnitCount
 import io.github.zzpby.tickcount.domain.WidgetCountdown
@@ -34,6 +35,17 @@ private const val TAG = "TickCountWidget"
 
 /** Both arrangements own a clock, and every update re-bases both. */
 private val CLOCKS = intArrayOf(R.id.row_clock, R.id.col_clock)
+
+/** The ink the widget's most important text is drawn in, in either arrangement. */
+private val PRIMARY_TEXTS = intArrayOf(
+    R.id.row_days,
+    R.id.row_clock,
+    R.id.col_days,
+    R.id.col_clock,
+)
+
+/** The quieter lines: the countdown's name, and the date under the clock. */
+private val SECONDARY_TEXTS = intArrayOf(R.id.row_name, R.id.col_name, R.id.col_date)
 
 /**
  * The home-screen widget's plumbing, kept out of [CountdownWidgetProvider] so the
@@ -111,6 +123,17 @@ object CountdownWidgets {
         // One layout id for every shape, so a resize is an ordinary property change
         // rather than a re-inflate. See the layout's own comment for why that matters.
         val views = RemoteViews(context.packageName, R.layout.widget_countdown)
+
+        // The panel is the only appearance setting this widget takes. Its text is
+        // auto-sized to fill whatever cell it has been given, which is already as large as
+        // it can be — the list widget is the one with fixed sizes to scale.
+        val panel = SettingsStore(context).load().widgetPanel
+        views.applyPalette(
+            palette = widgetPalette(context, panel),
+            panelId = R.id.widget_root,
+            primaryIds = PRIMARY_TEXTS,
+            secondaryIds = SECONDARY_TEXTS,
+        )
 
         val events = EventStore(context).load()
         // A widget whose countdown was deleted falls back to the soonest one still

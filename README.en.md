@@ -48,7 +48,9 @@ see how long is left — or how long it has been.
   added together.
 - **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
   screen, ticking to the second. **Countdown list** shows what is coming next, one per row.
-  Both adapt to their size, and neither asks for a permission.
+  Both adapt to their size; their panel — light, dark or the system's — is chosen on the
+  Home-screen widgets page in the drawer, along with the list's text size, and neither asks
+  for a permission.
 - **Notifications** — a page of its own in the drawer: a reminder time, one app-wide lead
   time, and an override for any single countdown. It lists what is coming up with the moment
   each reminder will arrive, and can send a test notification. Reminders use an inexact alarm,
@@ -64,8 +66,8 @@ see how long is left — or how long it has been.
   not take colours from the wallpaper; a choice stays put.
 - **Bilingual** — follows the system language, or you can pick Chinese or English in the
   drawer. Date formats are localised too.
-- **Backup and restore** — every countdown, and the appearance, sorting and language settings,
-  can be written to a file and read back. An export can be encrypted with AES-256-GCM and a
+- **Backup and restore** — every countdown, and the appearance (including the widgets' panel
+  and text size), sorting and language settings, can be written to a file and read back. An export can be encrypted with AES-256-GCM and a
   password; an import asks for that password first, then asks **Overwrite** or **Merge**, and
   says how many countdowns it would add, overwrite or discard before it does any of them.
   There is also **Export as a calendar file**, which writes .ics for a system calendar.
@@ -134,6 +136,10 @@ a time says so after the days — “Today 09:30”. The default 4×2 holds thre
 widget holds up to four, and the rows share the height between them; with nothing coming up
 it says so.
 
+Both take their panel from **Home-screen widgets** in the drawer: light, dark, or whatever
+the system is using. The list can also be given a smaller or larger text size; the single
+widget keeps its own, because it already fills its cell with the largest text that fits.
+
 **Neither asks for a permission.**
 
 ## Download
@@ -181,7 +187,7 @@ app/src/main/java/io/github/zzpby/tickcount/
 │   ├── CountdownEvent.kt        the model: id / date / time / tags / colour / pinned
 │   ├── EventCodec.kt            reading and writing the records as JSON, migrations included
 │   ├── EventStore.kt            keeping that document in SharedPreferences
-│   ├── SettingsStore.kt         the stored theme, sort order and language
+│   ├── SettingsStore.kt         the stored theme, sort order, language and widget appearance
 │   ├── Backup.kt                the backup file's shape, and the outcome of an import
 │   └── BackupCrypto.kt          password encryption for a backup (PBKDF2 + AES-GCM)
 ├── domain/                      pure logic, covered by unit tests
@@ -209,14 +215,15 @@ app/src/main/java/io/github/zzpby/tickcount/
     ├── EventEditorScreen.kt     new or edit (a whole screen): name, tags, date, time,
     │                            colour, and adding several at once
     ├── DeleteConfirmDialog.kt   the confirmation before a delete
-    ├── AppearanceScreen.kt      appearance: six theme presets and a custom hue
+    ├── AppearanceScreen.kt      appearance: the theme, the hue strip, and the surface levels
+    ├── WidgetSettingsScreen.kt  the two home-screen widgets: their panel, and the list's text size
     ├── NotificationsScreen.kt   notifications: the reminder, a lead per countdown, and a test
     ├── DataScreen.kt            data management: export, import, the optional encryption, and
     │                            the .ics export
     ├── ChangelogScreen.kt       the changelog, taken from `更新日志.txt` in the repository
     ├── ProjectIntroScreen.kt    the introduction, taken from this file
     ├── calendar/                the hand-drawn month grid and the month picker
-    ├── components/              Canvas icons (the search one too), the hue strip, the Markdown renderer, localised formats
+    ├── components/              the choice pills, Canvas icons (the search one too), the hue strip, the Markdown renderer, localised formats
     ├── notify/                  reminders: scheduling the inexact alarm, the receiver, and the
     │                            restart that puts it back
     ├── widget/                  the two home-screen widgets: drawing, receivers, config screen
@@ -248,9 +255,9 @@ TickCount stores one list of countdowns — date, name, time, tags, colour, pin 
 was added — in its own private `SharedPreferences` file, with nothing else in it. The
 colour belongs to each countdown and is used to tell them apart in the calendar and the
 list. The home-screen widget keeps a second file, `tickcount_widgets`, recording only which
-widget shows which countdown; the theme, sort order and language live in
-`tickcount_settings`. All three sit in the app's private directory, and none of them leaves
-the device on its own.
+widget shows which countdown; the theme, sort order, language and the widgets' appearance
+live in `tickcount_settings`. All three sit in the app's private directory, and none of them
+leaves the device on its own.
 
 A backup exported from Backup & data goes wherever you choose to put it, encrypted or not,
 as you decide; the app has no way to send it anywhere.

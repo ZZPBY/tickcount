@@ -5,11 +5,13 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.data.SettingsStore
 import io.github.zzpby.tickcount.domain.UPCOMING_WIDGET_ROWS
 import io.github.zzpby.tickcount.domain.daysFromToday
 import io.github.zzpby.tickcount.domain.upcomingCountdowns
@@ -17,6 +19,18 @@ import io.github.zzpby.tickcount.domain.upcomingRowsFor
 import java.time.LocalDate
 
 private const val TAG = "TickCountWidget"
+
+/**
+ * The sizes the layout is drawn at before a setting is applied.
+ *
+ * The same numbers live in `styles.xml` and `widget_upcoming.xml`, which is what the
+ * launcher inflates for the first picture of a new widget; from then on this widget sends
+ * them itself, scaled by the text-size choice. Keep the two in step.
+ */
+private const val HEADER_TEXT_SP = 11f
+private const val TITLE_TEXT_SP = 13f
+private const val DAYS_TEXT_SP = 12f
+private const val EMPTY_TEXT_SP = 12f
 
 /**
  * The list widget: what is coming next, one row each.
@@ -53,6 +67,12 @@ object UpcomingWidgets {
         R.id.upcoming_days_4,
     )
 
+    /** The quieter text: the heading, the day counts and the empty message. */
+    private val secondaryIds = daysIds + intArrayOf(
+        R.id.upcoming_header,
+        R.id.upcoming_empty,
+    )
+
     init {
         // The layout and these arrays have to agree, or a row is drawn into nothing.
         check(rowIds.size == UPCOMING_WIDGET_ROWS && titleIds.size == rowIds.size &&
@@ -87,6 +107,35 @@ object UpcomingWidgets {
         val next = upcomingCountdowns(EventStore(context).load(), today, UPCOMING_WIDGET_ROWS)
 
         val views = RemoteViews(context.packageName, R.layout.widget_upcoming)
+        val settings = SettingsStore(context).load()
+        views.applyPalette(
+            palette = widgetPalette(context, settings.widgetPanel),
+            panelId = R.id.upcoming_root,
+            primaryIds = titleIds,
+            secondaryIds = secondaryIds,
+        )
+
+        // Sent explicitly rather than left to the styles, because the setting has to be
+        // able to take them back to the sizes the layout names: an action that is never
+        // sent leaves the launcher holding the previous update's size.
+        val scale = settings.widgetTextSize.scale
+        views.setTextViewTextSize(
+            R.id.upcoming_header,
+            TypedValue.COMPLEX_UNIT_SP,
+            HEADER_TEXT_SP * scale,
+        )
+        views.setTextViewTextSize(
+            R.id.upcoming_empty,
+            TypedValue.COMPLEX_UNIT_SP,
+            EMPTY_TEXT_SP * scale,
+        )
+        titleIds.forEach {
+            views.setTextViewTextSize(it, TypedValue.COMPLEX_UNIT_SP, TITLE_TEXT_SP * scale)
+        }
+        daysIds.forEach {
+            views.setTextViewTextSize(it, TypedValue.COMPLEX_UNIT_SP, DAYS_TEXT_SP * scale)
+        }
+
         rowIds.indices.forEach { index ->
             val event = next.getOrNull(index)?.takeIf { index < room }
             if (event == null) {

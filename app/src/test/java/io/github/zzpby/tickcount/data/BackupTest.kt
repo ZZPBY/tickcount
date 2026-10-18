@@ -39,6 +39,8 @@ class BackupTest {
         customHue = 88f,
         sortOrder = SortOrder.ADDED,
         language = AppLanguage.ENGLISH,
+        widgetPanel = WidgetPanel.DARK,
+        widgetTextSize = WidgetTextSize.LARGE,
     )
 
     private fun backup() = Backup(events, settings)
@@ -57,6 +59,14 @@ class BackupTest {
         val restored = BackupCodec.decode(BackupCodec.encode(backup(), exportedAt = 1L))
 
         assertEquals(settings, restored.settings)
+    }
+
+    @Test
+    fun `the widget panel and text size travel with the settings`() {
+        val restored = BackupCodec.decode(BackupCodec.encode(backup(), exportedAt = 1L))
+
+        assertEquals(WidgetPanel.DARK, restored.settings.widgetPanel)
+        assertEquals(WidgetTextSize.LARGE, restored.settings.widgetTextSize)
     }
 
     @Test
@@ -86,7 +96,8 @@ class BackupTest {
     fun `a setting from a newer build falls back rather than failing`() {
         val future = """
             {"app":"tickcount","format":1,"events":[],
-             "settings":{"theme":"MAGENTA","sort":"SIDEWAYS","language":"KLINGON"}}
+             "settings":{"theme":"MAGENTA","sort":"SIDEWAYS","language":"KLINGON",
+                         "widgetPanel":"SEPIA","widgetTextSize":"HUGE"}}
         """.trimIndent()
 
         val restored = BackupCodec.decode(future)
@@ -94,6 +105,8 @@ class BackupTest {
         assertEquals(AppSettings().preset, restored.settings.preset)
         assertEquals(AppSettings().sortOrder, restored.settings.sortOrder)
         assertEquals(AppSettings().language, restored.settings.language)
+        assertEquals(AppSettings().widgetPanel, restored.settings.widgetPanel)
+        assertEquals(AppSettings().widgetTextSize, restored.settings.widgetTextSize)
     }
 
     @Test

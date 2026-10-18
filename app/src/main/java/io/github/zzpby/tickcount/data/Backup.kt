@@ -108,12 +108,18 @@ object BackupCodec {
         .put("hue", settings.customHue.toDouble())
         .put("sort", settings.sortOrder.name)
         .put("language", settings.language.name)
+        .put("widgetPanel", settings.widgetPanel.name)
+        .put("widgetTextSize", settings.widgetTextSize.name)
 
     private fun settingsFromJson(json: JSONObject): AppSettings = AppSettings(
         preset = json.optString("theme").toEnum(ThemePreset.entries, AppSettings().preset),
         customHue = json.optDouble("hue", DEFAULT_HUE.toDouble()).toFloat(),
         sortOrder = json.optString("sort").toEnum(SortOrder.entries, AppSettings().sortOrder),
         language = json.optString("language").toEnum(AppLanguage.entries, AppSettings().language),
+        widgetPanel = json.optString("widgetPanel")
+            .toEnum(WidgetPanel.entries, AppSettings().widgetPanel),
+        widgetTextSize = json.optString("widgetTextSize")
+            .toEnum(WidgetTextSize.entries, AppSettings().widgetTextSize),
     )
 
     /** The named constant, or [fallback] when the name is missing or from a newer build. */

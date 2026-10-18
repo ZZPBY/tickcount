@@ -37,6 +37,33 @@ enum class AppLanguage(val tag: String?) {
 }
 
 /**
+ * Which panel the home-screen widgets wear.
+ *
+ * Its own choice rather than a copy of the app's palette: a widget sits on a wallpaper,
+ * where the comfortable answer is often not the one inside the app. [SYSTEM] keeps the
+ * behaviour every earlier version had, following the device's night setting; it is the
+ * default even though it is last, because it is the only one that needs no decision.
+ */
+enum class WidgetPanel {
+    LIGHT,
+    DARK,
+    SYSTEM,
+}
+
+/**
+ * How large the widgets' fixed-size text is.
+ *
+ * The list widget is the one this changes: its rows are drawn at fixed sizes, so they can
+ * grow and shrink without leaving the widget. The single widget sizes its own text to fill
+ * whatever cell it has, which leaves no room to grow and no reason to shrink.
+ */
+enum class WidgetTextSize(val scale: Float) {
+    SMALL(0.85f),
+    STANDARD(1.0f),
+    LARGE(1.15f),
+}
+
+/**
  * Everything the user has chosen about how the app looks, and how the list reads.
  *
  * [customHue] is kept even while a preset is selected, so switching to
@@ -54,6 +81,10 @@ data class AppSettings(
     val remindMinutes: Int = 540,
     /** How many minutes before the countdown the reminder arrives: 0 is at that moment. */
     val remindLeadMinutes: Int = 0,
+    /** The widgets' panel, which may differ from the one the app itself is painted in. */
+    val widgetPanel: WidgetPanel = WidgetPanel.SYSTEM,
+    /** How large the list widget's text is, as a multiple of the layout's own sizes. */
+    val widgetTextSize: WidgetTextSize = WidgetTextSize.STANDARD,
 )
 
 /**
@@ -86,6 +117,12 @@ class SettingsStore(context: Context) {
         val language = prefs.getString(KEY_LANGUAGE, null)
             ?.let { name -> AppLanguage.entries.firstOrNull { it.name == name } }
             ?: AppLanguage.SYSTEM
+        val widgetPanel = prefs.getString(KEY_WIDGET_PANEL, null)
+            ?.let { name -> WidgetPanel.entries.firstOrNull { it.name == name } }
+            ?: WidgetPanel.SYSTEM
+        val widgetTextSize = prefs.getString(KEY_WIDGET_TEXT_SIZE, null)
+            ?.let { name -> WidgetTextSize.entries.firstOrNull { it.name == name } }
+            ?: WidgetTextSize.STANDARD
         return AppSettings(
             preset = preset,
             customHue = prefs.getFloat(KEY_HUE, DEFAULT_HUE),
@@ -94,6 +131,8 @@ class SettingsStore(context: Context) {
             remind = prefs.getBoolean(KEY_REMIND, false),
             remindMinutes = prefs.getInt(KEY_REMIND_TIME, 540),
             remindLeadMinutes = prefs.getInt(KEY_REMIND_LEAD, 0),
+            widgetPanel = widgetPanel,
+            widgetTextSize = widgetTextSize,
         )
     }
 
@@ -106,6 +145,8 @@ class SettingsStore(context: Context) {
             putBoolean(KEY_REMIND, settings.remind)
             putInt(KEY_REMIND_TIME, settings.remindMinutes)
             putInt(KEY_REMIND_LEAD, settings.remindLeadMinutes)
+            putString(KEY_WIDGET_PANEL, settings.widgetPanel.name)
+            putString(KEY_WIDGET_TEXT_SIZE, settings.widgetTextSize.name)
         }
     }
 
@@ -127,5 +168,7 @@ class SettingsStore(context: Context) {
         const val KEY_REMIND_LEAD = "remind_lead"
         const val KEY_GUIDE = "guide_seen"
         const val KEY_REMIND = "remind"
+        const val KEY_WIDGET_PANEL = "widget_panel"
+        const val KEY_WIDGET_TEXT_SIZE = "widget_text_size"
     }
 }

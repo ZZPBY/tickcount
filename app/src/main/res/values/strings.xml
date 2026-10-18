@@ -158,6 +158,7 @@
     <string name="language_chinese" translatable="false">中文</string>
     <string name="language_english" translatable="false">English</string>
     <string name="settings_appearance">Appearance</string>
+    <string name="settings_widgets">Home-screen widgets</string>
 
     <!-- The five palettes, and the strip that mixes the last one -->
     <string name="theme_white">White</string>
@@ -224,6 +225,17 @@
     <string name="appearance_background">Page background</string>
     <string name="appearance_panel">Panels</string>
     <string name="appearance_card">Cards</string>
+    <!-- The home-screen widgets' own appearance, separate from the theme above. -->
+    <string name="widget_settings_intro">These apply to the two home-screen widgets; the app keeps its own theme.</string>
+    <string name="appearance_widget_panel">Panel</string>
+    <string name="appearance_widget_light">Light</string>
+    <string name="appearance_widget_dark">Dark</string>
+    <string name="appearance_widget_system">Follow the system</string>
+    <string name="appearance_widget_text_size">Text size</string>
+    <string name="appearance_widget_text_small">Small</string>
+    <string name="appearance_widget_text_standard">Standard</string>
+    <string name="appearance_widget_text_large">Large</string>
+    <string name="appearance_widget_note">The single widget fills its cell with the largest text that fits; the size above applies to the list.</string>
     <string name="home_empty">Nothing to count down to yet.\nTap + in the top right to add one.</string>
     <string name="home_no_matches">Nothing matches “%1$s”.</string>
     <string name="home_nothing_filtered">Nothing matches this filter.</string>

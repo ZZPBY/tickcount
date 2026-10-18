@@ -2,9 +2,14 @@
 <resources>
     <color name="window_background">#FF141311</color>
 
-    <!-- See values/colors.xml: the widget cannot inherit the Compose theme. -->
-    <color name="widget_background">#FF1D1C19</color>
-    <color name="widget_outline">#FF352F28</color>
-    <color name="widget_text_primary">#FFF3F1EA</color>
-    <color name="widget_text_secondary">#FFA8A296</color>
+    <!--
+      See values/colors.xml: the widget cannot inherit the Compose theme, and the fixed
+      light and dark palettes live in the default configuration so the panel setting can
+      pick either one. These four only say which palette the device's night setting starts
+      the widget from.
+    -->
+    <color name="widget_background">@color/widget_dark_background</color>
+    <color name="widget_outline">@color/widget_dark_outline</color>
+    <color name="widget_text_primary">@color/widget_dark_text_primary</color>
+    <color name="widget_text_secondary">@color/widget_dark_text_secondary</color>
 </resources>

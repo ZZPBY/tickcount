@@ -14,6 +14,8 @@ import io.github.zzpby.tickcount.data.ImportMode
 import io.github.zzpby.tickcount.data.ReadOutcome
 import io.github.zzpby.tickcount.data.SettingsStore
 import io.github.zzpby.tickcount.data.ThemePreset
+import io.github.zzpby.tickcount.data.WidgetPanel
+import io.github.zzpby.tickcount.data.WidgetTextSize
 import io.github.zzpby.tickcount.data.previewOf
 import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.domain.icsFor
@@ -265,6 +267,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         persist(events)
         _settings.value = backup.settings
         settingsStore.save(backup.settings)
+        // The restored settings decide the widgets' panel and text size too, and the
+        // refresh inside persist() ran before they were saved.
+        refreshAllWidgets(getApplication())
 
         return events.size
     }
@@ -297,6 +302,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun chooseLanguage(language: AppLanguage) {
         updateSettings(_settings.value.copy(language = language))
+    }
+
+    /**
+     * The panel the home-screen widgets wear.
+     *
+     * Redrawn at once rather than left for the half-hourly widget update: the widgets are
+     * what this setting is about, and the user may well be looking at one through the
+     * widget page.
+     */
+    fun chooseWidgetPanel(panel: WidgetPanel) {
+        updateSettings(_settings.value.copy(widgetPanel = panel))
+        refreshAllWidgets(getApplication())
+    }
+
+    /** The list widget's text size; applied the same way, and redrawn at once. */
+    fun chooseWidgetTextSize(size: WidgetTextSize) {
+        updateSettings(_settings.value.copy(widgetTextSize = size))
+        refreshAllWidgets(getApplication())
     }
 
     /** The first-run card has been read; it is not shown again on this install. */

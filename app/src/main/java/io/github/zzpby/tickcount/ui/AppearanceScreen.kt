@@ -1,10 +1,5 @@
 package io.github.zzpby.tickcount.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -33,7 +27,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,8 +34,7 @@ import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.AppSettings
 import io.github.zzpby.tickcount.data.ThemePreset
 import io.github.zzpby.tickcount.ui.components.HueSlider
-import io.github.zzpby.tickcount.ui.theme.FieldShape
-import io.github.zzpby.tickcount.ui.theme.hairline
+import io.github.zzpby.tickcount.ui.components.SectionLabel
 import io.github.zzpby.tickcount.ui.theme.schemeFor
 
 /**
@@ -68,6 +60,9 @@ private val ThemePreset.labelRes: Int
  * The screen is its own preview: the theme is applied from the settings as they
  * change, so dragging the hue strip repaints this page — and everything behind it —
  * as the knob moves. That is why there is no separate swatch to compare against.
+ *
+ * The home-screen widgets are not here: they have a page of their own in the drawer, since
+ * a widget sits on a wallpaper rather than in this window and its panel is not this theme.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -121,17 +116,6 @@ fun AppearanceScreen(
 
         Spacer(Modifier.height(36.dp))
     }
-}
-
-@Composable
-private fun SectionLabel(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.SemiBold,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-    Spacer(Modifier.height(8.dp))
 }
 
 /**

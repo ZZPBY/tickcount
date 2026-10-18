@@ -51,12 +51,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.AppSettings
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.notify.Reminders
+import io.github.zzpby.tickcount.ui.components.ChoicePill
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.CardShape
 import io.github.zzpby.tickcount.ui.theme.FieldShape
@@ -492,35 +492,6 @@ private fun StatTile(value: String, label: String, modifier: Modifier = Modifier
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-/** A small pill that is filled when chosen. */
-@Composable
-private fun ChoicePill(label: String, selected: Boolean, onClick: () -> Unit) {
-    val shape = MaterialTheme.shapes.extraLarge
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelLarge,
-        color = if (selected) {
-            MaterialTheme.colorScheme.onSecondaryContainer
-        } else {
-            MaterialTheme.colorScheme.onSurfaceVariant
-        },
-        maxLines = 1,
-        textAlign = TextAlign.Center,
-        modifier = Modifier
-            .clip(shape)
-            .background(
-                if (selected) {
-                    MaterialTheme.colorScheme.secondaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainer
-                }
-            )
-            .hairline(shape)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-    )
 }
 
 /**
