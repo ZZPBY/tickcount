@@ -42,6 +42,7 @@ import io.github.zzpby.tickcount.data.AppLanguage
 enum class AppScreen(val labelRes: Int) {
     HOME(R.string.drawer_home),
     CALENDAR(R.string.drawer_calendar),
+    REMINDERS(R.string.settings_toggles),
     APPEARANCE(R.string.settings_appearance),
     DATA(R.string.drawer_data),
     CHANGELOG(R.string.drawer_changelog),
@@ -57,7 +58,7 @@ enum class AppScreen(val labelRes: Int) {
  * writes.
  */
 private val AppScreen.startsGroup: Boolean
-    get() = this == AppScreen.APPEARANCE || this == AppScreen.CHANGELOG
+    get() = this == AppScreen.REMINDERS || this == AppScreen.CHANGELOG
 
 /**
  * The gap between two groups.

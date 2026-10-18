@@ -147,6 +147,7 @@
     <string name="appearance_seconds">显示秒</string>
     <string name="appearance_seconds_hint">关掉后倒计时只到分钟，不再每秒跳动。</string>
     <string name="appearance_remind">当天提醒</string>
+    <string name="settings_toggles">提醒与显示</string>
     <string name="appearance_remind_hint">当天 09:00 发一条通知。需要通知权限，开着应用才生效。</string>
     <string name="reminder_channel">倒数日提醒</string>
     <string name="reminder_channel_description">倒数日当天的提醒</string>

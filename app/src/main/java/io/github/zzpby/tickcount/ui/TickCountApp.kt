@@ -297,12 +297,17 @@ fun TickCountApp(
                         onLongPressEvent = { actionsForId = it },
                     )
 
+                    screen == AppScreen.REMINDERS -> TogglesScreen(
+                        showSeconds = settings.showSeconds,
+                        remind = settings.remind,
+                        onShowSeconds = viewModel::chooseShowSeconds,
+                        onRemind = viewModel::chooseRemind,
+                    )
+
                     screen == AppScreen.APPEARANCE -> AppearanceScreen(
                         settings = settings,
                         onPreset = viewModel::chooseTheme,
                         onCustomHue = viewModel::chooseCustomHue,
-                        onShowSeconds = viewModel::chooseShowSeconds,
-                        onRemind = viewModel::chooseRemind,
                     )
 
                     screen == AppScreen.DATA -> DataScreen(

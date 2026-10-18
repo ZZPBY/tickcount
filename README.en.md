@@ -19,8 +19,8 @@ see how long is left — or how long it has been.
 ## Features
 
 - **Drawer** — the menu at the top left opens a half-screen drawer: Home and Calendar,
-  Appearance and Backup & data, then Changelog and About this project. Language sits on its
-  own at the foot of the drawer.
+  Reminders and display, Appearance, Backup & data, then Changelog and About this project.
+  Language sits on its own at the foot of the drawer.
 - **Countdown list** — one card each: the days left set large on the left, and the name, tags
   and date on the right — with the time after the date where there is one. What has gone by
   sits at the foot of the list, under a **Past** heading; when something falls today or

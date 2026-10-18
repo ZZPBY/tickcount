@@ -75,17 +75,8 @@ fun AppearanceScreen(
     settings: AppSettings,
     onPreset: (ThemePreset) -> Unit,
     onCustomHue: (Float) -> Unit,
-    onShowSeconds: (Boolean) -> Unit,
-    onRemind: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
-    // The permission is asked for here because a permission request needs an activity
-    // result, and this is the screen the switch lives on. A refusal still turns the switch
-    // back off, so the setting never claims a reminder that cannot arrive.
-    val notificationPermission = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted -> onRemind(granted) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -127,74 +118,6 @@ fun AppearanceScreen(
         SectionLabel(stringResource(R.string.appearance_surfaces))
         Spacer(Modifier.height(10.dp))
         SurfaceLadder()
-
-        Spacer(Modifier.height(24.dp))
-        // A switch rather than a section of its own: the countdown still reads the same,
-        // it just stops at the minute, and a paragraph about that would be longer than the
-        // change.
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(FieldShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .hairline(FieldShape)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.appearance_seconds),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.appearance_seconds_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Switch(checked = settings.showSeconds, onCheckedChange = onShowSeconds)
-        }
-
-        Spacer(Modifier.height(10.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(FieldShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                .hairline(FieldShape)
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.appearance_remind),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.appearance_remind_hint),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Spacer(Modifier.width(12.dp))
-            Switch(
-                checked = settings.remind,
-                onCheckedChange = { want ->
-                    when {
-                        !want -> onRemind(false)
-                        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU -> onRemind(true)
-                        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-                            PackageManager.PERMISSION_GRANTED -> onRemind(true)
-                        else -> notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-                },
-            )
-        }
 
         Spacer(Modifier.height(36.dp))
     }

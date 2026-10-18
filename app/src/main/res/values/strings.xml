@@ -162,6 +162,7 @@
     <string name="appearance_seconds">Show seconds</string>
     <string name="appearance_seconds_hint">Off stops the countdown at the minute, so nothing ticks.</string>
     <string name="appearance_remind">Remind me on the day</string>
+    <string name="settings_toggles">Reminders and display</string>
     <string name="appearance_remind_hint">A notification at 09:00 on the day. Needs notification permission, and works while the app is installed.</string>
     <string name="reminder_channel">Countdown reminders</string>
     <string name="reminder_channel_description">The reminder on a countdown day</string>
