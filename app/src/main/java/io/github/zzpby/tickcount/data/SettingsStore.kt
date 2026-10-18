@@ -50,6 +50,8 @@ data class AppSettings(
     val language: AppLanguage = AppLanguage.SYSTEM,
     /** Whether the countdown's own line ticks out seconds, or stops at minutes. */
     val showSeconds: Boolean = true,
+    /** Whether a notification is posted at 09:00 on the day a countdown lands. */
+    val remind: Boolean = false,
 )
 
 /**
@@ -88,6 +90,7 @@ class SettingsStore(context: Context) {
             sortOrder = order,
             language = language,
             showSeconds = prefs.getBoolean(KEY_SECONDS, true),
+            remind = prefs.getBoolean(KEY_REMIND, false),
         )
     }
 
@@ -98,6 +101,7 @@ class SettingsStore(context: Context) {
             putString(KEY_SORT, settings.sortOrder.name)
             putString(KEY_LANGUAGE, settings.language.name)
             putBoolean(KEY_SECONDS, settings.showSeconds)
+            putBoolean(KEY_REMIND, settings.remind)
         }
     }
 
@@ -116,5 +120,6 @@ class SettingsStore(context: Context) {
         const val KEY_LANGUAGE = "language"
         const val KEY_SECONDS = "seconds"
         const val KEY_GUIDE = "guide_seen"
+        const val KEY_REMIND = "remind"
     }
 }

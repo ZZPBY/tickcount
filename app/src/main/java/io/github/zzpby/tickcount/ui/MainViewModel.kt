@@ -17,6 +17,7 @@ import io.github.zzpby.tickcount.data.ThemePreset
 import io.github.zzpby.tickcount.data.previewOf
 import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.domain.icsFor
+import io.github.zzpby.tickcount.notify.Reminders
 import io.github.zzpby.tickcount.ui.widget.refreshAllWidgets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -176,6 +177,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // Any placed widget is showing one of these countdowns and has no way of
         // knowing one was renamed, re-timed, moved, or removed.
         refreshAllWidgets(getApplication())
+        // The reminder is for the next countdown, so it is only right while the list is.
+        if (_settings.value.remind) Reminders.schedule(getApplication(), events)
     }
 
     // -------------------------------------------------------------- backup
@@ -298,6 +301,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun dismissGuide() {
         settingsStore.markGuideSeen()
         _showGuide.value = false
+    }
+
+    /**
+     * Turns the on-the-day notification on or off.
+     *
+     * The permission itself is asked for by the screen, which owns the activity result: by
+     * the time this is called, the answer is already known.
+     */
+    fun chooseRemind(on: Boolean) {
+        updateSettings(_settings.value.copy(remind = on))
+        if (on) {
+            Reminders.schedule(getApplication(), _events.value)
+        } else {
+            Reminders.cancel(getApplication())
+        }
     }
 
     private fun updateSettings(next: AppSettings) {

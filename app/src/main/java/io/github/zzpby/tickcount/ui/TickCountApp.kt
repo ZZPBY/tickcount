@@ -302,6 +302,7 @@ fun TickCountApp(
                         onPreset = viewModel::chooseTheme,
                         onCustomHue = viewModel::chooseCustomHue,
                         onShowSeconds = viewModel::chooseShowSeconds,
+                        onRemind = viewModel::chooseRemind,
                     )
 
                     screen == AppScreen.DATA -> DataScreen(

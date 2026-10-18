@@ -2,9 +2,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
-      TickCount needs no permissions at all: it is a pure viewer over the
-      device clock and its own private storage.
+      TickCount needs no permissions to count down. Two are declared for the optional
+      reminder, and neither is requested until that switch is turned on:
+      POST_NOTIFICATIONS (Android 13+) to post it, RECEIVE_BOOT_COMPLETED to put the alarm
+      back after a restart. The alarm itself is the inexact kind, which needs no permission.
     -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -62,8 +66,7 @@
                 android:resource="@xml/upcoming_widget_info" />
         </receiver>
 
-        <!-- Started by the launcher, so this one does have to be exported. -->
-        <activity
+        <!-- Started by the launcher, so this one does have to be exported. -->        <activity
             android:name=".ui.widget.CountdownWidgetConfigActivity"
             android:excludeFromRecents="true"
             android:exported="true"
@@ -73,6 +76,20 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
+
+        <!-- The alarm's own receiver: it only ever posts a notification. -->
+        <receiver
+            android:name=".notify.ReminderReceiver"
+            android:exported="false" />
+
+        <!-- Alarms do not survive a restart, so this puts the next one back. -->
+        <receiver
+            android:name=".notify.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 

@@ -146,6 +146,12 @@
     <string name="appearance_presets">主题色</string>
     <string name="appearance_seconds">显示秒</string>
     <string name="appearance_seconds_hint">关掉后倒计时只到分钟，不再每秒跳动。</string>
+    <string name="appearance_remind">当天提醒</string>
+    <string name="appearance_remind_hint">当天 09:00 发一条通知。需要通知权限，开着应用才生效。</string>
+    <string name="reminder_channel">倒数日提醒</string>
+    <string name="reminder_channel_description">倒数日当天的提醒</string>
+    <string name="reminder_notification_today">就是今天</string>
+    <string name="reminder_notification_later">就是这一天（%1$s）</string>
     <string name="appearance_custom_hue">拖动选择色相</string>
     <string name="appearance_custom_hint">拖的时候整个应用会立刻换色，这个画面就是预览。</string>
     <string name="appearance_surfaces">各层深浅</string>

@@ -1,5 +1,10 @@
 package io.github.zzpby.tickcount.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -70,8 +76,16 @@ fun AppearanceScreen(
     onPreset: (ThemePreset) -> Unit,
     onCustomHue: (Float) -> Unit,
     onShowSeconds: (Boolean) -> Unit,
+    onRemind: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val context = LocalContext.current
+    // The permission is asked for here because a permission request needs an activity
+    // result, and this is the screen the switch lives on. A refusal still turns the switch
+    // back off, so the setting never claims a reminder that cannot arrive.
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted -> onRemind(granted) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -142,6 +156,44 @@ fun AppearanceScreen(
             }
             Spacer(Modifier.width(12.dp))
             Switch(checked = settings.showSeconds, onCheckedChange = onShowSeconds)
+        }
+
+        Spacer(Modifier.height(10.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(FieldShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .hairline(FieldShape)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.appearance_remind),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.appearance_remind_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(
+                checked = settings.remind,
+                onCheckedChange = { want ->
+                    when {
+                        !want -> onRemind(false)
+                        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU -> onRemind(true)
+                        context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
+                            PackageManager.PERMISSION_GRANTED -> onRemind(true)
+                        else -> notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                },
+            )
         }
 
         Spacer(Modifier.height(36.dp))

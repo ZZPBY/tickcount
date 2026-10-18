@@ -161,6 +161,12 @@
     <string name="appearance_presets">Theme colour</string>
     <string name="appearance_seconds">Show seconds</string>
     <string name="appearance_seconds_hint">Off stops the countdown at the minute, so nothing ticks.</string>
+    <string name="appearance_remind">Remind me on the day</string>
+    <string name="appearance_remind_hint">A notification at 09:00 on the day. Needs notification permission, and works while the app is installed.</string>
+    <string name="reminder_channel">Countdown reminders</string>
+    <string name="reminder_channel_description">The reminder on a countdown day</string>
+    <string name="reminder_notification_today">That is today</string>
+    <string name="reminder_notification_later">That is this day (%1$s)</string>
     <string name="appearance_custom_hue">Pick a hue</string>
     <string name="appearance_custom_hint">The whole app repaints as you drag, so this screen is the preview.</string>
     <string name="appearance_surfaces">Surface levels</string>
