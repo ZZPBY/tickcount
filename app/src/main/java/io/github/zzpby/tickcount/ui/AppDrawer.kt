@@ -1,4 +1,4 @@
-﻿package io.github.zzpby.tickcount.ui
+package io.github.zzpby.tickcount.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -63,7 +63,7 @@ private val AppScreen.startsGroup: Boolean
 /**
  * The gap between two groups.
  *
- * Sized against the 4dp between two rows inside a group 鈥?four times that, and equal to the
+ * Sized against the 4dp between two rows inside a group — four times that, and equal to the
  * 12dp the column already leaves at its top and bottom, so the ends and the seams read as
  * the same kind of pause.
  */
@@ -81,7 +81,8 @@ private val GroupSpacing = 12.dp
  * tap and a back press to change one word. It is drawn at the foot of the panel rather than
  * among the rows, because everything above it is a place to go and it is not.
  *
- * The destinations come in three groups 鈥?what you browse, what you set up, what you read 鈥? * and the gaps between them are the only thing saying so. Every row is otherwise the same
+ * The destinations come in three groups — what you browse, what you set up, what you read —
+ * and the gaps between them are the only thing saying so. Every row is otherwise the same
  * weight, and a flat list would leave the reader to guess where one kind ends and the next
  * begins.
  */
@@ -101,7 +102,7 @@ fun AppDrawerContent(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
         // A real shadow rather than a tonal elevation: tonal elevation tints the surface
-        // towards the primary colour, which on a white theme is a grey 鈥?the one thing this
+        // towards the primary colour, which on a white theme is a grey — the one thing this
         // panel should not be.
         shadowElevation = 14.dp,
     ) {

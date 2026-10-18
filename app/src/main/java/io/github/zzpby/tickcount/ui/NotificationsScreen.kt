@@ -19,8 +19,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,12 +36,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.AppSettings
+import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.notify.Reminders
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.CardShape
@@ -65,7 +71,9 @@ fun NotificationsScreen(
     next: Reminders.Planned?,
     onRemind: (Boolean) -> Unit,
     onMinutes: (Int) -> Unit,
-    onAdvance: (Int) -> Unit,
+    onLead: (Int) -> Unit,
+    onEventLead: (String, Int?) -> Unit,
+    events: List<CountdownEvent>,
     onTest: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -74,10 +82,17 @@ fun NotificationsScreen(
     // no reason to re-read it when the user comes back from the system settings.
     var refreshKey by remember { mutableIntStateOf(0) }
     var timeDialogOpen by remember { mutableStateOf(false) }
+    var leadDialogOpen by remember { mutableStateOf(false) }
 
     val allowed = remember(refreshKey, settings.remind) { Reminders.canNotify(context) }
     val granted = allowed || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
     val scheduled = settings.remind && next != null
+    val upcoming = remember(events) {
+        events.filter { !it.date.isBefore(java.time.LocalDate.now()) }
+            .sortedBy { it.date }
+            .take(6)
+    }
+    var eventDialogId by remember { mutableStateOf<String?>(null) }
     val nextText = when {
         !settings.remind -> stringResource(R.string.notify_off_summary)
         next == null -> stringResource(R.string.notify_none)
@@ -189,7 +204,7 @@ fun NotificationsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = stringResource(R.string.notify_time),
+                        text = stringResource(R.string.notify_time_all_day),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f),
@@ -201,26 +216,78 @@ fun NotificationsScreen(
                     )
                 }
 
-                Spacer(Modifier.height(10.dp))
+                // The reminder time is only consulted for countdowns that do not name a
+                // time of their own, and a row that looks universal without saying so reads
+                // as a setting that has been ignored.
                 Text(
-                    text = stringResource(R.string.notify_advance),
-                    style = MaterialTheme.typography.bodyMedium,
+                    text = stringResource(R.string.notify_time_note),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.height(8.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Reminders.ADVANCE_CHOICES.forEach { days ->
-                        ChoicePill(
-                            label = advanceLabel(days),
-                            selected = settings.remindAdvanceDays == days,
-                            onClick = { onAdvance(days) },
-                        )
-                    }
+
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(FieldShape)
+                        .clickable { leadDialogOpen = true }
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.notify_advance),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = leadText(settings.remindLeadMinutes),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
             }
         }
 
         Spacer(Modifier.height(10.dp))
+
+        // ---------------------------------------------------------- per countdown
+        if (upcoming.isNotEmpty()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(CardShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .hairline(CardShape)
+                    .padding(horizontal = 18.dp, vertical = 14.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.notify_events_title),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.notify_events_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(6.dp))
+
+                upcoming.forEachIndexed { index, event ->
+                    if (index > 0) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                    EventRow(
+                        event = event,
+                        moment = momentText(event, settings),
+                        customised = event.remindLeadMinutes != null,
+                        onClick = { eventDialogId = event.id },
+                    )
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+        }
 
         // ---------------------------------------------------------- prove it works
         Button(
@@ -267,6 +334,29 @@ fun NotificationsScreen(
         Spacer(Modifier.height(28.dp))
     }
 
+    val editing = events.firstOrNull { it.id == eventDialogId }
+    if (editing != null) {
+        EventLeadDialog(
+            title = editing.title,
+            current = editing.remindLeadMinutes,
+            onPick = {
+                onEventLead(editing.id, it)
+                eventDialogId = null
+            },
+            onDismiss = { eventDialogId = null },
+        )
+    }
+    if (leadDialogOpen) {
+        LeadDialog(
+            current = settings.remindLeadMinutes,
+            onPick = {
+                onLead(it)
+                leadDialogOpen = false
+            },
+            onDismiss = { leadDialogOpen = false },
+        )
+    }
+
     if (timeDialogOpen) {
         TimeDialog(
             current = settings.remindMinutes,
@@ -285,14 +375,20 @@ private fun minutesOf(planned: Reminders.Planned): Int {
     return local.hour * 60 + local.minute
 }
 
-/** "On the day" for zero, "3 days before" otherwise. */
+/** "On time", or the offset written in the largest whole unit it fits. */
 @Composable
-private fun advanceLabel(days: Int): String =
-    if (days == 0) {
-        stringResource(R.string.notify_advance_same_day)
-    } else {
-        stringResource(R.string.notify_advance_option, days)
+private fun leadText(minutes: Int): String = when {
+    minutes <= 0 -> stringResource(R.string.notify_lead_none)
+    minutes % (24 * 60) == 0 -> {
+        val days = minutes / (24 * 60)
+        pluralStringResource(R.plurals.notify_lead_days, days, days)
     }
+    minutes % 60 == 0 -> {
+        val hours = minutes / 60
+        pluralStringResource(R.plurals.notify_lead_hours, hours, hours)
+    }
+    else -> pluralStringResource(R.plurals.notify_lead_minutes, minutes, minutes)
+}
 
 /** 780 becomes `13:00`. */
 private fun timeText(minutes: Int): String =
@@ -356,6 +452,81 @@ private fun ChoicePill(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 /**
+ * Picks how early the reminder arrives, in any number of minutes, hours or days.
+ *
+ * One number and one unit rather than a list of choices: the useful offsets are as varied as
+ * the things being counted, and a menu would only ever hold the ones somebody thought of.
+ */
+@Composable
+private fun LeadDialog(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Unit) {
+    var unit by remember {
+        mutableIntStateOf(
+            when {
+                current >= 24 * 60 && current % (24 * 60) == 0 -> 24 * 60
+                current >= 60 && current % 60 == 0 -> 60
+                else -> 1
+            }
+        )
+    }
+    var amount by remember { mutableStateOf((current / unit).toString()) }
+
+    fun total(): Int = ((amount.toIntOrNull() ?: 0) * unit)
+        .coerceIn(0, Reminders.MAX_LEAD_MINUTES)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.notify_lead_title)) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = amount,
+                    onValueChange = { input ->
+                        // Digits only: the unit pills say what the number means, so a sign or
+                        // a decimal point would only make it ambiguous.
+                        amount = input.filter { it.isDigit() }.take(5)
+                    },
+                    label = { Text(stringResource(R.string.notify_lead_amount)) },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(1 to R.string.notify_lead_unit_minutes,
+                        60 to R.string.notify_lead_unit_hours,
+                        24 * 60 to R.string.notify_lead_unit_days,
+                    ).forEach { (size, label) ->
+                        ChoicePill(
+                            label = stringResource(label),
+                            selected = unit == size,
+                            onClick = {
+                                val kept = total()
+                                unit = size
+                                amount = (kept / size).toString()
+                            },
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    text = leadText(total()) + " · " + stringResource(R.string.notify_lead_max),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onPick(total()) }) {
+                Text(stringResource(R.string.action_ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}
+
+/**
  * Picks the time the reminder arrives.
  *
  * Half-hour steps and four presets rather than a wheel: a reminder for a countdown is set
@@ -376,7 +547,7 @@ private fun TimeDialog(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Uni
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     TextButton(onClick = { minutes = (minutes + 1440 - 30) % 1440 }) {
-                        Text("−")
+                        Text("\u2212")
                     }
                     Text(
                         text = timeText(minutes),
@@ -401,6 +572,151 @@ private fun TimeDialog(current: Int, onPick: (Int) -> Unit, onDismiss: () -> Uni
         },
         confirmButton = {
             TextButton(onClick = { onPick(minutes) }) {
+                Text(stringResource(R.string.action_ok))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}
+
+/** The moment a countdown's reminder falls, as a date and a time. */
+@Composable
+private fun momentText(event: CountdownEvent, settings: AppSettings): String {
+    val at = Reminders.momentOf(event, settings.remindMinutes, settings.remindLeadMinutes)
+        .atZone(ZoneId.systemDefault())
+    val date = rememberDateFormatter(R.string.date_format_short).format(at)
+    return date + " " + at.format(DateTimeFormatter.ofPattern("HH:mm"))
+}
+
+/** One countdown, with the moment it will be reminded at. */
+@Composable
+private fun EventRow(
+    event: CountdownEvent,
+    moment: String,
+    customised: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = event.title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = if (customised) {
+                    moment + " · " + stringResource(R.string.notify_custom)
+                } else {
+                    moment + " · " + stringResource(R.string.notify_follow_global)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = "\u203A",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * One countdown's own reminder offset.
+ *
+ * Two answers rather than three: follow the app-wide setting, or name an offset. "On time" is
+ * an offset of zero, and giving it a third button would be a menu of one special case.
+ */
+@Composable
+private fun EventLeadDialog(
+    title: String,
+    current: Int?,
+    onPick: (Int?) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var follow by remember { mutableStateOf(current == null) }
+    var unit by remember {
+        mutableIntStateOf(
+            when {
+                (current ?: 0) >= 24 * 60 && (current ?: 0) % (24 * 60) == 0 -> 24 * 60
+                (current ?: 0) >= 60 && (current ?: 0) % 60 == 0 -> 60
+                else -> 1
+            }
+        )
+    }
+    var amount by remember { mutableStateOf(((current ?: 0) / unit).toString()) }
+
+    fun total(): Int = ((amount.toIntOrNull() ?: 0) * unit)
+        .coerceIn(0, Reminders.MAX_LEAD_MINUTES)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            Column {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ChoicePill(
+                        label = stringResource(R.string.notify_follow_global),
+                        selected = follow,
+                        onClick = { follow = true },
+                    )
+                    ChoicePill(
+                        label = stringResource(R.string.notify_custom),
+                        selected = !follow,
+                        onClick = { follow = false },
+                    )
+                }
+                if (!follow) {
+                    Spacer(Modifier.height(10.dp))
+                    OutlinedTextField(
+                        value = amount,
+                        onValueChange = { input ->
+                            amount = input.filter { it.isDigit() }.take(5)
+                        },
+                        label = { Text(stringResource(R.string.notify_lead_amount)) },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        listOf(1 to R.string.notify_lead_unit_minutes,
+                            60 to R.string.notify_lead_unit_hours,
+                            24 * 60 to R.string.notify_lead_unit_days,
+                        ).forEach { (size, label) ->
+                            ChoicePill(
+                                label = stringResource(label),
+                                selected = unit == size,
+                                onClick = {
+                                    val kept = total()
+                                    unit = size
+                                    amount = (kept / size).toString()
+                                },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = leadText(total()),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { if (follow) onPick(null) else onPick(total()) }) {
                 Text(stringResource(R.string.action_ok))
             }
         },

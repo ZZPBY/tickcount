@@ -28,6 +28,7 @@ object EventCodec {
     private const val KEY_CREATED = "a"
     private const val KEY_PINNED = "p"
     private const val KEY_LEGACY_COLOR = "c"
+    private const val KEY_LEAD = "r"
 
     /** Sentinel for "no time of day", which is not a valid minute. */
     private const val NO_TIME = -1
@@ -63,6 +64,10 @@ object EventCodec {
                     .put(KEY_CREATED, event.createdAt)
                     .put(KEY_PINNED, event.pinned)
                     .apply { event.colorHue?.let { put(KEY_HUE, it.toDouble()) } }
+                    // Only written when this countdown overrides the app-wide lead: the
+                    // field is new, and a default that was never chosen need not take up
+                    // space in a document that is rewritten on every save.
+                    .apply { event.remindLeadMinutes?.let { put(KEY_LEAD, it) } }
             )
         }
         return array
@@ -89,6 +94,7 @@ object EventCodec {
                     // back to the date from there.
                     createdAt = obj.optLong(KEY_CREATED, 0L),
                     pinned = obj.optBoolean(KEY_PINNED, false),
+                    remindLeadMinutes = readLead(obj),
                 )
             )
         }
@@ -128,6 +134,19 @@ object EventCodec {
         } else {
             LocalTime.of(minuteOfDay / 60, minuteOfDay % 60)
         }
+
+    /**
+     * This countdown's own reminder offset, or null for "follow the app-wide one".
+     *
+     * A negative or absurd value is treated as absent rather than clamped: it can only come
+     * from a hand-edited document, and the app-wide setting is a better answer than a
+     * reminder scheduled thirty years ago.
+     */
+    private fun readLead(obj: JSONObject): Int? =
+        if (!obj.has(KEY_LEAD)) null else obj.optInt(KEY_LEAD, -1).takeIf { it in 0..MAX_LEAD }
+
+    /** A month, the same ceiling the screen offers. */
+    private const val MAX_LEAD = 30 * 24 * 60
 
     private fun readTags(array: JSONArray?): List<String> {
         if (array == null) return emptyList()

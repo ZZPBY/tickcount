@@ -150,16 +150,33 @@
     <string name="notify_off_summary">提醒已关闭</string>
     <string name="notify_grant">授予权限</string>
     <string name="notify_time">提醒时间</string>
+    <string name="notify_time_all_day">全天倒数日的提醒时间</string>
+    <string name="notify_time_note">有具体时间的倒数日，按它自己的时间提前，不看这里。</string>
     <string name="notify_advance">提前</string>
-    <string name="notify_advance_same_day">当天</string>
-    <string name="notify_advance_option">提前 %1$d 天</string>
-    <string name="notify_diagnosis">提醒诊断</string>
-    <string name="notify_diagnosis_hint">检查权限、调度状态与下一条提醒</string>
+    <string name="notify_lead_none">准时</string>
+    <plurals name="notify_lead_minutes">
+        <item quantity="other">提前 %1$d 分钟</item>
+    </plurals>
+    <plurals name="notify_lead_hours">
+        <item quantity="other">提前 %1$d 小时</item>
+    </plurals>
+    <plurals name="notify_lead_days">
+        <item quantity="other">提前 %1$d 天</item>
+    </plurals>
+    <string name="notify_lead_title">提前多久</string>
+    <string name="notify_lead_amount">数量</string>
+    <string name="notify_lead_unit_minutes">分钟</string>
+    <string name="notify_lead_unit_hours">小时</string>
+    <string name="notify_lead_unit_days">天</string>
+    <string name="notify_lead_max">最多 30 天</string>
+    <string name="notify_events_title">按事件提醒</string>
+    <string name="notify_events_hint">点一条，单独设置它的提前量</string>
+    <string name="notify_follow_global">跟随全局</string>
+    <string name="notify_custom">自定义</string>
     <string name="notify_permission">通知权限</string>
     <string name="notify_granted">已开启</string>
     <string name="notify_not_granted">未开启</string>
     <string name="notify_pending">待调度</string>
-    <string name="notify_pending_count">%1$d 条</string>
     <string name="notify_next">下一条提醒</string>
     <string name="notify_none">暂无</string>
     <string name="notify_refresh">刷新状态</string>

@@ -165,16 +165,36 @@
     <string name="notify_off_summary">Reminders are off</string>
     <string name="notify_grant">Allow permission</string>
     <string name="notify_time">Reminder time</string>
+    <string name="notify_time_all_day">Time for all-day countdowns</string>
+    <string name="notify_time_note">A countdown with a time of its own is reminded before that time, not this one.</string>
     <string name="notify_advance">How early</string>
-    <string name="notify_advance_same_day">On the day</string>
-    <string name="notify_advance_option">%1$d days before</string>
-    <string name="notify_diagnosis">Reminder check</string>
-    <string name="notify_diagnosis_hint">Permission, scheduling and the next reminder</string>
+    <string name="notify_lead_none">On time</string>
+    <plurals name="notify_lead_minutes">
+        <item quantity="one">%1$d minute before</item>
+        <item quantity="other">%1$d minutes before</item>
+    </plurals>
+    <plurals name="notify_lead_hours">
+        <item quantity="one">%1$d hour before</item>
+        <item quantity="other">%1$d hours before</item>
+    </plurals>
+    <plurals name="notify_lead_days">
+        <item quantity="one">%1$d day before</item>
+        <item quantity="other">%1$d days before</item>
+    </plurals>
+    <string name="notify_lead_title">How early</string>
+    <string name="notify_lead_amount">Amount</string>
+    <string name="notify_lead_unit_minutes">Minutes</string>
+    <string name="notify_lead_unit_hours">Hours</string>
+    <string name="notify_lead_unit_days">Days</string>
+    <string name="notify_lead_max">Up to 30 days</string>
+    <string name="notify_events_title">Per countdown</string>
+    <string name="notify_events_hint">Tap one to set how early it is reminded</string>
+    <string name="notify_follow_global">Follow the app setting</string>
+    <string name="notify_custom">Custom</string>
     <string name="notify_permission">Permission</string>
     <string name="notify_granted">Allowed</string>
     <string name="notify_not_granted">Not allowed</string>
     <string name="notify_pending">Scheduled</string>
-    <string name="notify_pending_count">%1$d</string>
     <string name="notify_next">Next reminder</string>
     <string name="notify_none">None yet</string>
     <string name="notify_refresh">Refresh</string>

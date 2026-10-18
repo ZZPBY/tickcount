@@ -52,8 +52,8 @@ data class AppSettings(
     val remind: Boolean = false,
     /** Minutes after midnight at which the reminder is delivered. 540 is 09:00. */
     val remindMinutes: Int = 540,
-    /** How many days before the countdown the reminder arrives: 0 is on the day. */
-    val remindAdvanceDays: Int = 0,
+    /** How many minutes before the countdown the reminder arrives: 0 is at that moment. */
+    val remindLeadMinutes: Int = 0,
 )
 
 /**
@@ -93,7 +93,7 @@ class SettingsStore(context: Context) {
             language = language,
             remind = prefs.getBoolean(KEY_REMIND, false),
             remindMinutes = prefs.getInt(KEY_REMIND_TIME, 540),
-            remindAdvanceDays = prefs.getInt(KEY_REMIND_ADVANCE, 0),
+            remindLeadMinutes = prefs.getInt(KEY_REMIND_LEAD, 0),
         )
     }
 
@@ -105,7 +105,7 @@ class SettingsStore(context: Context) {
             putString(KEY_LANGUAGE, settings.language.name)
             putBoolean(KEY_REMIND, settings.remind)
             putInt(KEY_REMIND_TIME, settings.remindMinutes)
-            putInt(KEY_REMIND_ADVANCE, settings.remindAdvanceDays)
+            putInt(KEY_REMIND_LEAD, settings.remindLeadMinutes)
         }
     }
 
@@ -124,7 +124,7 @@ class SettingsStore(context: Context) {
         const val KEY_LANGUAGE = "language"
         const val KEY_SECONDS = "seconds"
         const val KEY_REMIND_TIME = "remind_time"
-        const val KEY_REMIND_ADVANCE = "remind_advance"
+        const val KEY_REMIND_LEAD = "remind_lead"
         const val KEY_GUIDE = "guide_seen"
         const val KEY_REMIND = "remind"
     }

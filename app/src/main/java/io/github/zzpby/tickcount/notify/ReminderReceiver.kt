@@ -1,4 +1,4 @@
-package io.github.zzpby.tickcount.notify
+﻿package io.github.zzpby.tickcount.notify
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -24,7 +24,7 @@ class ReminderReceiver : BroadcastReceiver() {
         } else {
             // Still reschedule, or a deleted countdown would silence every later reminder.
             val settings = io.github.zzpby.tickcount.data.SettingsStore(context).load()
-            Reminders.schedule(context, events, settings.remindMinutes, settings.remindAdvanceDays)
+            Reminders.schedule(context, events, settings.remindMinutes, settings.remindLeadMinutes)
         }
     }
 }

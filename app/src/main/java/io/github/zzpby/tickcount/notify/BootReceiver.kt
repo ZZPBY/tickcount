@@ -1,4 +1,4 @@
-package io.github.zzpby.tickcount.notify
+﻿package io.github.zzpby.tickcount.notify
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -21,7 +21,7 @@ class BootReceiver : BroadcastReceiver() {
             context,
             EventStore(context).load(),
             settings.remindMinutes,
-            settings.remindAdvanceDays,
+            settings.remindLeadMinutes,
         )
     }
 }

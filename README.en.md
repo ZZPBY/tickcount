@@ -49,6 +49,10 @@ see how long is left — or how long it has been.
 - **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
   screen, ticking to the second. **Countdown list** shows what is coming next, one per row.
   Both adapt to their size, and neither asks for a permission.
+- **Notifications** — a page of its own in the drawer: a reminder time, one app-wide lead
+  time, and an override for any single countdown. It lists what is coming up with the moment
+  each reminder will arrive, and can send a test notification. Reminders use an inexact alarm,
+  so no exact-alarm permission is asked for, and they are put back after a restart.
 - **Appearance** — large rounded cards with a hairline outline, and the day count set far
   larger than anything else. Six themes — white, black, teal, mist blue, amber and rose — or
   mix your own on a hue strip. White is the plain one: a white page with near-black ink. Teal

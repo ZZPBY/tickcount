@@ -37,8 +37,8 @@ object Reminders {
 
     private const val REQUEST_CODE = 1077
 
-    /** Where a countdown may be reminded before its day arrives: the choices on screen. */
-    val ADVANCE_CHOICES = listOf(0, 1, 3)
+    /** How far ahead a reminder may be set: a month, which is as far as anyone plans ahead. */
+    const val MAX_LEAD_MINUTES = 30 * 24 * 60
 
     /** When the reminder falls, for the countdown it belongs to. */
     data class Planned(val event: CountdownEvent, val at: Instant)
@@ -62,29 +62,34 @@ object Reminders {
             PackageManager.PERMISSION_GRANTED
 
     /**
-     * The next reminder that still lies ahead, or null when there is none.
+     * When the reminder for [event] falls, in [zone].
      *
-     * Computed rather than stored, so the diagnostics on the notification screen describe
-     * the same arithmetic the alarm uses — a "next reminder" line of its own would be a
-     * second implementation to keep in step.
+     * Anchored to the countdown itself — its own time when it names one, the reminder time
+     * of day when it is all day — and then moved back by its own offset if it has one, or by
+     * the app-wide [leadMinutes] if it does not.
      */
+    fun momentOf(
+        event: CountdownEvent,
+        minutes: Int,
+        leadMinutes: Int,
+        zone: ZoneId = ZoneId.systemDefault(),
+    ): Instant {
+        val fallback = LocalTime.of(minutes / 60, minutes % 60)
+        val base = event.time?.let { event.date.atTime(it) } ?: event.date.atTime(fallback)
+        return base.minusMinutes((event.remindLeadMinutes ?: leadMinutes).toLong())
+            .atZone(zone).toInstant()
+    }
+
     fun planned(
         events: List<CountdownEvent>,
         minutes: Int,
-        advanceDays: Int,
+        leadMinutes: Int,
         now: Instant = Instant.now(),
     ): Planned? {
         val zone = ZoneId.systemDefault()
-        val at = LocalTime.of(minutes / 60, minutes % 60)
         return events
             .sortedBy { it.date }
-            .map { event ->
-                Planned(
-                    event = event,
-                    at = event.date.minusDays(advanceDays.toLong()).atTime(at)
-                        .atZone(zone).toInstant(),
-                )
-            }
+            .map { event -> Planned(event, momentOf(event, minutes, leadMinutes, zone)) }
             .firstOrNull { it.at.isAfter(now) }
     }
 
@@ -95,10 +100,10 @@ object Reminders {
      * launch: the next countdown can change without an alarm ever firing — deleting the
      * upcoming one, say.
      */
-    fun schedule(context: Context, events: List<CountdownEvent>, minutes: Int, advanceDays: Int) {
+    fun schedule(context: Context, events: List<CountdownEvent>, minutes: Int, leadMinutes: Int) {
         val host = context.applicationContext
         val alarms = host.getSystemService(AlarmManager::class.java) ?: return
-        val next = planned(events, minutes, advanceDays)
+        val next = planned(events, minutes, leadMinutes)
         if (next == null) {
             alarms.cancel(pendingIntent(host))
             return
@@ -130,7 +135,7 @@ object Reminders {
         // The list may have changed since this one was scheduled, so the next reminder is
         // picked from what is stored now rather than from what was scheduled then.
         val settings = io.github.zzpby.tickcount.data.SettingsStore(host).load()
-        schedule(host, EventStore(host).load(), settings.remindMinutes, settings.remindAdvanceDays)
+        schedule(host, EventStore(host).load(), settings.remindMinutes, settings.remindLeadMinutes)
     }
 
     /** A notification to confirm that the permission, channel and popup all work. */

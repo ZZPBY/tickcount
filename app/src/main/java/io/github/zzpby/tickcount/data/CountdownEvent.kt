@@ -39,6 +39,15 @@ data class CountdownEvent(
     val createdAt: Long = 0L,
     /** Pinned countdowns lead the list whatever order it is in. */
     val pinned: Boolean = false,
+    /**
+     * How early to be reminded about this one, in minutes, or null to follow the app-wide
+     * setting.
+     *
+     * Minutes rather than days because the useful offsets are unevenly spaced — half an hour
+     * before a deadline, two days before a birthday — and null rather than a sentinel so
+     * "nobody has said anything about this one" is a state the code can test for.
+     */
+    val remindLeadMinutes: Int? = null,
 ) {
     val epochDay: Long get() = date.toEpochDay()
 
