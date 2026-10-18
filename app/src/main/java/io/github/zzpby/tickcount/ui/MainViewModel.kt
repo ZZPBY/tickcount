@@ -59,6 +59,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _settings = MutableStateFlow(settingsStore.load())
     val settings: StateFlow<AppSettings> = _settings.asStateFlow()
 
+    /** True until the first-run card has been read once. */
+    private val _showGuide = MutableStateFlow(!settingsStore.hasSeenGuide())
+    val showGuide: StateFlow<Boolean> = _showGuide.asStateFlow()
+
     /**
      * The clock every screen reads.
      *
@@ -288,6 +292,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /** Whether the countdown on the detail screen shows seconds as well as minutes. */
     fun chooseShowSeconds(show: Boolean) {
         updateSettings(_settings.value.copy(showSeconds = show))
+    }
+
+    /** The first-run card has been read; it is not shown again on this install. */
+    fun dismissGuide() {
+        settingsStore.markGuideSeen()
+        _showGuide.value = false
     }
 
     private fun updateSettings(next: AppSettings) {

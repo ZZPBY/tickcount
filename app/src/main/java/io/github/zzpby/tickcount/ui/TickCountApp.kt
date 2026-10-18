@@ -77,6 +77,7 @@ fun TickCountApp(
     val now by viewModel.now.collectAsStateWithLifecycle()
     val visibleMonth by viewModel.visibleMonth.collectAsStateWithLifecycle()
     val settings by viewModel.settings.collectAsStateWithLifecycle()
+    val showGuide by viewModel.showGuide.collectAsStateWithLifecycle()
 
     var screenName by rememberSaveable { mutableStateOf(AppScreen.HOME.name) }
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -404,6 +405,7 @@ fun TickCountApp(
     // Only rendered while the countdown still exists, so one that has already gone
     // — deleted from another path, say — cannot raise a dialog about itself.
     val pendingDeleteName = viewModel.event(pendingDeleteId)?.title
+
     if (pendingDeleteId != null && pendingDeleteName != null) {
         DeleteConfirmDialog(
             name = pendingDeleteName,
@@ -417,7 +419,14 @@ fun TickCountApp(
         )
     }
 
+    // Read once, on the first launch after installing: three sentences about where things
+    // are, and then never again.
+    if (showGuide) {
+        GuideDialog(onDismiss = viewModel::dismissGuide)
+    }
+
     val actionsEvent = viewModel.event(actionsForId)
+
     if (actionsEvent != null) {
         EventActionsDialog(
             name = actionsEvent.title,
@@ -474,6 +483,29 @@ private fun EventActionsDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}
+
+/**
+ * The first-run card: where the buttons are, and nothing else.
+ *
+ * A dialog rather than coach marks over the controls: the screen it would point at is behind
+ * this one, and a card that can be read in one go needs no arrows to follow.
+ */
+@Composable
+private fun GuideDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.guide_title)) },
+        text = {
+            Text(
+                text = stringResource(R.string.guide_body),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.guide_ok)) }
         },
     )
 }

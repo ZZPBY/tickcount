@@ -156,6 +156,15 @@
     <string name="home_no_matches">没有匹配「%1$s」的倒数日。</string>
     <string name="home_nothing_filtered">没有符合筛选的日子。</string>
     <string name="home_past_section">已过去</string>
+    <string name="reminder_today">今天：%1$s</string>
+    <string name="reminder_tomorrow">明天：%1$s</string>
+    <plurals name="reminder_more">
+        <item quantity="other">%1$s 等 %2$d 个</item>
+    </plurals>
+    <string name="reminder_dismiss">关闭</string>
+    <string name="guide_title">先说三件事</string>
+    <string name="guide_body">点右上角的 + 新建一个倒数日。\n列表上方是搜索，下面那行胶囊可以只看「7 天内」或按标签筛。\n侧边栏里能换主题、看小组件和做备份。</string>
+    <string name="guide_ok">知道了</string>
     <string name="filter_next_7">7 天内</string>
     <!-- 主页标题下面那行：还有几个日子在等 -->
     <plurals name="home_summary">

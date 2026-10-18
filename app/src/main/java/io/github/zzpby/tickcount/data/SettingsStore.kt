@@ -101,6 +101,13 @@ class SettingsStore(context: Context) {
         }
     }
 
+    /** Whether the first-run explanation has been shown, which happens once per install. */
+    fun hasSeenGuide(): Boolean = prefs.getBoolean(KEY_GUIDE, false)
+
+    fun markGuideSeen() {
+        prefs.edit { putBoolean(KEY_GUIDE, true) }
+    }
+
     private companion object {
         const val PREFS_NAME = "tickcount_settings"
         const val KEY_THEME = "theme"
@@ -108,5 +115,6 @@ class SettingsStore(context: Context) {
         const val KEY_SORT = "sort"
         const val KEY_LANGUAGE = "language"
         const val KEY_SECONDS = "seconds"
+        const val KEY_GUIDE = "guide_seen"
     }
 }

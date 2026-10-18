@@ -23,7 +23,8 @@ see how long is left — or how long it has been.
   own at the foot of the drawer.
 - **Countdown list** — one card each: the days left set large on the left, and the name, tags
   and date on the right — with the time after the date where there is one. What has gone by
-  sits at the foot of the list, under a **Past** heading.
+  sits at the foot of the list, under a **Past** heading; when something falls today or
+  tomorrow, a line at the top of the list says so.
 - **Pinning and sorting** — a pinned countdown leads the list however it is sorted. The sort
   button offers **By date · nearest first**, **By date · furthest first** and **Date added ·
   newest first**, and remembers the choice. It governs the part still ahead.

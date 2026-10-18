@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +42,7 @@ import io.github.zzpby.tickcount.domain.searchText
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.Gutter
 import io.github.zzpby.tickcount.ui.theme.hairline
+import io.github.zzpby.tickcount.ui.theme.tintWash
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -126,6 +128,33 @@ fun HomeScreen(
             tagFilter = tagFilter,
             onTag = { tagFilter = if (tagFilter == it) null else it },
         )
+
+        // A reminder that needs no permission and no service: it is here when the app is
+        // open, and it resets itself the next day because it is keyed to the date.
+        val todays = entries.filter { !it.isPast && it.event.date == today }
+        val tomorrow = entries.filter { !it.isPast && it.event.date == today.plusDays(1) }
+        var reminderDismissed by rememberSaveable(today.toEpochDay()) { mutableStateOf(false) }
+        if (!reminderDismissed && (todays.isNotEmpty() || tomorrow.isNotEmpty())) {
+            val due = if (todays.isNotEmpty()) todays else tomorrow
+            val names = due.map { it.event.title }
+            val shown = if (names.size <= 2) {
+                names.joinToString(SEPARATOR)
+            } else {
+                pluralStringResource(
+                    R.plurals.reminder_more,
+                    names.size - 1,
+                    names.first(),
+                    names.size - 1,
+                )
+            }
+            ReminderBanner(
+                text = stringResource(
+                    if (todays.isNotEmpty()) R.string.reminder_today else R.string.reminder_tomorrow,
+                    shown,
+                ),
+                onDismiss = { reminderDismissed = true },
+            )
+        }
 
         when {
             entries.isEmpty() -> CentredNotice(stringResource(R.string.home_empty))
@@ -305,10 +334,42 @@ private fun cardDetail(
     return stringResource(R.string.text_with_time, dateText, time.format(timeFormatter))
 }
 
+/** What separates two names in the reminder line. */
+private const val SEPARATOR = "、"
+
+/**
+ * The line at the top of the list saying that something is due today or tomorrow.
+ *
+ * It is a strip on a tint of the accent rather than a card: it is a message about the list
+ * under it, not another countdown in it, and it should not be the thing the eye lands on
+ * before the list does.
+ */
+@Composable
+private fun ReminderBanner(text: String, onDismiss: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Gutter)
+            .clip(MaterialTheme.shapes.extraLarge)
+            .background(tintWash())
+            .padding(start = 16.dp, end = 4.dp, top = 2.dp, bottom = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onDismiss) {
+            Text(stringResource(R.string.reminder_dismiss))
+        }
+    }
+}
+
 /** A centred line of explanation, for a list that has nothing to show. */
 @Composable
-fun CentredNotice(text: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+fun CentredNotice(text: String, modifier: Modifier = Modifier) {    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,

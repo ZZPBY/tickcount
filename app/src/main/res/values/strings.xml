@@ -171,6 +171,16 @@
     <string name="home_no_matches">Nothing matches “%1$s”.</string>
     <string name="home_nothing_filtered">Nothing matches this filter.</string>
     <string name="home_past_section">Past</string>
+    <string name="reminder_today">Today: %1$s</string>
+    <string name="reminder_tomorrow">Tomorrow: %1$s</string>
+    <plurals name="reminder_more">
+        <item quantity="one">%1$s and %2$d more</item>
+        <item quantity="other">%1$s and %2$d more</item>
+    </plurals>
+    <string name="reminder_dismiss">Dismiss</string>
+    <string name="guide_title">Three things worth knowing</string>
+    <string name="guide_body">Tap + at the top right to add a countdown.\nSearch sits above the list, and the pills under it narrow the list to the next 7 days or to one tag.\nThe drawer holds the theme, the widgets and the backups.</string>
+    <string name="guide_ok">Got it</string>
     <string name="filter_next_7">Next 7 days</string>
     <!-- The line under the home screen's title: how many countdowns are still ahead. -->
     <plurals name="home_summary">
