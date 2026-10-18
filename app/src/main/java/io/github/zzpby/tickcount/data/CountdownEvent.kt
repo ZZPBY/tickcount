@@ -48,6 +48,16 @@ data class CountdownEvent(
      * "nobody has said anything about this one" is a state the code can test for.
      */
     val remindLeadMinutes: Int? = null,
+    /**
+     * The lunar date this countdown was entered as, when it was entered that way.
+     *
+     * Kept beside the solar [date] rather than instead of it: the countdown still counts down
+     * to one solar day, and the lunar fields exist so the card can say which lunar day that
+     * is. Null when the date was chosen in the ordinary solar way.
+     */
+    val lunarMonth: Int? = null,
+    val lunarDay: Int? = null,
+    val lunarLeap: Boolean = false,
 ) {
     val epochDay: Long get() = date.toEpochDay()
 

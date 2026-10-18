@@ -165,12 +165,11 @@ android {
         minSdk = 27
         // Google Play requires new apps to target API 36+ since 2026-08-31.
         targetSdk = 36
-        // A calendar version: year.month.revision, so a release's age is readable at a
-        // glance. The version code has to stay a single increasing integer for Play, so it
-        // is the same date squeezed together — 2026.10.1 becomes 261001 — with two digits
-        // kept for the revision and the century left out.
-        versionCode = 261001
-        versionName = "2026.10.1"
+        // A calendar version: year.month.day.sequence, the sequence counting the updates made
+        // that day. The version code stays one increasing integer for Play: the date squeezed
+        // together with the sequence in the last two digits — 2026.10.18.1 becomes 26101801.
+        versionCode = 26101801
+        versionName = "2026.10.18.1"
     }
 
     signingConfigs {

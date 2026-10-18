@@ -127,7 +127,10 @@ fun CalendarScreen(
                         EventCard(
                             entry = entry,
                             today = today,
-                            detailText = entry.event.time?.format(timeFormatter) ?: allDay,
+                            detailText = withLunar(
+                                entry.event,
+                                entry.event.time?.format(timeFormatter) ?: allDay,
+                            ),
                             onClick = { onOpenEvent(entry.event.id) },
                             onLongClick = { onLongPressEvent(entry.event.id) },
                         )

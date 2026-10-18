@@ -54,6 +54,16 @@
     <string name="field_all_day">All day</string>
     <string name="field_exact_minute">Exact minute</string>
     <string name="field_color">Own colour</string>
+    <string name="field_lunar">Lunar date</string>
+    <string name="lunar_unset">Not set</string>
+    <string name="lunar_picker_title">Pick a lunar date</string>
+    <string name="lunar_date">Lunar %1$d-%2$d</string>
+    <string name="lunar_date_leap">Lunar leap %1$d-%2$d</string>
+    <string name="lunar_leap">Leap month</string>
+    <string name="lunar_year">Year</string>
+    <string name="lunar_month">Month</string>
+    <string name="lunar_day">Day</string>
+    <string name="lunar_lands">Falls on %1$s</string>
     <string name="field_hue">Hue</string>
     <string name="field_pinned">Pin to the top</string>
 

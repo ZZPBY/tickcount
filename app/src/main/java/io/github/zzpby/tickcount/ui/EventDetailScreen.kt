@@ -144,7 +144,7 @@ fun EventDetailScreen(
         Spacer(Modifier.height(10.dp))
         DetailCard(
             label = stringResource(R.string.field_date),
-            value = event.date.format(dateFormatter),
+            value = withLunar(event, event.date.format(dateFormatter)),
         )
 
         Spacer(Modifier.height(10.dp))

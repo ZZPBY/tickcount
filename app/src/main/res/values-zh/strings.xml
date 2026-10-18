@@ -53,6 +53,16 @@
     <string name="field_all_day">全天</string>
     <string name="field_exact_minute">精确到分钟</string>
     <string name="field_color">自定义颜色</string>
+    <string name="field_lunar">农历日期</string>
+    <string name="lunar_unset">未设置</string>
+    <string name="lunar_picker_title">按农历选</string>
+    <string name="lunar_date">农历 %1$d月%2$d日</string>
+    <string name="lunar_date_leap">农历 闰%1$d月%2$d日</string>
+    <string name="lunar_leap">闰月</string>
+    <string name="lunar_year">年</string>
+    <string name="lunar_month">月</string>
+    <string name="lunar_day">日</string>
+    <string name="lunar_lands">对应 %1$s</string>
     <string name="field_hue">色相</string>
     <string name="field_pinned">置顶</string>
 

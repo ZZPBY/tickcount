@@ -2,6 +2,9 @@ package io.github.zzpby.tickcount.ui
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.BorderStroke
+import io.github.zzpby.tickcount.domain.Lunar
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -121,6 +124,10 @@ fun EventEditorScreen(
 
     var tagDraft by rememberSaveable(initial.id) { mutableStateOf("") }
     var datePickerOpen by rememberSaveable { mutableStateOf(false) }
+    var lunarPickerOpen by rememberSaveable { mutableStateOf(false) }
+    var lunarMonth by rememberSaveable(initial.id) { mutableIntStateOf(initial.lunarMonth ?: 0) }
+    var lunarDay by rememberSaveable(initial.id) { mutableIntStateOf(initial.lunarDay ?: 0) }
+    var lunarLeap by rememberSaveable(initial.id) { mutableStateOf(initial.lunarLeap) }
     var timePickerOpen by rememberSaveable { mutableStateOf(false) }
 
     // Null means "no colour of its own". Kept separately from the hue so that
@@ -149,6 +156,9 @@ fun EventEditorScreen(
         date = date,
         time = if (timed) LocalTime.of(minuteOfDay / 60, minuteOfDay % 60) else null,
         colorHue = hue.takeIf { coloured },
+        lunarMonth = lunarMonth.takeIf { it in 1..12 },
+        lunarDay = lunarDay.takeIf { it in 1..30 },
+        lunarLeap = lunarLeap && lunarMonth in 1..12,
     )
 
     /**
@@ -314,6 +324,38 @@ fun EventEditorScreen(
                 if (coloured) {
                     HueSlider(hue = hue, onHueChange = { hue = it })
                 }
+                Spacer(Modifier.height(12.dp))
+                // Under the date rather than beside it in a second field: the lunar date is
+                // another way of saying the same day, and the solar one is what is actually
+                // stored.
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(FieldShape)
+                        .clickable { lunarPickerOpen = true }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(R.string.field_lunar),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(
+                        text = if (lunarMonth in 1..12) {
+                            lunarLabel(lunarMonth, lunarDay.coerceAtLeast(1), lunarLeap)
+                        } else {
+                            stringResource(R.string.lunar_unset)
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (lunarMonth in 1..12) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
 
                 Spacer(Modifier.height(8.dp))
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -423,11 +465,31 @@ fun EventEditorScreen(
             }
     }
 
+    if (lunarPickerOpen) {
+        LunarPickerDialog(
+            initial = date,
+            onPick = { lunar ->
+                val solar = Lunar.toSolar(lunar)
+                if (solar != null) {
+                    epochDay = solar.toEpochDay()
+                    lunarMonth = lunar.month
+                    lunarDay = lunar.day
+                    lunarLeap = lunar.leap
+                }
+                lunarPickerOpen = false
+            },
+            onDismiss = { lunarPickerOpen = false },
+        )
+    }
     if (datePickerOpen) {
         DatePickerSheet(
             initial = date,
             onPick = {
                 epochDay = it.toEpochDay()
+                // Chosen as a solar day, so there is no lunar day left to name.
+                lunarMonth = 0
+                lunarDay = 0
+                lunarLeap = false
                 datePickerOpen = false
             },
             onDismiss = { datePickerOpen = false },
@@ -657,3 +719,98 @@ private const val DEFAULT_BATCH_COUNT_NUMBER = 2
  * quietly adding a countdown a day for the next two days.
  */
 private fun intOr(text: String, fallback: Int): Int = text.toIntOrNull() ?: fallback
+
+
+/**
+ * Picks a lunar date, and shows the solar day it lands on as it is chosen.
+ *
+ * Steppers rather than a wheel calendar: the interesting lunar dates are a handful per year,
+ * and stepping to "8-15" is faster than scrolling a grid that has to explain leap months.
+ */
+@Composable
+private fun LunarPickerDialog(
+    initial: LocalDate,
+    onPick: (Lunar.Date) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val start = remember(initial) {
+        Lunar.fromSolar(initial) ?: Lunar.Date(initial.year, 1, 1)
+    }
+    var year by remember { mutableIntStateOf(start.year) }
+    var month by remember { mutableIntStateOf(start.month) }
+    var leap by remember { mutableStateOf(start.leap) }
+    var day by remember { mutableIntStateOf(start.day) }
+
+    val leapMonthOfYear = Lunar.leapMonth(year)
+    val effectiveLeap = leap && leapMonthOfYear == month
+    val maxDay = Lunar.daysIn(year, month, effectiveLeap).coerceAtLeast(1)
+    val effectiveDay = day.coerceIn(1, maxDay)
+    val solar = Lunar.toSolar(Lunar.Date(year, month, effectiveDay, effectiveLeap))
+    val formatter = rememberDateFormatter(R.string.date_format_full)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.lunar_picker_title)) },
+        text = {
+            Column {
+                StepperRow(stringResource(R.string.lunar_year), year, 1900..2100) { year = it }
+                StepperRow(stringResource(R.string.lunar_month), month, 1..12) { month = it }
+                StepperRow(stringResource(R.string.lunar_day), effectiveDay, 1..maxDay) { day = it }
+
+                // Only offered when the year actually repeats this month, so the switch
+                // cannot be turned on for a leap month that does not exist.
+                if (leapMonthOfYear == month) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.lunar_leap),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Switch(checked = effectiveLeap, onCheckedChange = { leap = it })
+                    }
+                }
+
+                if (solar != null) {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = stringResource(R.string.lunar_lands, solar.format(formatter)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onPick(Lunar.Date(year, month, effectiveDay, effectiveLeap)) },
+                enabled = solar != null,
+            ) { Text(stringResource(R.string.action_ok)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
+}
+
+/** One "label — − value +" line of [LunarPickerDialog]. */
+@Composable
+private fun StepperRow(label: String, value: Int, range: IntRange, onChange: (Int) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = { onChange((value - 1).coerceIn(range)) }) { Text("-") }
+        Text(text = value.toString(), style = MaterialTheme.typography.titleMedium)
+        TextButton(onClick = { onChange((value + 1).coerceIn(range)) }) { Text("+") }
+    }
+}

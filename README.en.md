@@ -53,6 +53,9 @@ see how long is left — or how long it has been.
   time, and an override for any single countdown. It lists what is coming up with the moment
   each reminder will arrive, and can send a test notification. Reminders use an inexact alarm,
   so no exact-alarm permission is asked for, and they are put back after a restart.
+- **Lunar dates** — a countdown can be picked on the lunar calendar (1900–2100, leap months
+  included), and the card and its screen name the lunar day after the solar one. One day, not
+  a yearly repeat.
 - **Appearance** — large rounded cards with a hairline outline, and the day count set far
   larger than anything else. Six themes — white, black, teal, mist blue, amber and rose — or
   mix your own on a hue strip. White is the plain one: a white page with near-black ink. Teal
@@ -190,6 +193,7 @@ app/src/main/java/io/github/zzpby/tickcount/
 │   ├── Changelog.kt             splitting the changelog into versions
 │   ├── Readme.kt                pulling the introduction's sections out of the README
 │   ├── Ics.kt                   the .ics export: the countdowns as a calendar file
+│   ├── Lunar.kt                 the lunar table, and both directions of the conversion
 │   └── WidgetCountdown.kt       the widget's day split, shape rules and list picking
 └── ui/
     ├── MainViewModel.kt         the state, and the process's only clock

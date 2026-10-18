@@ -330,8 +330,13 @@ private fun cardDetail(
     dateText: String,
     timeFormatter: DateTimeFormatter,
 ): String {
-    val time = entry.event.time ?: return dateText
-    return stringResource(R.string.text_with_time, dateText, time.format(timeFormatter))
+    val time = entry.event.time
+    val base = if (time == null) {
+        dateText
+    } else {
+        stringResource(R.string.text_with_time, dateText, time.format(timeFormatter))
+    }
+    return withLunar(entry.event, base)
 }
 
 /** What separates two names in the reminder line. */
