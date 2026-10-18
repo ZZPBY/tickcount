@@ -85,8 +85,11 @@ object Reminders {
         minutes: Int,
         leadMinutes: Int,
         now: Instant = Instant.now(),
+        // A parameter rather than a straight read of the default zone: the tests assert an
+        // exact instant, and a machine set to a different time zone would otherwise be
+        // testing a different question. The app always passes its own zone.
+        zone: ZoneId = ZoneId.systemDefault(),
     ): Planned? {
-        val zone = ZoneId.systemDefault()
         return events
             .sortedBy { it.date }
             .map { event -> Planned(event, momentOf(event, minutes, leadMinutes, zone)) }

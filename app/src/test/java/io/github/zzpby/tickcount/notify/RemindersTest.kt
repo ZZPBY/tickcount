@@ -63,23 +63,22 @@ class RemindersTest {
         val soon = allDay(id = "soon", date = LocalDate.of(2026, 10, 26))
         val now = LocalDate.of(2026, 10, 18).atTime(12, 0).atZone(zone).toInstant()
 
-        val planned = Reminders.planned(listOf(soon, past), 9 * 60, 0, now)
+        val planned = Reminders.planned(listOf(soon, past), 9 * 60, 0, now, zone)
 
         assertEquals("soon", planned?.event?.id)
-        assertEquals(LocalDate.of(2026, 10, 26).atTime(9, 0), local(planned!!.at))
-    }
+        assertEquals(LocalDate.of(2026, 10, 26).atTime(9, 0), local(planned!!.at))    }
 
     @Test
     fun `a list whose reminders have all passed has nothing to schedule`() {
         val past = allDay(date = LocalDate.of(2026, 10, 20))
         val now = LocalDate.of(2026, 10, 21).atTime(12, 0).atZone(zone).toInstant()
-        assertNull(Reminders.planned(listOf(past), 9 * 60, 0, now))
+        assertNull(Reminders.planned(listOf(past), 9 * 60, 0, now, zone))
     }
 
     @Test
     fun `a lead can move a reminder into the past, which is then skipped`() {
         val event = allDay(date = LocalDate.of(2026, 10, 26), lead = 7 * 24 * 60)
         val now = LocalDate.of(2026, 10, 20).atTime(12, 0).atZone(zone).toInstant()
-        assertNull(Reminders.planned(listOf(event), 9 * 60, 0, now))
+        assertNull(Reminders.planned(listOf(event), 9 * 60, 0, now, zone))
     }
 }
