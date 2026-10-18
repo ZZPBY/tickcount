@@ -173,6 +173,9 @@
     <string name="notify_events_hint">点一条，单独设置它的提前量</string>
     <string name="notify_follow_global">跟随全局</string>
     <string name="notify_custom">自定义</string>
+    <string name="notify_search_hint">搜索名称或标签</string>
+    <string name="notify_filter_all">全部</string>
+    <string name="notify_events_empty">没有符合条件的日子</string>
     <string name="notify_permission">通知权限</string>
     <string name="notify_granted">已开启</string>
     <string name="notify_not_granted">未开启</string>

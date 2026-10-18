@@ -191,6 +191,9 @@
     <string name="notify_events_hint">Tap one to set how early it is reminded</string>
     <string name="notify_follow_global">Follow the app setting</string>
     <string name="notify_custom">Custom</string>
+    <string name="notify_search_hint">Search name or tag</string>
+    <string name="notify_filter_all">All</string>
+    <string name="notify_events_empty">Nothing matches</string>
     <string name="notify_permission">Permission</string>
     <string name="notify_granted">Allowed</string>
     <string name="notify_not_granted">Not allowed</string>

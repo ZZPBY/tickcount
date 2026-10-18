@@ -5,10 +5,21 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -87,10 +98,22 @@ fun NotificationsScreen(
     val allowed = remember(refreshKey, settings.remind) { Reminders.canNotify(context) }
     val granted = allowed || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
     val scheduled = settings.remind && next != null
+    var eventQuery by rememberSaveable { mutableStateOf("") }
+    var eventFilter by rememberSaveable { mutableStateOf(EventFilter.ALL.name) }
     val upcoming = remember(events) {
-        events.filter { !it.date.isBefore(java.time.LocalDate.now()) }
-            .sortedBy { it.date }
-            .take(6)
+        events.filter { !it.date.isBefore(java.time.LocalDate.now()) }.sortedBy { it.date }
+    }
+    val shown = upcoming.filter { event ->
+        val query = eventQuery.trim()
+        val matchesQuery = query.isEmpty() ||
+            event.title.contains(query, ignoreCase = true) ||
+            event.tags.any { it.contains(query, ignoreCase = true) }
+        val matchesFilter = when (eventFilter) {
+            EventFilter.CUSTOM.name -> event.remindLeadMinutes != null
+            EventFilter.GLOBAL.name -> event.remindLeadMinutes == null
+            else -> true
+        }
+        matchesQuery && matchesFilter
     }
     var eventDialogId by remember { mutableStateOf<String?>(null) }
     val nextText = when {
@@ -272,18 +295,67 @@ fun NotificationsScreen(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Spacer(Modifier.height(6.dp))
-
-                upcoming.forEachIndexed { index, event ->
-                    if (index > 0) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-                    EventRow(
-                        event = event,
-                        moment = momentText(event, settings),
-                        customised = event.remindLeadMinutes != null,
-                        onClick = { eventDialogId = event.id },
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = eventQuery,
+                    onValueChange = { eventQuery = it },
+                    placeholder = { Text(stringResource(R.string.notify_search_hint)) },
+                    singleLine = true,
+                    shape = FieldShape,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ChoicePill(
+                        label = stringResource(R.string.notify_filter_all),
+                        selected = eventFilter == EventFilter.ALL.name,
+                        onClick = { eventFilter = EventFilter.ALL.name },
                     )
+                    ChoicePill(
+                        label = stringResource(R.string.notify_custom),
+                        selected = eventFilter == EventFilter.CUSTOM.name,
+                        onClick = { eventFilter = EventFilter.CUSTOM.name },
+                    )
+                    ChoicePill(
+                        label = stringResource(R.string.notify_follow_global),
+                        selected = eventFilter == EventFilter.GLOBAL.name,
+                        onClick = { eventFilter = EventFilter.GLOBAL.name },
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
+
+                if (shown.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.notify_events_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    // Three rows high, however many there are: the card is a part of a
+                    // settings page, not a list to fill the screen. The bar beside it says
+                    // how much is below the fold.
+                    val scroll = rememberScrollState()
+                    Row(modifier = Modifier.height(EVENT_VIEWPORT)) {
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(scroll),
+                        ) {
+                            shown.forEachIndexed { index, event ->
+                                if (index > 0) {
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                }
+                                EventRow(
+                                    event = event,
+                                    moment = momentText(event, settings),
+                                    customised = event.remindLeadMinutes != null,
+                                    onClick = { eventDialogId = event.id },
+                                )
+                            }
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        ScrollIndicator(state = scroll, viewport = EVENT_VIEWPORT)
+                    }
                 }
             }
             Spacer(Modifier.height(10.dp))
@@ -723,5 +795,47 @@ private fun EventLeadDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
+    )
+}
+/** How much of the per-countdown list is visible: three rows. */
+private val EVENT_VIEWPORT = 66.dp * 3
+
+/** Which countdowns the per-event list is narrowed to. */
+private enum class EventFilter { ALL, CUSTOM, GLOBAL }
+
+/**
+ * A scroll bar for [state].
+ *
+ * Drawn rather than taken from the platform: the bar Android offers on a scrollable column is
+ * invisible until a drag starts, and the point of this one is to say, before anyone touches
+ * it, that there are more countdowns below the three on show.
+ */
+@Composable
+private fun ScrollIndicator(state: ScrollState, viewport: Dp) {
+    // Drawn rather than laid out: the thumb's position is read inside the draw phase, so a
+    // scroll does not recompose the page it belongs to.
+    val track = MaterialTheme.colorScheme.outlineVariant
+    val thumb = MaterialTheme.colorScheme.primary
+    Box(
+        modifier = Modifier
+            .width(3.dp)
+            .height(viewport)
+            .drawBehind {
+                val corner = CornerRadius(size.width / 2f)
+                drawRoundRect(color = track, cornerRadius = corner)
+                val max = state.maxValue
+                if (max > 0) {
+                    val visible = size.height
+                    val ratio = visible / (visible + max)
+                    val thumbHeight = (visible * ratio).coerceAtLeast(visible * 0.15f)
+                    val top = (visible - thumbHeight) * (state.value.toFloat() / max)
+                    drawRoundRect(
+                        color = thumb,
+                        topLeft = Offset(0f, top),
+                        size = Size(size.width, thumbHeight),
+                        cornerRadius = corner,
+                    )
+                }
+            },
     )
 }
