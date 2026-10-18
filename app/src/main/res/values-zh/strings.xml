@@ -163,7 +163,7 @@
     </plurals>
     <string name="reminder_dismiss">关闭</string>
     <string name="guide_title">先说三件事</string>
-    <string name="guide_body">点右上角的 + 新建一个倒数日。\n列表上方是搜索，下面那行胶囊可以只看「7 天内」或按标签筛。\n侧边栏里能换主题、看小组件和做备份。</string>
+    <string name="guide_body">点右上角的 + 新建一个倒数日。\n\n列表上方是搜索，下面那行胶囊可以只看「7 天内」或按标签筛。\n\n展开侧边栏查看更多功能。</string>
     <string name="guide_ok">知道了</string>
     <string name="filter_next_7">7 天内</string>
     <!-- 主页标题下面那行：还有几个日子在等 -->

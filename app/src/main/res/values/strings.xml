@@ -179,7 +179,7 @@
     </plurals>
     <string name="reminder_dismiss">Dismiss</string>
     <string name="guide_title">Three things worth knowing</string>
-    <string name="guide_body">Tap + at the top right to add a countdown.\nSearch sits above the list, and the pills under it narrow the list to the next 7 days or to one tag.\nThe drawer holds the theme, the widgets and the backups.</string>
+    <string name="guide_body">Tap + at the top right to add a countdown.\n\nSearch sits above the list, and the pills under it narrow the list to the next 7 days or to one tag.\n\nOpen the drawer to see the rest.</string>
     <string name="guide_ok">Got it</string>
     <string name="filter_next_7">Next 7 days</string>
     <!-- The line under the home screen's title: how many countdowns are still ahead. -->
