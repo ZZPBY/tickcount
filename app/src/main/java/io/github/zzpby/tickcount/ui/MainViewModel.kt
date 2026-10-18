@@ -16,6 +16,7 @@ import io.github.zzpby.tickcount.data.SettingsStore
 import io.github.zzpby.tickcount.data.ThemePreset
 import io.github.zzpby.tickcount.data.previewOf
 import io.github.zzpby.tickcount.domain.SortOrder
+import io.github.zzpby.tickcount.domain.icsFor
 import io.github.zzpby.tickcount.ui.widget.refreshAllWidgets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.crypto.AEADBadTagException
 
@@ -191,6 +193,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * The same countdowns as an iCalendar file, for a calendar the app does not own.
+     *
+     * A separate export rather than the backup one: the backup restores this app, this one
+     * hands the dates to another program, and they cannot be the same file.
+     */
+    fun exportIcs(): String {
+        val zone = ZoneId.systemDefault()
+        return icsFor(_events.value, zone, ZonedDateTime.now(zone))
+    }
+
+    /**
      * Opens a backup file without putting anything back.
      *
      * Kept apart from applying it so that the file, and any password on it, are settled
@@ -270,6 +283,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun chooseLanguage(language: AppLanguage) {
         updateSettings(_settings.value.copy(language = language))
+    }
+
+    /** Whether the countdown on the detail screen shows seconds as well as minutes. */
+    fun chooseShowSeconds(show: Boolean) {
+        updateSettings(_settings.value.copy(showSeconds = show))
     }
 
     private fun updateSettings(next: AppSettings) {

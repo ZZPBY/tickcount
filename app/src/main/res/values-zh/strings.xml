@@ -39,6 +39,7 @@
       为 0 的位已替换成等宽短横线，所以这里只负责排版和单位文字。
     -->
     <string name="countdown_line_format">%1$s年%2$s月%3$s日 %4$s时%5$s分%6$s秒</string>
+    <string name="countdown_line_format_no_seconds">%1$s年%2$s月%3$s日 %4$s时%5$s分</string>
 
     <!-- 编辑对话框 -->
     <string name="dialog_new_title">新建倒数日</string>
@@ -101,6 +102,9 @@
     <string name="data_export_body">把所有倒数日，以及外观、排序和语言设置，写进一个你指定的文件。</string>
     <string name="data_import">导入备份</string>
     <string name="data_import_body">读回一个备份文件，内容可以合并进来，也可以直接覆盖现有数据。</string>
+    <string name="data_export_ics">导出日历文件</string>
+    <string name="data_export_ics_body">把倒数日写成 .ics 文件，可以导入手机自带的日历；应用自己的设置不包含在内。</string>
+    <string name="data_ics_exported">日历文件已写好。</string>
     <string name="data_encrypt">用密码加密</string>
     <string name="data_password">密码</string>
     <string name="data_password_repeat">再输一遍</string>
@@ -140,6 +144,8 @@
     <string name="theme_rose">玫瑰</string>
     <string name="theme_custom">自定义</string>
     <string name="appearance_presets">主题色</string>
+    <string name="appearance_seconds">显示秒</string>
+    <string name="appearance_seconds_hint">关掉后倒计时只到分钟，不再每秒跳动。</string>
     <string name="appearance_custom_hue">拖动选择色相</string>
     <string name="appearance_custom_hint">拖的时候整个应用会立刻换色，这个画面就是预览。</string>
     <string name="appearance_surfaces">各层深浅</string>
@@ -148,13 +154,19 @@
     <string name="appearance_card">卡片</string>
     <string name="home_empty">还没有要数的日子。\n点右上角的 + 新建一个。</string>
     <string name="home_no_matches">没有匹配「%1$s」的倒数日。</string>
+    <string name="home_nothing_filtered">没有符合筛选的日子。</string>
     <string name="home_past_section">已过去</string>
+    <string name="filter_next_7">7 天内</string>
     <!-- 主页标题下面那行：还有几个日子在等 -->
     <plurals name="home_summary">
         <item quantity="other">%1$d 个日子，正在接近</item>
     </plurals>
     <plurals name="home_summary_past">
         <item quantity="other">这 %1$d 个日子都已经过去</item>
+    </plurals>
+    <!-- 接在 home_summary 后面：其中几个在今年 -->
+    <plurals name="home_this_year">
+        <item quantity="other">今年还有 %1$d 个</item>
     </plurals>
     <!-- 卡片上数字的三段：上标 / 数字 / 下注。中文读作「还有 8 天」 -->
     <string name="card_caption_future">还有</string>

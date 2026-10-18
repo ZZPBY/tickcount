@@ -289,6 +289,16 @@ fun EventEditorScreen(
                 )
 
                 Spacer(Modifier.height(12.dp))
+                FieldRow(
+                    label = stringResource(R.string.field_date),
+                    value = date.format(dateFormatter),
+                    onClick = { datePickerOpen = true },
+                )
+
+                // The colour sits directly under the date: both answer "which day is this",
+                // and the colour strip pushes the all-day / exact-minute choice away from the
+                // date it belongs to if it is put between them.
+                Spacer(Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -304,13 +314,6 @@ fun EventEditorScreen(
                 if (coloured) {
                     HueSlider(hue = hue, onHueChange = { hue = it })
                 }
-
-                Spacer(Modifier.height(12.dp))
-                FieldRow(
-                    label = stringResource(R.string.field_date),
-                    value = date.format(dateFormatter),
-                    onClick = { datePickerOpen = true },
-                )
 
                 Spacer(Modifier.height(8.dp))
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {

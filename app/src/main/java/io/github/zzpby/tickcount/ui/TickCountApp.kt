@@ -260,6 +260,7 @@ fun TickCountApp(
                     detailEvent != null -> EventDetailScreen(
                         event = detailEvent,
                         now = now,
+                        showSeconds = settings.showSeconds,
                         onTogglePin = { viewModel.togglePin(detailEvent.id) },
                     )
 
@@ -299,12 +300,14 @@ fun TickCountApp(
                         settings = settings,
                         onPreset = viewModel::chooseTheme,
                         onCustomHue = viewModel::chooseCustomHue,
+                        onShowSeconds = viewModel::chooseShowSeconds,
                     )
 
                     screen == AppScreen.DATA -> DataScreen(
                         onExport = viewModel::exportBackup,
                         onRead = viewModel::readBackup,
                         onApply = viewModel::applyBackup,
+                        onExportIcs = viewModel::exportIcs,
                     )
 
                     screen == AppScreen.CHANGELOG -> ChangelogScreen()

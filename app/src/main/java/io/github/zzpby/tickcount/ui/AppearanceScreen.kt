@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.AppSettings
 import io.github.zzpby.tickcount.data.ThemePreset
 import io.github.zzpby.tickcount.ui.components.HueSlider
+import io.github.zzpby.tickcount.ui.theme.FieldShape
+import io.github.zzpby.tickcount.ui.theme.hairline
 import io.github.zzpby.tickcount.ui.theme.schemeFor
 
 /**
@@ -66,6 +69,7 @@ fun AppearanceScreen(
     settings: AppSettings,
     onPreset: (ThemePreset) -> Unit,
     onCustomHue: (Float) -> Unit,
+    onShowSeconds: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -109,6 +113,36 @@ fun AppearanceScreen(
         SectionLabel(stringResource(R.string.appearance_surfaces))
         Spacer(Modifier.height(10.dp))
         SurfaceLadder()
+
+        Spacer(Modifier.height(24.dp))
+        // A switch rather than a section of its own: the countdown still reads the same,
+        // it just stops at the minute, and a paragraph about that would be longer than the
+        // change.
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(FieldShape)
+                .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                .hairline(FieldShape)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.appearance_seconds),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = stringResource(R.string.appearance_seconds_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(checked = settings.showSeconds, onCheckedChange = onShowSeconds)
+        }
 
         Spacer(Modifier.height(36.dp))
     }

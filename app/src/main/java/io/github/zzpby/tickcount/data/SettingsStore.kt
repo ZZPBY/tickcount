@@ -48,6 +48,8 @@ data class AppSettings(
     val customHue: Float = DEFAULT_HUE,
     val sortOrder: SortOrder = SortOrder.DATE_ASC,
     val language: AppLanguage = AppLanguage.SYSTEM,
+    /** Whether the countdown's own line ticks out seconds, or stops at minutes. */
+    val showSeconds: Boolean = true,
 )
 
 /**
@@ -85,6 +87,7 @@ class SettingsStore(context: Context) {
             customHue = prefs.getFloat(KEY_HUE, DEFAULT_HUE),
             sortOrder = order,
             language = language,
+            showSeconds = prefs.getBoolean(KEY_SECONDS, true),
         )
     }
 
@@ -94,6 +97,7 @@ class SettingsStore(context: Context) {
             putFloat(KEY_HUE, settings.customHue)
             putString(KEY_SORT, settings.sortOrder.name)
             putString(KEY_LANGUAGE, settings.language.name)
+            putBoolean(KEY_SECONDS, settings.showSeconds)
         }
     }
 
@@ -103,5 +107,6 @@ class SettingsStore(context: Context) {
         const val KEY_HUE = "hue"
         const val KEY_SORT = "sort"
         const val KEY_LANGUAGE = "language"
+        const val KEY_SECONDS = "seconds"
     }
 }

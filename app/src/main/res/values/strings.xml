@@ -40,6 +40,7 @@
       labels. Keep the "mo" for months distinct from the "m" for minutes.
     -->
     <string name="countdown_line_format">%1$sy %2$smo %3$sd %4$sh %5$sm %6$ss</string>
+    <string name="countdown_line_format_no_seconds">%1$sy %2$smo %3$sd %4$sh %5$sm</string>
 
     <!-- Editor dialog -->
     <string name="dialog_new_title">New countdown</string>
@@ -109,6 +110,9 @@
     <string name="data_export_body">Write every countdown, and the appearance, sorting and language settings, to a file you choose.</string>
     <string name="data_import">Import a backup</string>
     <string name="data_import_body">Read a backup file back in. Whatever it holds is added, or put in place of what is here.</string>
+    <string name="data_export_ics">Export as a calendar file</string>
+    <string name="data_export_ics_body">Write the countdowns as an .ics file, so they can be read into the calendar the phone already has. The settings of this app are not part of it.</string>
+    <string name="data_ics_exported">The calendar file was written.</string>
     <string name="data_encrypt">Encrypt with a password</string>
     <string name="data_password">Password</string>
     <string name="data_password_repeat">Enter it again</string>
@@ -155,6 +159,8 @@
     <string name="theme_rose">Rose</string>
     <string name="theme_custom">Custom</string>
     <string name="appearance_presets">Theme colour</string>
+    <string name="appearance_seconds">Show seconds</string>
+    <string name="appearance_seconds_hint">Off stops the countdown at the minute, so nothing ticks.</string>
     <string name="appearance_custom_hue">Pick a hue</string>
     <string name="appearance_custom_hint">The whole app repaints as you drag, so this screen is the preview.</string>
     <string name="appearance_surfaces">Surface levels</string>
@@ -163,7 +169,9 @@
     <string name="appearance_card">Cards</string>
     <string name="home_empty">Nothing to count down to yet.\nTap + in the top right to add one.</string>
     <string name="home_no_matches">Nothing matches “%1$s”.</string>
+    <string name="home_nothing_filtered">Nothing matches this filter.</string>
     <string name="home_past_section">Past</string>
+    <string name="filter_next_7">Next 7 days</string>
     <!-- The line under the home screen's title: how many countdowns are still ahead. -->
     <plurals name="home_summary">
         <item quantity="one">%1$d countdown coming up</item>
@@ -172,6 +180,11 @@
     <plurals name="home_summary_past">
         <item quantity="one">Every countdown has passed</item>
         <item quantity="other">All %1$d countdowns have passed</item>
+    </plurals>
+    <!-- Appended to home_summary: how many of those fall in the current year. -->
+    <plurals name="home_this_year">
+        <item quantity="one">%1$d this year</item>
+        <item quantity="other">%1$d this year</item>
     </plurals>
     <!--
       The three parts of a card's day count, stacked as caption / number / unit. English puts

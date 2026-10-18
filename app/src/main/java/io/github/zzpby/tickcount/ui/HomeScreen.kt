@@ -1,5 +1,9 @@
 package io.github.zzpby.tickcount.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,11 +16,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -29,8 +40,10 @@ import io.github.zzpby.tickcount.domain.matchesQuery
 import io.github.zzpby.tickcount.domain.searchText
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.Gutter
+import io.github.zzpby.tickcount.ui.theme.hairline
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 /**
  * Every countdown in one list, with a title over it and a search box above the list.
@@ -58,19 +71,34 @@ fun HomeScreen(
     val timeFormatter = rememberDateFormatter(R.string.time_format)
     val allDay = stringResource(R.string.field_all_day)
 
+    // Two filters rather than one, because they answer different questions: the tag narrows
+    // *what* is listed and the week narrows *when*. Kept in the screen rather than in the
+    // settings: they are a way of reading the list right now, not a preference.
+    var withinWeek by rememberSaveable { mutableStateOf(false) }
+    var tagFilter by rememberSaveable { mutableStateOf<String?>(null) }
+    val allTags = remember(entries) {
+        entries.flatMap { it.event.tags }.distinct().sorted()
+    }
+
     fun dateText(entry: CountdownListEntry) = entry.event.date.format(dateFormatter)
 
     fun timeText(entry: CountdownListEntry) = entry.event.time?.format(timeFormatter) ?: allDay
 
-    val visible = entries.filter { entry ->
-        matchesQuery(
-            haystack = searchText(entry.event, scope, dateText(entry), timeText(entry)),
-            query = query,
-        )
-    }
+    val visible = entries
+        .filter { tagFilter == null || tagFilter in it.event.tags }
+        .filter {
+            !withinWeek ||
+                (!it.isPast && ChronoUnit.DAYS.between(today, it.event.date) in 0..7)
+        }
+        .filter { entry ->
+            matchesQuery(
+                haystack = searchText(entry.event, scope, dateText(entry), timeText(entry)),
+                query = query,
+            )
+        }
 
     Column(modifier = modifier.fillMaxSize()) {
-        HomeHeader(entries)
+        HomeHeader(entries, today)
 
         Row(
             modifier = Modifier
@@ -91,12 +119,23 @@ fun HomeScreen(
 
         Spacer(Modifier.height(10.dp))
 
+        FilterRow(
+            withinWeek = withinWeek,
+            onWithinWeek = { withinWeek = it },
+            tags = allTags,
+            tagFilter = tagFilter,
+            onTag = { tagFilter = if (tagFilter == it) null else it },
+        )
+
         when {
             entries.isEmpty() -> CentredNotice(stringResource(R.string.home_empty))
 
             // An empty list after a search is a different thing from an empty list
             // altogether, and saying so is the difference between "nothing here" and
             // "nothing found".
+            visible.isEmpty() && (query.isNotBlank() || withinWeek || tagFilter != null) ->
+                CentredNotice(stringResource(R.string.home_nothing_filtered))
+
             visible.isEmpty() -> CentredNotice(
                 stringResource(R.string.home_no_matches, query.trim())
             )
@@ -129,13 +168,22 @@ fun HomeScreen(
  * empty screen says less than the empty screen's own message, which also says what to do.
  */
 @Composable
-private fun HomeHeader(entries: List<CountdownListEntry>) {
+private fun HomeHeader(entries: List<CountdownListEntry>, today: LocalDate) {
     val upcoming = entries.count { !it.isPast }
+    // How many of those land in the current year, which is the time horizon most people
+    // plan a birthday or a deadline against.
+    val thisYear = entries.count { !it.isPast && it.event.date.year == today.year }
     val summary = when {
         entries.isEmpty() -> null
         upcoming > 0 -> pluralStringResource(R.plurals.home_summary, upcoming, upcoming)
         else -> pluralStringResource(R.plurals.home_summary_past, entries.size, entries.size)
     }
+    val yearPart = if (thisYear > 0) {
+        pluralStringResource(R.plurals.home_this_year, thisYear, thisYear)
+    } else {
+        null
+    }
+    val line = listOfNotNull(summary, yearPart).joinToString(" · ")
 
     Column(
         modifier = Modifier
@@ -147,15 +195,81 @@ private fun HomeHeader(entries: List<CountdownListEntry>) {
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.onSurface,
         )
-        if (summary != null) {
+        if (line.isNotEmpty()) {
             Spacer(Modifier.height(4.dp))
             Text(
-                text = summary,
+                text = line,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
+}
+
+/**
+ * The two quick filters, above the list and under the search box.
+ *
+ * Nothing is shown when there is nothing to filter by: a row holding only "All" would be a
+ * control that cannot change anything, and on an empty list it would be the loudest thing on
+ * the screen.
+ */
+@Composable
+private fun FilterRow(
+    withinWeek: Boolean,
+    onWithinWeek: (Boolean) -> Unit,
+    tags: List<String>,
+    tagFilter: String?,
+    onTag: (String) -> Unit,
+) {
+    if (tags.isEmpty()) return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = Gutter, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FilterPill(
+            label = stringResource(R.string.filter_next_7),
+            selected = withinWeek,
+            onClick = { onWithinWeek(!withinWeek) },
+        )
+        tags.forEach { tag ->
+            FilterPill(
+                label = tag,
+                selected = tagFilter == tag,
+                onClick = { onTag(tag) },
+            )
+        }
+    }
+}
+
+/** One pill of [FilterRow]: outlined when off, tinted when on. */
+@Composable
+private fun FilterPill(label: String, selected: Boolean, onClick: () -> Unit) {
+    val shape = MaterialTheme.shapes.extraLarge
+    Text(
+        text = label,
+        style = MaterialTheme.typography.labelLarge,
+        color = if (selected) {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        maxLines = 1,
+        modifier = Modifier
+            .clip(shape)
+            .background(
+                if (selected) {
+                    MaterialTheme.colorScheme.secondaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHigh
+                }
+            )
+            .hairline(shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp),
+    )
 }
 
 /**

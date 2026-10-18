@@ -27,8 +27,9 @@ see how long is left — or how long it has been.
 - **Pinning and sorting** — a pinned countdown leads the list however it is sorted. The sort
   button offers **By date · nearest first**, **By date · furthest first** and **Date added ·
   newest first**, and remembers the choice. It governs the part still ahead.
-- **Search** — a box above the list, with a control on the right for searching **Name** (tags
-  included), **Date** or **Time**.
+- **Search and filters** — a box above the list, with a control on the right for searching
+  **Name** (tags included), **Date** or **Time**. Under it, a row of pills narrows the list to
+  **Next 7 days**, or to one tag. The line under the title also says how many fall this year.
 - **Exact minute** — a countdown is either all day, or set to an exact hour and minute.
 - **Tags and colours** — as many tags as you like, and a colour of its own mixed on a hue
   strip in the editor. Unset, it takes the theme's colour.
@@ -52,13 +53,15 @@ see how long is left — or how long it has been.
   mix your own on a hue strip. White is the plain one: a white page with near-black ink. Teal
   keeps the warm paper page. The other three, and a mixed hue, tint the page, the panels and
   the outlines to match their accent. The app does not follow the system dark setting and does
-  not take colours from the wallpaper; a choice stays put.
+  not take colours from the wallpaper; a choice stays put. Seconds can be switched off, and the
+  countdown then stops at the minute.
 - **Bilingual** — follows the system language, or you can pick Chinese or English in the
   drawer. Date formats are localised too.
 - **Backup and restore** — every countdown, and the appearance, sorting and language settings,
   can be written to a file and read back. An export can be encrypted with AES-256-GCM and a
   password; an import asks for that password first, then asks **Overwrite** or **Merge**, and
   says how many countdowns it would add, overwrite or discard before it does any of them.
+  There is also **Export as a calendar file**, which writes .ics for a system calendar.
 - **Changelog and About** — every release is listed in the drawer with the installed version
   marked, and the project's own introduction is readable in the app, with a repository address
   ready to copy or to open.
