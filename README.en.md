@@ -8,7 +8,7 @@ see how long is left — or how long it has been.
 
 [Chinese](README.md)
 
-**About 2 MB · No permissions · Fully offline · No ads · No account · Open source**
+**About 2 MB · Fully offline · No ads · No account · Open source**
 
 <p align="center">
   <img src="docs/screenshot-home.png" width="200" alt="Home: days left for each countdown, the past below" />
@@ -71,8 +71,10 @@ see how long is left — or how long it has been.
   ready to copy or to open.
 - **Large fonts** — the title bar, the drawer and the cards keep clear of the status bar and
   grow with the system font scale, so nothing is squeezed.
-- **No permissions, no network, no analytics.** One module, no third-party runtime libraries,
-  `minSdk` 27.
+- **No permissions unless you ask for reminders, no network, no analytics.** One module, no
+  third-party runtime libraries, `minSdk` 27. The optional on-the-day reminder is the only
+  thing that asks for anything — the notification permission, and permission to put its alarm
+  back after a restart.
 
 ## Adding several at once
 
@@ -187,6 +189,7 @@ app/src/main/java/io/github/zzpby/tickcount/
 │   ├── Search.kt                what the search box looks at, and what counts as a match
 │   ├── Changelog.kt             splitting the changelog into versions
 │   ├── Readme.kt                pulling the introduction's sections out of the README
+│   ├── Ics.kt                   the .ics export: the countdowns as a calendar file
 │   └── WidgetCountdown.kt       the widget's day split, shape rules and list picking
 └── ui/
     ├── MainViewModel.kt         the state, and the process's only clock
@@ -203,11 +206,15 @@ app/src/main/java/io/github/zzpby/tickcount/
     │                            colour, and adding several at once
     ├── DeleteConfirmDialog.kt   the confirmation before a delete
     ├── AppearanceScreen.kt      appearance: six theme presets and a custom hue
-    ├── DataScreen.kt            data management: export, import, and the optional encryption
+    ├── NotificationsScreen.kt   notifications: the reminder, a lead per countdown, and a test
+    ├── DataScreen.kt            data management: export, import, the optional encryption, and
+    │                            the .ics export
     ├── ChangelogScreen.kt       the changelog, taken from `更新日志.txt` in the repository
     ├── ProjectIntroScreen.kt    the introduction, taken from this file
     ├── calendar/                the hand-drawn month grid and the month picker
     ├── components/              Canvas icons (the search one too), the hue strip, the Markdown renderer, localised formats
+    ├── notify/                  reminders: scheduling the inexact alarm, the receiver, and the
+    │                            restart that puts it back
     ├── widget/                  the two home-screen widgets: drawing, receivers, config screen
     └── theme/                   the palettes, the type scale, and the shared shape and spacing tokens
 ```
@@ -243,8 +250,11 @@ the device on its own.
 
 A backup exported from Backup & data goes wherever you choose to put it, encrypted or not,
 as you decide; the app has no way to send it anywhere.
-The app declares no permissions, makes no network requests, and contains no analytics or
-advertising. There is a link to this repository in the introduction; tapping it opens the
+The app declares no permissions by default, makes no network requests, and contains no
+analytics or advertising. The one exception is the optional on-the-day reminder, which uses
+`POST_NOTIFICATIONS` (Android 13 and up) and `RECEIVE_BOOT_COMPLETED`; the notification
+permission is asked for when the switch is turned on, and goes away when it is turned off.
+There is a link to this repository in the introduction; tapping it opens the
 address in the browser, because TickCount has no network ability of its own and no
 `INTERNET` permission. The stored data leaves the device only if Android's own cloud backup
 is on, which is what `res/xml/backup_rules.xml` decides.

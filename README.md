@@ -156,6 +156,7 @@ app/src/main/java/io/github/zzpby/tickcount/
 │   ├── Search.kt                搜索范围与匹配规则
 │   ├── Changelog.kt             把更新日志拆成一个个版本
 │   ├── Readme.kt                从 README 里抽取项目介绍的章节
+│   ├── Ics.kt                   导出 .ics：把倒数日写成日历文件
 │   └── WidgetCountdown.kt       小组件的天数拆分、形态判定与清单挑选
 └── ui/
     ├── MainViewModel.kt         状态 + 全进程唯一的那个时钟
@@ -171,11 +172,13 @@ app/src/main/java/io/github/zzpby/tickcount/
     ├── EventEditorScreen.kt     新建 / 编辑（整屏）：名字、标签、日期、时间、颜色、批量
     ├── DeleteConfirmDialog.kt   删除前的确认弹窗
     ├── AppearanceScreen.kt      外观与显示：六个主题预设 + 自定义色相
-    ├── DataScreen.kt            数据管理：导出、导入、可选加密
+    ├── NotificationsScreen.kt   通知与提示：提醒设置、每条倒数日的提前量与测试通知
+    ├── DataScreen.kt            数据管理：导出、导入、可选加密、导出日历文件
     ├── ChangelogScreen.kt       更新日志，正文取自本仓库的同名文件
     ├── ProjectIntroScreen.kt    项目介绍，正文抽自本文件
     ├── calendar/                手写月历 + 年月选择窗
     ├── components/              Canvas 图标（含搜索）、色相条、Markdown 渲染、本地化格式
+    ├── notify/                  提醒：非精确闹钟的排期、通知接收器、开机后恢复
     ├── widget/                  两个桌面小组件：单条与清单的渲染、接收器、配置界面
     └── theme/                   配色、字体，以及形状与间距的共享 token
 ```
@@ -206,8 +209,10 @@ TickCount 只在自己私有的 `SharedPreferences` 中保存一份倒数日列�
 离开设备。
 
 「数据管理」里导出的备份文件写到哪里由你选，加不加密也由你定，应用没有任何办法把它送出去。
-它不声明任何权限，不发起网络请求，不含统计与广告。项目介绍里有一个指向本仓库的链接，
-点击后在浏览器中打开——TickCount 自己没有联网能力，也没有 `INTERNET` 权限。
+它默认不声明任何权限，也不发起网络请求、不含统计与广告；只有可选的「当天提醒」会用到
+`POST_NOTIFICATIONS`（Android 13 起）和 `RECEIVE_BOOT_COMPLETED`，前者在你打开提醒时才申请，
+关掉即撤销。项目介绍里有一个指向本仓库的链接，点击后在浏览器中打开——TickCount 自己没有
+联网能力，也没有 `INTERNET` 权限。
 这些数据仅在 Android 自身的云备份开启时才会离开设备，而这由 `res/xml/backup_rules.xml` 决定。
 
 ## 许可
