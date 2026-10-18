@@ -48,6 +48,7 @@ import io.github.zzpby.tickcount.data.AppLanguage
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.domain.SearchScope
 import io.github.zzpby.tickcount.domain.SortOrder
+import io.github.zzpby.tickcount.notify.Reminders
 import io.github.zzpby.tickcount.domain.countdownList
 import io.github.zzpby.tickcount.ui.calendar.MonthYearPickerDialog
 import io.github.zzpby.tickcount.ui.components.PlusIcon
@@ -64,13 +65,13 @@ private const val NO_DAY = Long.MIN_VALUE
  * dialogs that belong to whichever screen raised them.
  *
  * Navigation is a single piece of state rather than a navigation library. There is
- * exactly one level of it — a screen, plus optionally one countdown opened from a
- * list — so a back stack would be more machinery than the thing it models.
+ * exactly one level of it 鈥?a screen, plus optionally one countdown opened from a
+ * list 鈥?so a back stack would be more machinery than the thing it models.
  */
 @Composable
 fun TickCountApp(
     viewModel: MainViewModel = viewModel(),
-    /** Countdowns something outside the app asked to open — a home-screen widget, today. */
+    /** Countdowns something outside the app asked to open 鈥?a home-screen widget, today. */
     openRequests: Flow<String> = emptyFlow(),
 ) {
     val events by viewModel.events.collectAsStateWithLifecycle()
@@ -182,7 +183,9 @@ fun TickCountApp(
                             if (editorIsNew) R.string.dialog_new_title else R.string.dialog_edit_title
                         )
                         detailEvent != null -> detailEvent.title
-                        screen == AppScreen.HOME -> null
+                        // These set their own name large in the content, so the bar keeps
+                        // only the buttons.
+                        screen == AppScreen.HOME || screen == AppScreen.REMINDERS -> null
                         else -> stringResource(screen.labelRes)
                     },
                     // Editing a countdown is a step into it, like its own screen: the button
@@ -261,7 +264,6 @@ fun TickCountApp(
                     detailEvent != null -> EventDetailScreen(
                         event = detailEvent,
                         now = now,
-                        showSeconds = settings.showSeconds,
                         onTogglePin = { viewModel.togglePin(detailEvent.id) },
                     )
 
@@ -297,11 +299,17 @@ fun TickCountApp(
                         onLongPressEvent = { actionsForId = it },
                     )
 
-                    screen == AppScreen.REMINDERS -> TogglesScreen(
-                        showSeconds = settings.showSeconds,
-                        remind = settings.remind,
-                        onShowSeconds = viewModel::chooseShowSeconds,
+                    screen == AppScreen.REMINDERS -> NotificationsScreen(
+                        settings = settings,
+                        next = Reminders.planned(
+                            events,
+                            settings.remindMinutes,
+                            settings.remindAdvanceDays,
+                        ),
                         onRemind = viewModel::chooseRemind,
+                        onMinutes = viewModel::chooseRemindMinutes,
+                        onAdvance = viewModel::chooseRemindAdvance,
+                        onTest = viewModel::sendTestNotification,
                     )
 
                     screen == AppScreen.APPEARANCE -> AppearanceScreen(
@@ -409,7 +417,7 @@ fun TickCountApp(
     }
 
     // Only rendered while the countdown still exists, so one that has already gone
-    // — deleted from another path, say — cannot raise a dialog about itself.
+    // 鈥?deleted from another path, say 鈥?cannot raise a dialog about itself.
     val pendingDeleteName = viewModel.event(pendingDeleteId)?.title
 
     if (pendingDeleteId != null && pendingDeleteName != null) {
@@ -524,7 +532,7 @@ private fun GuideDialog(onDismiss: () -> Unit) {
  * list that will be saved rather than off the two fields that produced it, so the answer
  * cannot describe something other than what the button does.
  *
- * The count is the whole batch, the countdown that was filled in included — that is what the
+ * The count is the whole batch, the countdown that was filled in included 鈥?that is what the
  * list will hold after this, and it is the number someone is agreeing to.
  */
 @Composable

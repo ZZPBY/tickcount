@@ -39,7 +39,6 @@
       为 0 的位已替换成等宽短横线，所以这里只负责排版和单位文字。
     -->
     <string name="countdown_line_format">%1$s年%2$s月%3$s日 %4$s时%5$s分%6$s秒</string>
-    <string name="countdown_line_format_no_seconds">%1$s年%2$s月%3$s日 %4$s时%5$s分</string>
 
     <!-- 编辑对话框 -->
     <string name="dialog_new_title">新建倒数日</string>
@@ -144,15 +143,33 @@
     <string name="theme_rose">玫瑰</string>
     <string name="theme_custom">自定义</string>
     <string name="appearance_presets">主题色</string>
-    <string name="appearance_seconds">显示秒</string>
-    <string name="appearance_seconds_hint">关掉后倒计时只到分钟，不再每秒跳动。</string>
-    <string name="appearance_remind">当天提醒</string>
-    <string name="settings_toggles">提醒与显示</string>
-    <string name="appearance_remind_hint">当天 09:00 发一条通知。需要通知权限，开着应用才生效。</string>
-    <string name="reminder_channel">倒数日提醒</string>
-    <string name="reminder_channel_description">倒数日当天的提醒</string>
-    <string name="reminder_notification_today">就是今天</string>
-    <string name="reminder_notification_later">就是这一天（%1$s）</string>
+    <string name="settings_notifications">通知与提示</string>
+    <string name="notify_switch">提醒</string>
+    <string name="notify_on">已开</string>
+    <string name="notify_off">已关</string>
+    <string name="notify_off_summary">提醒已关闭</string>
+    <string name="notify_grant">授予权限</string>
+    <string name="notify_time">提醒时间</string>
+    <string name="notify_advance">提前</string>
+    <string name="notify_advance_same_day">当天</string>
+    <string name="notify_advance_option">提前 %1$d 天</string>
+    <string name="notify_diagnosis">提醒诊断</string>
+    <string name="notify_diagnosis_hint">检查权限、调度状态与下一条提醒</string>
+    <string name="notify_permission">通知权限</string>
+    <string name="notify_granted">已开启</string>
+    <string name="notify_not_granted">未开启</string>
+    <string name="notify_pending">待调度</string>
+    <string name="notify_pending_count">%1$d 条</string>
+    <string name="notify_next">下一条提醒</string>
+    <string name="notify_none">暂无</string>
+    <string name="notify_refresh">刷新状态</string>
+    <string name="notify_test">测试通知</string>
+    <string name="notify_test_body">这是一条测试通知，能收到就说明权限和通道都没问题。</string>
+    <string name="notify_footnote">提醒使用允许待机的非精确调度。若提醒延迟，请检查系统的电池优化、自启动和后台运行限制；不同厂商的限制可能不同。</string>
+    <string name="notify_channel">倒数日提醒</string>
+    <string name="notify_channel_description">倒数日当天的提醒</string>
+    <string name="notify_today">就是今天</string>
+    <string name="notify_later">就是这一天（%1$s）</string>
     <string name="appearance_custom_hue">拖动选择色相</string>
     <string name="appearance_custom_hint">拖的时候整个应用会立刻换色，这个画面就是预览。</string>
     <string name="appearance_surfaces">各层深浅</string>

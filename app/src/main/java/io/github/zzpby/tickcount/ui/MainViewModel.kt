@@ -178,7 +178,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         // knowing one was renamed, re-timed, moved, or removed.
         refreshAllWidgets(getApplication())
         // The reminder is for the next countdown, so it is only right while the list is.
-        if (_settings.value.remind) Reminders.schedule(getApplication(), events)
+        if (_settings.value.remind) {
+            Reminders.schedule(
+                getApplication(),
+                events,
+                _settings.value.remindMinutes,
+                _settings.value.remindAdvanceDays,
+            )
+        }
     }
 
     // -------------------------------------------------------------- backup
@@ -292,11 +299,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateSettings(_settings.value.copy(language = language))
     }
 
-    /** Whether the countdown on the detail screen shows seconds as well as minutes. */
-    fun chooseShowSeconds(show: Boolean) {
-        updateSettings(_settings.value.copy(showSeconds = show))
-    }
-
     /** The first-run card has been read; it is not shown again on this install. */
     fun dismissGuide() {
         settingsStore.markGuideSeen()
@@ -304,15 +306,42 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
-     * Turns the on-the-day notification on or off.
+     * Turns the reminder on or off.
      *
      * The permission itself is asked for by the screen, which owns the activity result: by
      * the time this is called, the answer is already known.
      */
     fun chooseRemind(on: Boolean) {
         updateSettings(_settings.value.copy(remind = on))
-        if (on) {
-            Reminders.schedule(getApplication(), _events.value)
+        reschedule()
+    }
+
+    /** The time of day the reminder arrives, as minutes after midnight. */
+    fun chooseRemindMinutes(minutes: Int) {
+        updateSettings(_settings.value.copy(remindMinutes = minutes))
+        reschedule()
+    }
+
+    /** How many days before the countdown the reminder arrives; 0 is on the day. */
+    fun chooseRemindAdvance(days: Int) {
+        updateSettings(_settings.value.copy(remindAdvanceDays = days))
+        reschedule()
+    }
+
+    /** A notification to prove that the permission and the channel work. */
+    fun sendTestNotification() {
+        Reminders.deliverTest(getApplication())
+    }
+
+    private fun reschedule() {
+        val settings = _settings.value
+        if (settings.remind) {
+            Reminders.schedule(
+                getApplication(),
+                _events.value,
+                settings.remindMinutes,
+                settings.remindAdvanceDays,
+            )
         } else {
             Reminders.cancel(getApplication())
         }

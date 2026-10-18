@@ -40,7 +40,6 @@
       labels. Keep the "mo" for months distinct from the "m" for minutes.
     -->
     <string name="countdown_line_format">%1$sy %2$smo %3$sd %4$sh %5$sm %6$ss</string>
-    <string name="countdown_line_format_no_seconds">%1$sy %2$smo %3$sd %4$sh %5$sm</string>
 
     <!-- Editor dialog -->
     <string name="dialog_new_title">New countdown</string>
@@ -159,15 +158,33 @@
     <string name="theme_rose">Rose</string>
     <string name="theme_custom">Custom</string>
     <string name="appearance_presets">Theme colour</string>
-    <string name="appearance_seconds">Show seconds</string>
-    <string name="appearance_seconds_hint">Off stops the countdown at the minute, so nothing ticks.</string>
-    <string name="appearance_remind">Remind me on the day</string>
-    <string name="settings_toggles">Reminders and display</string>
-    <string name="appearance_remind_hint">A notification at 09:00 on the day. Needs notification permission, and works while the app is installed.</string>
-    <string name="reminder_channel">Countdown reminders</string>
-    <string name="reminder_channel_description">The reminder on a countdown day</string>
-    <string name="reminder_notification_today">That is today</string>
-    <string name="reminder_notification_later">That is this day (%1$s)</string>
+    <string name="settings_notifications">Notifications and reminders</string>
+    <string name="notify_switch">Reminders</string>
+    <string name="notify_on">On</string>
+    <string name="notify_off">Off</string>
+    <string name="notify_off_summary">Reminders are off</string>
+    <string name="notify_grant">Allow permission</string>
+    <string name="notify_time">Reminder time</string>
+    <string name="notify_advance">How early</string>
+    <string name="notify_advance_same_day">On the day</string>
+    <string name="notify_advance_option">%1$d days before</string>
+    <string name="notify_diagnosis">Reminder check</string>
+    <string name="notify_diagnosis_hint">Permission, scheduling and the next reminder</string>
+    <string name="notify_permission">Permission</string>
+    <string name="notify_granted">Allowed</string>
+    <string name="notify_not_granted">Not allowed</string>
+    <string name="notify_pending">Scheduled</string>
+    <string name="notify_pending_count">%1$d</string>
+    <string name="notify_next">Next reminder</string>
+    <string name="notify_none">None yet</string>
+    <string name="notify_refresh">Refresh</string>
+    <string name="notify_test">Send a test</string>
+    <string name="notify_test_body">A test notification. If this arrives, the permission and the channel are both fine.</string>
+    <string name="notify_footnote">Reminders use an inexact alarm that is allowed to wait for the device to wake. If one arrives late, check battery optimisation, auto-start and background limits — they differ from maker to maker.</string>
+    <string name="notify_channel">Countdown reminders</string>
+    <string name="notify_channel_description">The reminder on a countdown day</string>
+    <string name="notify_today">That is today</string>
+    <string name="notify_later">That is this day (%1$s)</string>
     <string name="appearance_custom_hue">Pick a hue</string>
     <string name="appearance_custom_hint">The whole app repaints as you drag, so this screen is the preview.</string>
     <string name="appearance_surfaces">Surface levels</string>

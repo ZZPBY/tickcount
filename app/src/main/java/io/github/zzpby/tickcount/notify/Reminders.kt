@@ -9,12 +9,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationCompat
 import io.github.zzpby.tickcount.MainActivity
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 
@@ -37,18 +37,21 @@ object Reminders {
 
     private const val REQUEST_CODE = 1077
 
-    /** The time of day a reminder is delivered. */
-    private val AT: LocalTime = LocalTime.of(9, 0)
+    /** Where a countdown may be reminded before its day arrives: the choices on screen. */
+    val ADVANCE_CHOICES = listOf(0, 1, 3)
+
+    /** When the reminder falls, for the countdown it belongs to. */
+    data class Planned(val event: CountdownEvent, val at: Instant)
 
     /** Creates the channel, which is idempotent and must happen before any notification. */
     fun ensureChannel(context: Context) {
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
         val channel = NotificationChannel(
             CHANNEL_ID,
-            context.getString(R.string.reminder_channel),
+            context.getString(R.string.notify_channel),
             NotificationManager.IMPORTANCE_DEFAULT,
         )
-        channel.description = context.getString(R.string.reminder_channel_description)
+        channel.description = context.getString(R.string.notify_channel_description)
         manager.createNotificationChannel(channel)
     }
 
@@ -58,31 +61,54 @@ object Reminders {
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED
 
-    /** The next countdown that still has a reminder ahead of it, or null for none. */
-    fun nextReminder(events: List<CountdownEvent>, now: Instant = Instant.now()): CountdownEvent? {
+    /**
+     * The next reminder that still lies ahead, or null when there is none.
+     *
+     * Computed rather than stored, so the diagnostics on the notification screen describe
+     * the same arithmetic the alarm uses — a "next reminder" line of its own would be a
+     * second implementation to keep in step.
+     */
+    fun planned(
+        events: List<CountdownEvent>,
+        minutes: Int,
+        advanceDays: Int,
+        now: Instant = Instant.now(),
+    ): Planned? {
         val zone = ZoneId.systemDefault()
+        val at = LocalTime.of(minutes / 60, minutes % 60)
         return events
             .sortedBy { it.date }
-            .firstOrNull { it.date.atTime(AT).atZone(zone).toInstant().isAfter(now) }
+            .map { event ->
+                Planned(
+                    event = event,
+                    at = event.date.minusDays(advanceDays.toLong()).atTime(at)
+                        .atZone(zone).toInstant(),
+                )
+            }
+            .firstOrNull { it.at.isAfter(now) }
     }
 
     /**
      * Replaces whatever was scheduled with the reminder for [events].
      *
-     * Called whenever the list changes and on every launch, because the next countdown can
-     * change without an alarm ever firing — deleting the upcoming one, say.
+     * Called whenever the list changes, whenever the reminder is turned on, and on every
+     * launch: the next countdown can change without an alarm ever firing — deleting the
+     * upcoming one, say.
      */
-    fun schedule(context: Context, events: List<CountdownEvent>) {
+    fun schedule(context: Context, events: List<CountdownEvent>, minutes: Int, advanceDays: Int) {
         val host = context.applicationContext
-        val next = nextReminder(events)
         val alarms = host.getSystemService(AlarmManager::class.java) ?: return
+        val next = planned(events, minutes, advanceDays)
         if (next == null) {
             alarms.cancel(pendingIntent(host))
             return
         }
         ensureChannel(host)
-        val moment = next.date.atTime(AT).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, moment, pendingIntent(host))
+        alarms.setAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            next.at.toEpochMilli(),
+            pendingIntent(host),
+        )
     }
 
     fun cancel(context: Context) {
@@ -94,32 +120,46 @@ object Reminders {
     fun deliver(context: Context, event: CountdownEvent) {
         val host = context.applicationContext
         ensureChannel(host)
+        val text = when {
+            event.date.atStartOfDay(host.zone()).toInstant().isAfter(Instant.now()) ->
+                host.getString(R.string.notify_later, event.date.toString())
+            else -> host.getString(R.string.notify_today)
+        }
+        post(host, event.id.hashCode(), event.title, text)
+
+        // The list may have changed since this one was scheduled, so the next reminder is
+        // picked from what is stored now rather than from what was scheduled then.
+        val settings = io.github.zzpby.tickcount.data.SettingsStore(host).load()
+        schedule(host, EventStore(host).load(), settings.remindMinutes, settings.remindAdvanceDays)
+    }
+
+    /** A notification to confirm that the permission, channel and popup all work. */
+    fun deliverTest(context: Context) {
+        val host = context.applicationContext
+        ensureChannel(host)
+        post(host, TEST_ID, host.getString(R.string.app_name), host.getString(R.string.notify_test_body))
+    }
+
+    private fun post(context: Context, id: Int, title: String, text: String) {
         val open = PendingIntent.getActivity(
-            host,
+            context,
             0,
-            Intent(host, MainActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        val text = when {
-            event.date.isAfter(LocalDate.now()) ->
-                host.getString(R.string.reminder_notification_later, event.date.toString())
-            else -> host.getString(R.string.reminder_notification_today)
-        }
-        val notification = androidx.core.app.NotificationCompat.Builder(host, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle(event.title)
+            .setContentTitle(title)
             .setContentText(text)
             .setContentIntent(open)
             .setAutoCancel(true)
             .build()
-        host.getSystemService(NotificationManager::class.java)
-            ?.notify(event.id.hashCode(), notification)
-
-        // The list may have changed since this one was scheduled, so the next reminder is
-        // picked from what is stored now rather than from what was scheduled then.
-        schedule(host, EventStore(host).load())
+        context.getSystemService(NotificationManager::class.java)?.notify(id, notification)
     }
+
+    private const val TEST_ID = 77
+
+    private fun Context.zone(): ZoneId = ZoneId.systemDefault()
 
     private fun pendingIntent(context: Context): PendingIntent =
         PendingIntent.getBroadcast(

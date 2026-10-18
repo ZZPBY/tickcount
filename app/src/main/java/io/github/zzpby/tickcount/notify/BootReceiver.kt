@@ -15,7 +15,13 @@ import io.github.zzpby.tickcount.data.SettingsStore
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
-        if (!SettingsStore(context).load().remind) return
-        Reminders.schedule(context, EventStore(context).load())
+        val settings = SettingsStore(context).load()
+        if (!settings.remind) return
+        Reminders.schedule(
+            context,
+            EventStore(context).load(),
+            settings.remindMinutes,
+            settings.remindAdvanceDays,
+        )
     }
 }

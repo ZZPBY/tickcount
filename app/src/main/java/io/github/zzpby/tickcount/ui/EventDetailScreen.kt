@@ -57,23 +57,14 @@ import java.time.ZonedDateTime
 fun EventDetailScreen(
     event: CountdownEvent,
     now: ZonedDateTime,
-    showSeconds: Boolean,
     onTogglePin: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val countdown = remember(now, event) { countdownTo(event.target(now.zone), now) }
-    // One template per precision rather than trimming the seconds off the full line: the
-    // seconds are a slot with a unit after it, and cutting the text would have to know how
-    // each language writes that unit.
-    val slots = formatSlots(countdown.parts)
-    val line = if (showSeconds) {
-        stringResource(R.string.countdown_line_format, *slots.toTypedArray())
-    } else {
-        stringResource(
-            R.string.countdown_line_format_no_seconds,
-            *slots.take(SLOTS_WITHOUT_SECONDS).toTypedArray(),
-        )
-    }
+    val line = stringResource(
+        R.string.countdown_line_format,
+        *formatSlots(countdown.parts).toTypedArray(),
+    )
     val dateFormatter = rememberDateFormatter(R.string.date_format_full)
     val timeFormatter = rememberDateFormatter(R.string.time_format)
     val accent = eventAccent(event.colorHue)
@@ -237,11 +228,3 @@ private fun TagPill(tag: String) {
             .padding(horizontal = 12.dp, vertical = 6.dp),
     )
 }
-
-/**
- * How many of [formatSlots]' fields the minute-precision line keeps: years through minutes.
- *
- * The seconds are last, so dropping them is a matter of dropping the tail — which is what the
- * shorter template expects.
- */
-private const val SLOTS_WITHOUT_SECONDS = 5

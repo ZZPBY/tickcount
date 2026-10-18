@@ -48,10 +48,12 @@ data class AppSettings(
     val customHue: Float = DEFAULT_HUE,
     val sortOrder: SortOrder = SortOrder.DATE_ASC,
     val language: AppLanguage = AppLanguage.SYSTEM,
-    /** Whether the countdown's own line ticks out seconds, or stops at minutes. */
-    val showSeconds: Boolean = true,
-    /** Whether a notification is posted at 09:00 on the day a countdown lands. */
+    /** Whether a notification is posted on the day a countdown lands. */
     val remind: Boolean = false,
+    /** Minutes after midnight at which the reminder is delivered. 540 is 09:00. */
+    val remindMinutes: Int = 540,
+    /** How many days before the countdown the reminder arrives: 0 is on the day. */
+    val remindAdvanceDays: Int = 0,
 )
 
 /**
@@ -89,8 +91,9 @@ class SettingsStore(context: Context) {
             customHue = prefs.getFloat(KEY_HUE, DEFAULT_HUE),
             sortOrder = order,
             language = language,
-            showSeconds = prefs.getBoolean(KEY_SECONDS, true),
             remind = prefs.getBoolean(KEY_REMIND, false),
+            remindMinutes = prefs.getInt(KEY_REMIND_TIME, 540),
+            remindAdvanceDays = prefs.getInt(KEY_REMIND_ADVANCE, 0),
         )
     }
 
@@ -100,8 +103,9 @@ class SettingsStore(context: Context) {
             putFloat(KEY_HUE, settings.customHue)
             putString(KEY_SORT, settings.sortOrder.name)
             putString(KEY_LANGUAGE, settings.language.name)
-            putBoolean(KEY_SECONDS, settings.showSeconds)
             putBoolean(KEY_REMIND, settings.remind)
+            putInt(KEY_REMIND_TIME, settings.remindMinutes)
+            putInt(KEY_REMIND_ADVANCE, settings.remindAdvanceDays)
         }
     }
 
@@ -119,6 +123,8 @@ class SettingsStore(context: Context) {
         const val KEY_SORT = "sort"
         const val KEY_LANGUAGE = "language"
         const val KEY_SECONDS = "seconds"
+        const val KEY_REMIND_TIME = "remind_time"
+        const val KEY_REMIND_ADVANCE = "remind_advance"
         const val KEY_GUIDE = "guide_seen"
         const val KEY_REMIND = "remind"
     }

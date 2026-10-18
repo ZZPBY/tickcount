@@ -23,7 +23,8 @@ class ReminderReceiver : BroadcastReceiver() {
             Reminders.deliver(context, event)
         } else {
             // Still reschedule, or a deleted countdown would silence every later reminder.
-            Reminders.schedule(context, events)
+            val settings = io.github.zzpby.tickcount.data.SettingsStore(context).load()
+            Reminders.schedule(context, events, settings.remindMinutes, settings.remindAdvanceDays)
         }
     }
 }

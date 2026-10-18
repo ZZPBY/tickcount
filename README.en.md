@@ -54,8 +54,7 @@ see how long is left — or how long it has been.
   mix your own on a hue strip. White is the plain one: a white page with near-black ink. Teal
   keeps the warm paper page. The other three, and a mixed hue, tint the page, the panels and
   the outlines to match their accent. The app does not follow the system dark setting and does
-  not take colours from the wallpaper; a choice stays put. Seconds can be switched off, and the
-  countdown then stops at the minute.
+  not take colours from the wallpaper; a choice stays put.
 - **Bilingual** — follows the system language, or you can pick Chinese or English in the
   drawer. Date formats are localised too.
 - **Backup and restore** — every countdown, and the appearance, sorting and language settings,
