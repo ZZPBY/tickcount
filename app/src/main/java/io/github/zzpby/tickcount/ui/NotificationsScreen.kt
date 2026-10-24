@@ -75,6 +75,10 @@ import java.time.format.DateTimeFormatter
  * notification is due, the three tiles under it say whether anything is standing in its way,
  * and the settings only appear once the reminder is on. A settings page that leads with
  * switches asks the reader to work out what they add up to.
+ *
+ * Refresh and the permission action sit directly under those tiles rather than at the foot of
+ * the page: they are the two ways to clear a block, and a reader told "not allowed" should not
+ * have to scroll past the whole reminder setup to find them.
  */
 @Composable
 fun NotificationsScreen(
@@ -221,6 +225,37 @@ fun NotificationsScreen(
                 label = stringResource(R.string.notify_switch),
                 modifier = Modifier.weight(1f),
             )
+        }
+
+        // The two ways out of a block, right under the reading that reports it. The right-hand
+        // one changes with the cause: something this app may ask for, or a switch only the
+        // system settings own.
+        Spacer(Modifier.height(2.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextButton(onClick = { refreshKey++ }) {
+                Text(stringResource(R.string.notify_refresh))
+            }
+            Spacer(Modifier.weight(1f))
+            TextButton(
+                onClick = {
+                    if (permissionMissing) {
+                        notificationPermission.launch(Reminders.POST_NOTIFICATIONS)
+                    } else {
+                        Reminders.openNotificationSettings(context)
+                    }
+                },
+                enabled = !granted,
+            ) {
+                Text(
+                    stringResource(
+                        if (permissionMissing) R.string.notify_grant
+                        else R.string.notify_open_settings
+                    )
+                )
+            }
         }
 
         if (settings.remind) {
@@ -393,35 +428,7 @@ fun NotificationsScreen(
             Text(stringResource(R.string.notify_test))
         }
 
-        Spacer(Modifier.height(4.dp))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            TextButton(onClick = { refreshKey++ }) {
-                Text(stringResource(R.string.notify_refresh))
-            }
-            Spacer(Modifier.weight(1f))
-            TextButton(
-                onClick = {
-                    if (permissionMissing) {
-                        notificationPermission.launch(Reminders.POST_NOTIFICATIONS)
-                    } else {
-                        Reminders.openNotificationSettings(context)
-                    }
-                },
-                enabled = !granted,
-            ) {
-                Text(
-                    stringResource(
-                        if (permissionMissing) R.string.notify_grant
-                        else R.string.notify_open_settings
-                    )
-                )
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(10.dp))
         Text(
             text = stringResource(R.string.notify_footnote),
             style = MaterialTheme.typography.bodySmall,
