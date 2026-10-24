@@ -18,9 +18,10 @@ see how long is left — or how long it has been.
 
 ## Features
 
-- **Drawer** — the menu at the top left opens a half-screen drawer: Home and Calendar,
-  Reminders and display, Appearance, Backup & data, then Changelog and About this project.
-  Language sits on its own at the foot of the drawer.
+- **Three buttons at the foot of the window** — Home, Calendar and Settings, one screen each,
+  always within reach. What used to be in the drawer now sits under Settings: reminders,
+  appearance, the home-screen widgets, backup and data, the changelog, the introduction, and
+  the language choice.
 - **Countdown list** — one card each: the days left set large on the left, and the name, tags
   and date on the right — with the time after the date where there is one. What has gone by
   sits at the foot of the list, under a **Past** heading; when something falls today or
@@ -49,9 +50,9 @@ see how long is left — or how long it has been.
 - **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
   screen, ticking to the second. **Countdown list** shows what is coming next, one per row.
   Both adapt to their size; their panel — light, dark or the system's — is chosen on the
-  Home-screen widgets page in the drawer, along with the list's text size, and neither asks
+  Home-screen widgets page under Settings, along with the list's text size, and neither asks
   for a permission.
-- **Notifications** — a page of its own in the drawer: a reminder time, one app-wide lead
+- **Notifications** — a page of its own under Settings: a reminder time, one app-wide lead
   time, and an override for any single countdown. It lists what is coming up with the moment
   each reminder will arrive, and can send a test notification. Reminders use an inexact alarm,
   so no exact-alarm permission is asked for, and they are put back after a restart.
@@ -64,18 +65,18 @@ see how long is left — or how long it has been.
   keeps the warm paper page. The other three, and a mixed hue, tint the page, the panels and
   the outlines to match their accent. The app does not follow the system dark setting and does
   not take colours from the wallpaper; a choice stays put.
-- **Bilingual** — follows the system language, or you can pick Chinese or English in the
-  drawer. Date formats are localised too.
+- **Bilingual** — follows the system language, or you can pick Chinese or English under
+  Settings. Date formats are localised too.
 - **Backup and restore** — every countdown, and the appearance (including the widgets' panel
   and text size), sorting and language settings, can be written to a file and read back. An export can be encrypted with AES-256-GCM and a
   password; an import asks for that password first, then asks **Overwrite** or **Merge**, and
   says how many countdowns it would add, overwrite or discard before it does any of them.
   There is also **Export as a calendar file**, which writes .ics for a system calendar.
-- **Changelog and About** — every release is listed in the drawer with the installed version
+- **Changelog and About** — every release is listed under Settings with the installed version
   marked, and the project's own introduction is readable in the app, with a repository address
   ready to copy or to open.
-- **Large fonts** — the title bar, the drawer and the cards keep clear of the status bar and
-  grow with the system font scale, so nothing is squeezed.
+- **Large fonts** — the title bar, the bottom bar and the cards keep clear of the status bar
+  and grow with the system font scale, so nothing is squeezed.
 - **No permissions unless you ask for reminders, no network, no analytics.** One module, no
   third-party runtime libraries, `minSdk` 27. The optional on-the-day reminder is the only
   thing that asks for anything — the notification permission, and permission to put its alarm
@@ -136,7 +137,7 @@ a time says so after the days — “Today 09:30”. The default 4×2 holds thre
 widget holds up to four, and the rows share the height between them; with nothing coming up
 it says so.
 
-Both take their panel from **Home-screen widgets** in the drawer: light, dark, or whatever
+Both take their panel from **Home-screen widgets** under Settings: light, dark, or whatever
 the system is using. The list can also be given a smaller or larger text size; the single
 widget keeps its own, because it already fills its cell with the largest text that fits.
 
@@ -203,9 +204,11 @@ app/src/main/java/io/github/zzpby/tickcount/
 │   └── WidgetCountdown.kt       the widget's day split, shape rules and list picking
 └── ui/
     ├── MainViewModel.kt         the state, and the process's only clock
-    ├── TickCountApp.kt          the root: drawer, screen switching, back, dialogs
-    ├── AppDrawer.kt             the side drawer
-    ├── AppTitleBar.kt           the title bar: menu or back, name, action slot
+    ├── TickCountApp.kt          the root: switching between the three screens, back, dialogs
+    ├── AppDestinations.kt       the three buttons, and every screen the app can show
+    ├── AppBottomBar.kt          the bar at the foot: a floating card with the three buttons
+    ├── SettingsScreen.kt        Settings: the grouped rows, language and backup among them
+    ├── AppTitleBar.kt           the title bar: back, name, action slot
     ├── HomeScreen.kt            the countdown list
     ├── CalendarScreen.kt        the month grid, and the chosen day's countdowns
     ├── EventCard.kt             the countdown card, shared by both lists

@@ -28,19 +28,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.ui.components.ChevronIcon
-import io.github.zzpby.tickcount.ui.components.MenuIcon
 
 /** What the button on the left of the bar does. */
-enum class TitleBarNavigation { MENU, BACK }
+enum class TitleBarNavigation { NONE, BACK }
 
 /**
- * The bar every screen carries: a button on the left, the screen's name in the
- * middle, and whatever that screen offers on the right.
+ * The bar every screen carries: a button on the left when there is somewhere to go back to,
+ * the screen's name in the middle, and whatever that screen offers on the right.
  *
- * The left button opens the drawer from a screen the drawer lists, and goes up one
- * level from a screen it does not — a countdown's own page, or the introduction
- * under Settings. The box around it is the same either way, so the bar does not
- * jump as you move between levels.
+ * There is no menu button any more: the three destinations are on the bar at the foot of the
+ * window, so a button here would only repeat them. What the left slot still carries is a way
+ * up one level — a countdown's own page, the editor, and the screens reached from Settings.
+ * The box around it is the same either way, so the bar does not jump as you move between
+ * levels.
  *
  * The name is centred by the layout rather than by padding, so it stays in the
  * middle of the *screen* whether or not the right-hand slot has anything in it.
@@ -111,12 +111,11 @@ private fun LeadingButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val description = stringResource(
-        when (navigation) {
-            TitleBarNavigation.MENU -> R.string.action_open_menu
-            TitleBarNavigation.BACK -> R.string.action_back
-        }
-    )
+    // Nothing to go back to, and the destinations are on the bar below: the slot is left
+    // empty rather than filled with a button that would repeat them.
+    if (navigation == TitleBarNavigation.NONE) return
+
+    val description = stringResource(R.string.action_back)
     val corner = RoundedCornerShape(12.dp)
 
     Box(
@@ -128,13 +127,10 @@ private fun LeadingButton(
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {
-        when (navigation) {
-            TitleBarNavigation.MENU -> MenuIcon(color = MaterialTheme.colorScheme.onSurface)
-            TitleBarNavigation.BACK -> ChevronIcon(
-                pointsLeft = true,
-                size = 22.dp,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-        }
+        ChevronIcon(
+            pointsLeft = true,
+            size = 22.dp,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }

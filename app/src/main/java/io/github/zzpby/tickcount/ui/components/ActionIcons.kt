@@ -12,41 +12,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * The three bars of a menu button, drawn on the canvas.
- *
- * Hand-drawn for the same reason as [ChevronIcon]: the Compose icon artifact
- * carries several thousand vectors to ship two lines. The box the title bar wants
- * around it is layout rather than drawing, so it stays with the caller.
- */
-@Composable
-fun MenuIcon(
-    modifier: Modifier = Modifier,
-    size: Dp = 20.dp,
-    color: Color = LocalContentColor.current,
-) {
-    Canvas(modifier = modifier.size(size)) {
-        val w = this.size.width
-        val h = this.size.height
-        val bar = h * 0.13f
-        val gap = (h - bar * 3) / 2f
-        // A round cap reaches half a stroke past each end, so every bar is inset by
-        // that much to keep the drawing inside its canvas.
-        val inset = bar / 2f
-
-        repeat(3) { index ->
-            val y = inset + index * (bar + gap)
-            drawLine(
-                color = color,
-                start = Offset(inset, y),
-                end = Offset(w - inset, y),
-                strokeWidth = bar,
-                cap = StrokeCap.Round,
-            )
-        }
-    }
-}
-
-/**
  * Three bars of decreasing length, the usual shorthand for "this list can be put in
  * an order".
  */

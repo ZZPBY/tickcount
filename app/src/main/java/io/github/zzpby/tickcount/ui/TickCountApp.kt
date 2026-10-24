@@ -1,14 +1,7 @@
 package io.github.zzpby.tickcount.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -82,7 +74,6 @@ fun TickCountApp(
 
     var screenName by rememberSaveable { mutableStateOf(AppScreen.HOME.name) }
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
-    var drawerOpen by rememberSaveable { mutableStateOf(false) }
     var monthPickerOpen by rememberSaveable { mutableStateOf(false) }
     var calendarEpochDay by rememberSaveable { mutableLongStateOf(NO_DAY) }
     var pendingDeleteId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -159,12 +150,15 @@ fun TickCountApp(
 
     // Enabled while there is anywhere to go back to; disabled lets the system have
     // the press, which is what closes the app from the home screen. Each press goes
-    // up exactly one level, matching the arrow the title bar shows.
-    BackHandler(enabled = drawerOpen || editorOpen || detailId != null || screen != AppScreen.HOME) {
+    // up exactly one level: out of a dialog-like screen first, then from a settings screen
+    // to the settings list, then home from any of the three.
+    BackHandler(
+        enabled = editorOpen || detailId != null || screen != AppScreen.HOME
+    ) {
         when {
-            drawerOpen -> drawerOpen = false
             editorOpen -> editorOpen = false
             detailId != null -> detailId = null
+            screen.isUnderSettings -> screenName = AppScreen.SETTINGS.name
             else -> screenName = AppScreen.HOME.name
         }
     }
@@ -172,215 +166,204 @@ fun TickCountApp(
     val uriHandler = LocalUriHandler.current
     val linkUrl = stringResource(R.string.about_link_url)
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            topBar = {
-                AppTitleBar(
-                    // The home screen keeps its name for the screen itself, where it is set
-                    // at display size: the bar there is only a place to put the buttons.
-                    title = when {
-                        editorOpen -> stringResource(
-                            if (editorIsNew) R.string.dialog_new_title else R.string.dialog_edit_title
-                        )
-                        detailEvent != null -> detailEvent.title
-                        // These set their own name large in the content, so the bar keeps
-                        // only the buttons.
-                        screen == AppScreen.HOME || screen == AppScreen.REMINDERS -> null
-                        else -> stringResource(screen.labelRes)
-                    },
-                    // Editing a countdown is a step into it, like its own screen: the button
-                    // goes back to whatever list it came from rather than opening the drawer.
-                    navigation = if (detailEvent != null || editorOpen) {
-                        TitleBarNavigation.BACK
-                    } else {
-                        TitleBarNavigation.MENU
-                    },
-                    onNavigate = {
-                        when {
-                            editorOpen -> editorOpen = false
-                            detailEvent != null -> detailId = null
-                            else -> drawerOpen = true
-                        }
-                    },
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                ) {
+    Scaffold(
+        topBar = {
+            AppTitleBar(
+                // The home screen keeps its name for the screen itself, where it is set
+                // at display size: the bar there is only a place to put the buttons.
+                title = when {
+                    editorOpen -> stringResource(
+                        if (editorIsNew) R.string.dialog_new_title else R.string.dialog_edit_title
+                    )
+                    detailEvent != null -> detailEvent.title
+                    // These set their own name large in the content, so the bar keeps
+                    // only the buttons.
+                    screen == AppScreen.HOME ||
+                        screen == AppScreen.SETTINGS ||
+                        screen == AppScreen.REMINDERS -> null
+                    else -> stringResource(screen.labelRes)
+                },
+                // The editor and a countdown's own page are steps into something, and the
+                // screens under Settings are one level down from the list they were opened
+                // from. The three tabs have nothing above them: the bar at the foot of the
+                // window is where you go from one to another.
+                navigation = if (detailEvent != null || editorOpen || screen.isUnderSettings) {
+                    TitleBarNavigation.BACK
+                } else {
+                    TitleBarNavigation.NONE
+                },
+                onNavigate = {
                     when {
-                        // The editor saves from its own header row: it is a whole screen now,
-                        // and the slot here belongs to one action over a list.
-                        editorOpen -> Unit
+                        editorOpen -> editorOpen = false
+                        detailEvent != null -> detailId = null
+                        else -> screenName = AppScreen.SETTINGS.name
+                    }
+                },
+                modifier = Modifier.padding(horizontal = 12.dp),
+            ) {
+                when {
+                    // The editor saves from its own header row: it is a whole screen now,
+                    // and the slot here belongs to one action over a list.
+                    editorOpen -> Unit
 
-                        detailEvent != null -> TextButton(onClick = { startEditEvent(detailEvent.id) }) {
-                            Text(stringResource(R.string.action_edit))
-                        }
+                    detailEvent != null -> TextButton(onClick = { startEditEvent(detailEvent.id) }) {
+                        Text(stringResource(R.string.action_edit))
+                    }
 
-                        // The order is chosen from a pill next to the search box, which is
-                        // where the list it orders can see it.
-                        screen == AppScreen.HOME -> {
-                            IconButton(onClick = { startNewEvent(today) }) { PlusIcon() }
-                        }
+                    // The order is chosen from a pill next to the search box, which is
+                    // where the list it orders can see it.
+                    screen == AppScreen.HOME -> {
+                        IconButton(onClick = { startNewEvent(today) }) { PlusIcon() }
+                    }
 
-                        // On the calendar the plus belongs to the chosen day, and
-                        // there is nothing to add to until one is chosen.
-                        screen == AppScreen.CALENDAR -> {
-                            if (calendarDate != null) {
-                                IconButton(onClick = { startNewEvent(calendarDate) }) { PlusIcon() }
-                            }
+                    // On the calendar the plus belongs to the chosen day, and
+                    // there is nothing to add to until one is chosen.
+                    screen == AppScreen.CALENDAR -> {
+                        if (calendarDate != null) {
+                            IconButton(onClick = { startNewEvent(calendarDate) }) { PlusIcon() }
                         }
                     }
                 }
-            },
-        ) { insets ->
-            Box(modifier = Modifier.padding(insets)) {
-                when {
-                    // The editor is a screen of its own, with the screen's own title bar
-                    // above it. It was a dialog until the batch section made it taller than a
-                    // dialog can be: a dialog is sized by its content, so the fields that
-                    // appeared and disappeared inside it resized the window, which re-measured
-                    // the content, and the two chased each other every frame.
-                    editorOpen -> EventEditorScreen(
-                        initial = editorEvent!!,
-                        isNew = editorIsNew,
-                        onSave = { edited ->
-                            viewModel.saveEvent(edited)
-                            editorOpen = false
-                        },
-                        onSaveMany = { batch ->
-                            editorOpen = false
-                            pendingBatch = batch
-                        },
-                        // Editing is the only way in with a delete: a countdown that does not
-                        // exist yet has nothing to delete. The editor steps aside first, the
-                        // same way it did while it was a dialog: the confirmation is the next
-                        // question, and it belongs over the list rather than over the form.
-                        onDelete = editorEvent.takeIf { !editorIsNew }?.let {
-                            {
-                                editorOpen = false
-                                pendingDeleteId = it.id
-                            }
-                        },
-                        onDismiss = { editorOpen = false },
-                    )
-
-                    detailEvent != null -> EventDetailScreen(
-                        event = detailEvent,
-                        now = now,
-                        onTogglePin = { viewModel.togglePin(detailEvent.id) },
-                    )
-
-                    screen == AppScreen.HOME -> HomeScreen(
-                        entries = countdownList(events, today, settings.sortOrder),
-                        today = today,
-                        query = searchQuery,
-                        onQueryChange = { searchQuery = it },
-                        scope = searchScope,
-                        onScopeChange = { searchScopeName = it.name },
-                        sortOrder = settings.sortOrder,
-                        onSortChange = viewModel::chooseSortOrder,
-                        onOpen = { detailId = it },
-                        onLongPress = { actionsForId = it },
-                    )
-
-                    screen == AppScreen.CALENDAR -> CalendarScreen(
-                        month = visibleMonth,
-                        today = today,
-                        selectedDate = calendarDate,
-                        eventsByDate = byDate,
-                        query = calendarQuery,
-                        onQueryChange = { calendarQuery = it },
-                        scope = calendarScope,
-                        onScopeChange = { calendarScopeName = it.name },
-                        sortOrder = settings.sortOrder,
-                        onSortChange = viewModel::chooseSortOrder,
-                        onSelectDate = { calendarEpochDay = it.toEpochDay() },
-                        onStepMonth = viewModel::stepMonth,
-                        onMonthClick = { monthPickerOpen = true },
-                        onToday = viewModel::goToToday,
-                        onOpenEvent = { detailId = it },
-                        onLongPressEvent = { actionsForId = it },
-                    )
-
-                    screen == AppScreen.REMINDERS -> NotificationsScreen(
-                        settings = settings,
-                        next = Reminders.planned(
-                            events,
-                            settings.remindMinutes,
-                            settings.remindLeadMinutes,
-                        ),
-                        onRemind = viewModel::chooseRemind,
-                        onMinutes = viewModel::chooseRemindMinutes,
-                        onLead = viewModel::chooseRemindLead,
-                        onEventLead = viewModel::chooseEventLead,
-                        events = events,
-                        onTest = viewModel::sendTestNotification,
-                    )
-
-                    screen == AppScreen.APPEARANCE -> AppearanceScreen(
-                        settings = settings,
-                        onPreset = viewModel::chooseTheme,
-                        onCustomHue = viewModel::chooseCustomHue,
-                    )
-
-                    screen == AppScreen.WIDGETS -> WidgetSettingsScreen(
-                        settings = settings,
-                        onPanel = viewModel::chooseWidgetPanel,
-                        onTextSize = viewModel::chooseWidgetTextSize,
-                    )
-
-                    screen == AppScreen.DATA -> DataScreen(
-                        onExport = viewModel::exportBackup,
-                        onRead = viewModel::readBackup,
-                        onApply = viewModel::applyBackup,
-                        onExportIcs = viewModel::exportIcs,
-                    )
-
-                    screen == AppScreen.CHANGELOG -> ChangelogScreen()
-
-                    else -> ProjectIntroScreen(
-                        // The link is the one thing here that leaves the app, and it
-                        // is handed to the browser: TickCount has no INTERNET
-                        // permission of its own.
-                        onOpenLink = { runCatching { uriHandler.openUri(linkUrl) } },
-                    )
-                }
             }
-        }
+        },
+        bottomBar = {
+            // The editor and a countdown's own page are opened from a tab and closed
+            // again, so the bar stays out of their way; every other screen is one of the
+            // three, and the bar is how you leave it.
+            if (!editorOpen && detailEvent == null) {
+                AppBottomBar(
+                    current = screen.tab,
+                    onSelect = { tab ->
+                        screenName = when (tab) {
+                            AppTab.HOME -> AppScreen.HOME.name
+                            AppTab.CALENDAR -> AppScreen.CALENDAR.name
+                            AppTab.SETTINGS -> AppScreen.SETTINGS.name
+                        }
+                    },
+                )
+            }
+        },
+    ) { insets ->
+        Box(modifier = Modifier.padding(insets)) {
+            when {
+                // The editor is a screen of its own, with the screen's own title bar
+                // above it. It was a dialog until the batch section made it taller than a
+                // dialog can be: a dialog is sized by its content, so the fields that
+                // appeared and disappeared inside it resized the window, which re-measured
+                // the content, and the two chased each other every frame.
+                editorOpen -> EventEditorScreen(
+                    initial = editorEvent!!,
+                    isNew = editorIsNew,
+                    onSave = { edited ->
+                        viewModel.saveEvent(edited)
+                        editorOpen = false
+                    },
+                    onSaveMany = { batch ->
+                        editorOpen = false
+                        pendingBatch = batch
+                    },
+                    // Editing is the only way in with a delete: a countdown that does not
+                    // exist yet has nothing to delete. The editor steps aside first, the
+                    // same way it did while it was a dialog: the confirmation is the next
+                    // question, and it belongs over the list rather than over the form.
+                    onDelete = editorEvent.takeIf { !editorIsNew }?.let {
+                        {
+                            editorOpen = false
+                            pendingDeleteId = it.id
+                        }
+                    },
+                    onDismiss = { editorOpen = false },
+                )
 
-        // The drawer, over the screen rather than beside it. Fading the scrim and
-        // sliding the panel are separate animations so the two can differ.
-        AnimatedVisibility(visible = drawerOpen, enter = fadeIn(), exit = fadeOut()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.45f))
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = { drawerOpen = false },
+                detailEvent != null -> EventDetailScreen(
+                    event = detailEvent,
+                    now = now,
+                    onTogglePin = { viewModel.togglePin(detailEvent.id) },
+                )
+
+                screen == AppScreen.HOME -> HomeScreen(
+                    entries = countdownList(events, today, settings.sortOrder),
+                    today = today,
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    scope = searchScope,
+                    onScopeChange = { searchScopeName = it.name },
+                    sortOrder = settings.sortOrder,
+                    onSortChange = viewModel::chooseSortOrder,
+                    onOpen = { detailId = it },
+                    onLongPress = { actionsForId = it },
+                )
+
+                screen == AppScreen.CALENDAR -> CalendarScreen(
+                    month = visibleMonth,
+                    today = today,
+                    selectedDate = calendarDate,
+                    eventsByDate = byDate,
+                    query = calendarQuery,
+                    onQueryChange = { calendarQuery = it },
+                    scope = calendarScope,
+                    onScopeChange = { calendarScopeName = it.name },
+                    sortOrder = settings.sortOrder,
+                    onSortChange = viewModel::chooseSortOrder,
+                    onSelectDate = { calendarEpochDay = it.toEpochDay() },
+                    onStepMonth = viewModel::stepMonth,
+                    onMonthClick = { monthPickerOpen = true },
+                    onToday = viewModel::goToToday,
+                    onOpenEvent = { detailId = it },
+                    onLongPressEvent = { actionsForId = it },
+                )
+
+                screen == AppScreen.SETTINGS -> SettingsScreen(
+                    language = settings.language,
+                    onOpen = { screenName = it.name },
+                    // A dialog rather than a row of its own: it is one choice, and
+                    // rebuilding the activity would take a second screen with it.
+                    onLanguage = { languageOpen = true },
+                )
+
+                screen == AppScreen.REMINDERS -> NotificationsScreen(
+                    settings = settings,
+                    next = Reminders.planned(
+                        events,
+                        settings.remindMinutes,
+                        settings.remindLeadMinutes,
                     ),
-            )
-        }
+                    onRemind = viewModel::chooseRemind,
+                    onMinutes = viewModel::chooseRemindMinutes,
+                    onLead = viewModel::chooseRemindLead,
+                    onEventLead = viewModel::chooseEventLead,
+                    events = events,
+                    onTest = viewModel::sendTestNotification,
+                )
 
-        AnimatedVisibility(
-            visible = drawerOpen,
-            enter = slideInHorizontally { -it },
-            exit = slideOutHorizontally { -it },
-        ) {
-            AppDrawerContent(
-                // Nothing is highlighted while a countdown's own screen is open,
-                // because that screen belongs to no drawer entry.
-                current = if (detailEvent == null) screen else null,
-                language = settings.language,
-                onSelect = { picked ->
-                    screenName = picked.name
-                    detailId = null
-                    drawerOpen = false
-                },
-                onLanguage = {
-                    drawerOpen = false
-                    languageOpen = true
-                },
-                modifier = Modifier.fillMaxWidth(0.5f),
-            )
+                screen == AppScreen.APPEARANCE -> AppearanceScreen(
+                    settings = settings,
+                    onPreset = viewModel::chooseTheme,
+                    onCustomHue = viewModel::chooseCustomHue,
+                )
+
+                screen == AppScreen.WIDGETS -> WidgetSettingsScreen(
+                    settings = settings,
+                    onPanel = viewModel::chooseWidgetPanel,
+                    onTextSize = viewModel::chooseWidgetTextSize,
+                )
+
+                screen == AppScreen.DATA -> DataScreen(
+                    onExport = viewModel::exportBackup,
+                    onRead = viewModel::readBackup,
+                    onApply = viewModel::applyBackup,
+                    onExportIcs = viewModel::exportIcs,
+                )
+
+                screen == AppScreen.CHANGELOG -> ChangelogScreen()
+
+                else -> ProjectIntroScreen(
+                    // The link is the one thing here that leaves the app, and it
+                    // is handed to the browser: TickCount has no INTERNET
+                    // permission of its own.
+                    onOpenLink = { runCatching { uriHandler.openUri(linkUrl) } },
+                )
+            }
         }
     }
 
@@ -607,7 +590,7 @@ private fun LanguageDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.drawer_language)) },
+        title = { Text(stringResource(R.string.settings_language)) },
         text = {
             Column {
                 AppLanguage.entries.forEach { option ->
