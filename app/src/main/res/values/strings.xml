@@ -212,6 +212,9 @@
     <string name="notify_permission">Permission</string>
     <string name="notify_granted">Allowed</string>
     <string name="notify_not_granted">Not allowed</string>
+    <!-- The permission is there, but the app's notifications are off in the system settings -->
+    <string name="notify_blocked">Blocked</string>
+    <string name="notify_open_settings">Open notification settings</string>
     <string name="notify_pending">Scheduled</string>
     <string name="notify_next">Next reminder</string>
     <string name="notify_none">None yet</string>

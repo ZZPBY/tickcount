@@ -194,6 +194,9 @@
     <string name="notify_permission">通知权限</string>
     <string name="notify_granted">已开启</string>
     <string name="notify_not_granted">未开启</string>
+    <!-- 权限给了，但系统设置里把这个应用的通知关掉了 -->
+    <string name="notify_blocked">系统已关闭</string>
+    <string name="notify_open_settings">打开通知设置</string>
     <string name="notify_pending">待调度</string>
     <string name="notify_next">下一条提醒</string>
     <string name="notify_none">暂无</string>

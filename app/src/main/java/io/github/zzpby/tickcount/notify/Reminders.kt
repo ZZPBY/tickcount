@@ -1,6 +1,5 @@
 package io.github.zzpby.tickcount.notify
 
-import android.Manifest
 import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -9,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import io.github.zzpby.tickcount.MainActivity
 import io.github.zzpby.tickcount.R
@@ -35,6 +35,13 @@ object Reminders {
     const val CHANNEL_ID = "reminders"
     const val EXTRA_ID = "event_id"
 
+    /**
+     * The permission's name written out rather than taken from `Manifest.permission`, whose
+     * constant only exists from Android 13: the string is what the platform matches on, and
+     * asking for it on an older release is simply never done.
+     */
+    const val POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS"
+
     private const val REQUEST_CODE = 1077
 
     /** How far ahead a reminder may be set: a month, which is as far as anyone plans ahead. */
@@ -55,11 +62,45 @@ object Reminders {
         manager.createNotificationChannel(channel)
     }
 
-    /** Whether the app may post a notification at all on this version of Android. */
-    fun canNotify(context: Context): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-            PackageManager.PERMISSION_GRANTED
+    /**
+     * Whether a notification the app posts would actually be seen.
+     *
+     * Three separate switches can each silence it, and reading only one of them is how this
+     * went wrong: below Android 13 there is no runtime permission at all, so asking for
+     * `POST_NOTIFICATIONS` answered "yes" while the system settings had the app's
+     * notifications turned off — the reminder was then scheduled, fired, and dropped with
+     * nothing in the app saying so.
+     */
+    fun canNotify(context: Context): Boolean {
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return false
+        // The app's own switch, which is the only one below Android 13 and the first one set
+        // by "turn notifications off" anywhere in the system settings.
+        if (!manager.areNotificationsEnabled()) return false
+        if (needsPermission(context)) return false
+        // A channel can be silenced on its own since Android 8, leaving the app's switch on.
+        val channel = manager.getNotificationChannel(CHANNEL_ID)
+        return channel == null || channel.importance != NotificationManager.IMPORTANCE_NONE
+    }
+
+    /**
+     * Whether what is missing is the Android 13 runtime permission, which the app may ask for
+     * itself — as opposed to a switch in the system settings, which only the user can flip.
+     *
+     * Below Android 13 this is always false: the permission does not exist, and asking for it
+     * would do nothing at all, so the caller has to offer the settings screen instead.
+     */
+    fun needsPermission(context: Context): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            context.checkSelfPermission(POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+
+    /** Opens the system screen where this app's notifications are turned on and off. */
+    fun openNotificationSettings(context: Context) {
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+            .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        // A few ROMs ship without this screen; a missing setting is not worth a crash.
+        runCatching { context.startActivity(intent) }
+    }
 
     /**
      * When the reminder for [event] falls, in [zone].

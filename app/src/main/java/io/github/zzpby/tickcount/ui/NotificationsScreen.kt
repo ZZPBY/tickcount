@@ -1,8 +1,6 @@
 package io.github.zzpby.tickcount.ui
 
-import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ScrollState
@@ -10,6 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -95,8 +95,15 @@ fun NotificationsScreen(
     var timeDialogOpen by remember { mutableStateOf(false) }
     var leadDialogOpen by remember { mutableStateOf(false) }
 
-    val allowed = remember(refreshKey, settings.remind) { Reminders.canNotify(context) }
-    val granted = allowed || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+    // Coming back from the system settings is the one moment the answer can change without
+    // this screen hearing a click, and the system offers no callback for it.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refreshKey++ }
+
+    // Read from the system, so it is re-read when the refresh action or a permission answer
+    // says to. Which switch is missing decides what the screen can offer: below Android 13
+    // there is no permission to ask for, and the system settings are the only way back.
+    val granted = remember(refreshKey) { Reminders.canNotify(context) }
+    val permissionMissing = remember(refreshKey) { Reminders.needsPermission(context) }
     val scheduled = settings.remind && next != null
     var eventQuery by rememberSaveable { mutableStateOf("") }
     var eventFilter by rememberSaveable { mutableStateOf(EventFilter.ALL.name) }
@@ -175,9 +182,12 @@ fun NotificationsScreen(
                     when {
                         !want -> onRemind(false)
                         granted -> onRemind(true)
-                        else -> notificationPermission.launch(
-                            Manifest.permission.POST_NOTIFICATIONS
+                        permissionMissing -> notificationPermission.launch(
+                            Reminders.POST_NOTIFICATIONS
                         )
+                        // Nothing this app may ask for: the switch is in the system settings,
+                        // and opening it is the only way to make the reminder audible.
+                        else -> Reminders.openNotificationSettings(context)
                     }
                 },
             )
@@ -189,7 +199,12 @@ fun NotificationsScreen(
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             StatTile(
                 value = stringResource(
-                    if (granted) R.string.notify_granted else R.string.notify_not_granted
+                    when {
+                        granted -> R.string.notify_granted
+                        permissionMissing -> R.string.notify_not_granted
+                        // The permission is there; the system's own switch is off.
+                        else -> R.string.notify_blocked
+                    }
                 ),
                 label = stringResource(R.string.notify_permission),
                 modifier = Modifier.weight(1f),
@@ -364,10 +379,12 @@ fun NotificationsScreen(
         // ---------------------------------------------------------- prove it works
         Button(
             onClick = {
-                if (granted) {
-                    onTest()
-                } else {
-                    notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                when {
+                    granted -> onTest()
+                    permissionMissing -> notificationPermission.launch(
+                        Reminders.POST_NOTIFICATIONS
+                    )
+                    else -> Reminders.openNotificationSettings(context)
                 }
             },
             shape = PillShape,
@@ -387,11 +404,20 @@ fun NotificationsScreen(
             Spacer(Modifier.weight(1f))
             TextButton(
                 onClick = {
-                    if (!granted) notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    if (permissionMissing) {
+                        notificationPermission.launch(Reminders.POST_NOTIFICATIONS)
+                    } else {
+                        Reminders.openNotificationSettings(context)
+                    }
                 },
                 enabled = !granted,
             ) {
-                Text(stringResource(R.string.notify_grant))
+                Text(
+                    stringResource(
+                        if (permissionMissing) R.string.notify_grant
+                        else R.string.notify_open_settings
+                    )
+                )
             }
         }
 

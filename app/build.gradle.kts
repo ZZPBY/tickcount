@@ -172,9 +172,9 @@ android {
         targetSdk = 36
         // A calendar version: year.month.day.sequence, the sequence counting the updates made
         // that day. The version code stays one increasing integer for Play: the date squeezed
-        // together with the sequence in the last two digits — 2026.10.24.1 becomes 26102401.
-        versionCode = 26102401
-        versionName = "2026.10.24.1"
+        // together with the sequence in the last two digits — 2026.10.24.2 becomes 26102402.
+        versionCode = 26102402
+        versionName = "2026.10.24.2"
     }
 
     signingConfigs {
