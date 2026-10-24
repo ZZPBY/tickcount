@@ -65,13 +65,13 @@ private const val NO_DAY = Long.MIN_VALUE
  * dialogs that belong to whichever screen raised them.
  *
  * Navigation is a single piece of state rather than a navigation library. There is
- * exactly one level of it 閳?a screen, plus optionally one countdown opened from a
- * list 閳?so a back stack would be more machinery than the thing it models.
+ * exactly one level of it — a screen, plus optionally one countdown opened from a
+ * list — so a back stack would be more machinery than the thing it models.
  */
 @Composable
 fun TickCountApp(
     viewModel: MainViewModel = viewModel(),
-    /** Countdowns something outside the app asked to open 閳?a home-screen widget, today. */
+    /** Countdowns something outside the app asked to open — a home-screen widget, today. */
     openRequests: Flow<String> = emptyFlow(),
 ) {
     val events by viewModel.events.collectAsStateWithLifecycle()
@@ -425,7 +425,7 @@ fun TickCountApp(
     }
 
     // Only rendered while the countdown still exists, so one that has already gone
-    // 閳?deleted from another path, say 閳?cannot raise a dialog about itself.
+    // — deleted from another path, say — cannot raise a dialog about itself.
     val pendingDeleteName = viewModel.event(pendingDeleteId)?.title
 
     if (pendingDeleteId != null && pendingDeleteName != null) {
@@ -540,7 +540,7 @@ private fun GuideDialog(onDismiss: () -> Unit) {
  * list that will be saved rather than off the two fields that produced it, so the answer
  * cannot describe something other than what the button does.
  *
- * The count is the whole batch, the countdown that was filled in included 閳?that is what the
+ * The count is the whole batch, the countdown that was filled in included — that is what the
  * list will hold after this, and it is the number someone is agreeing to.
  */
 @Composable

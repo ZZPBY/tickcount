@@ -51,6 +51,12 @@ AGENTS.md
 .DS_Store
 Thumbs.db
 
+# PowerShell's module-analysis cache. A confined shell on this machine resolves
+# the cache path to a bare relative one, so PowerShell 5.1 drops it into the
+# working directory. Nothing to do with the app; only exists to keep it out of
+# `git status`.
+Microsoft/
+
 # Build outputs
 *.apk
 *.aab
