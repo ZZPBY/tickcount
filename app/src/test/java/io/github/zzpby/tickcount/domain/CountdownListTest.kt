@@ -141,6 +141,19 @@ class CountdownListTest {
     }
 
     @Test
+    fun `a yearly countdown is never in the past section`() {
+        // Its stored date is decades behind us; what the list shows is the next time the
+        // day comes round, which is still ahead.
+        val birthday = event(LocalDate.of(1990, 10, 1), "birthday").copy(repeatsYearly = true)
+
+        val entries = countdownList(listOf(birthday), today)
+
+        assertEquals(1, entries.size)
+        assertFalse(entries.single().isPast)
+        assertEquals(LocalDate.of(2026, 10, 1), entries.single().event.date)
+    }
+
+    @Test
     fun `an all-past list runs most recent first and is fully flagged`() {
         val events = listOf(
             event(LocalDate.of(2026, 9, 20), "b"),

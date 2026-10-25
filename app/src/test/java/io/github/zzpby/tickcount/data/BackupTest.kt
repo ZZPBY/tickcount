@@ -70,6 +70,23 @@ class BackupTest {
     }
 
     @Test
+    fun `a yearly countdown keeps its flag through the file`() {
+        val birthday = CountdownEvent(
+            id = "y",
+            date = LocalDate.of(1990, 10, 26),
+            title = "生日",
+            repeatsYearly = true,
+        )
+
+        val restored = BackupCodec.decode(
+            BackupCodec.encode(Backup(listOf(birthday), AppSettings()), exportedAt = 1L)
+        )
+
+        assertEquals(birthday, restored.events.single())
+        assertTrue(restored.events.single().repeatsYearly)
+    }
+
+    @Test
     fun `encoding is repeatable when the timestamp is given`() {
         assertEquals(
             BackupCodec.encode(backup(), exportedAt = 7L),

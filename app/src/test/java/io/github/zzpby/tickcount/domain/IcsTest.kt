@@ -65,6 +65,17 @@ class IcsTest {
     }
 
     @Test
+    fun `a yearly countdown carries a yearly rule, and a one-off carries none`() {
+        val birthday = event(date = LocalDate.of(1990, 10, 26)).copy(repeatsYearly = true)
+        val trip = event(id = "b", date = LocalDate.of(2026, 10, 26))
+
+        val out = icsFor(listOf(birthday, trip), zone, now)
+
+        assertEquals(1, Regex("RRULE:FREQ=YEARLY").findAll(out).count())
+        assertEquals(2, Regex("BEGIN:VEVENT").findAll(out).count())
+    }
+
+    @Test
     fun `every line fits in 75 octets, Chinese included`() {
         val title = "很".repeat(60)
         val out = icsFor(listOf(event(title = title)), zone, now)

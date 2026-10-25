@@ -71,8 +71,11 @@ or delete on its own.
 ## How the countdown reads
 
 The target is **00:00 local time on the chosen date**, or the exact time of day it is set
-to. Once that moment has passed, the same arithmetic runs backwards, and the label changes
-from “Time left” to “Time since”; on the target day itself it reads “Elapsed today”.
+to. A yearly countdown takes the day it next comes round, so once this year's day has gone
+by the target becomes the same day next year, and a 29 February date falls on the 28th in
+the years that have no 29th. Once that moment has passed, the same arithmetic runs
+backwards, and the label changes from “Time left” to “Time since”; on the target day itself
+it reads “Elapsed today”.
 
 Leading fields that have not started counting yet are filled with dashes, so you can see at
 a glance how far off a date is:
