@@ -154,6 +154,7 @@
     </plurals>
     <string name="data_exported">Backup written.</string>
     <string name="data_write_failed">The file could not be written.</string>
+    <string name="data_export_lost_password">The app was rebuilt while the picker was open and the password did not survive, so nothing was written. Export again.</string>
     <string name="data_wrong_password">That password does not open this file.</string>
     <string name="data_not_a_backup">That is not a TickCount backup.</string>
     <string name="data_unreadable">The file could not be read.</string>

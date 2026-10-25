@@ -142,6 +142,7 @@
     </plurals>
     <string name="data_exported">备份已写入。</string>
     <string name="data_write_failed">文件写入失败。</string>
+    <string name="data_export_lost_password">导出途中应用被重新创建，密码没能留住；这次没有写出文件，请重新导出。</string>
     <string name="data_wrong_password">密码不对，打不开这个文件。</string>
     <string name="data_not_a_backup">这不是 TickCount 的备份文件。</string>
     <string name="data_unreadable">文件读不出来。</string>

@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -97,6 +98,11 @@ fun DataScreen(
     // needs no equivalent: once a password is accepted there, the backup is already in hand.
     var exportPassword by remember { mutableStateOf<String?>(null) }
 
+    // Whether the file being written was meant to be encrypted. Saveable rather than plain
+    // state because the picker can outlive this activity: coming back with the password gone
+    // must not turn a protected backup into a plain one without saying so.
+    var exportEncrypted by rememberSaveable { mutableStateOf(false) }
+
     // The reading side: the file waiting on a password, and what came out of it.
     var importStage by remember { mutableStateOf(ImportStage.CLOSED) }
     var pendingText by remember { mutableStateOf("") }
@@ -152,22 +158,31 @@ fun DataScreen(
     val createFile = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
+        val password = exportPassword
         if (uri != null) {
-            val text = onExport(exportPassword)
-            scope.launch {
-                val ok = withContext(Dispatchers.IO) {
-                    runCatching {
-                        context.contentResolver.openOutputStream(uri)?.use {
-                            it.write(text.toByteArray(Charsets.UTF_8))
-                        } != null
-                    }.getOrDefault(false)
+            if (exportEncrypted && password.isNullOrEmpty()) {
+                // The activity was rebuilt while the picker was up, and the password went
+                // with it. Writing the file in the clear here would be exactly the outcome
+                // the user asked to avoid, so nothing is written and the export is redone.
+                message = Notice(R.string.data_export_lost_password)
+            } else {
+                val text = onExport(password)
+                scope.launch {
+                    val ok = withContext(Dispatchers.IO) {
+                        runCatching {
+                            context.contentResolver.openOutputStream(uri)?.use {
+                                it.write(text.toByteArray(Charsets.UTF_8))
+                            } != null
+                        }.getOrDefault(false)
+                    }
+                    message = Notice(
+                        if (ok) R.string.data_exported else R.string.data_write_failed
+                    )
                 }
-                message = Notice(
-                    if (ok) R.string.data_exported else R.string.data_write_failed
-                )
             }
         }
         exportPassword = null
+        exportEncrypted = false
     }
 
     val createIcs = rememberLauncherForActivityResult(
@@ -255,6 +270,7 @@ fun DataScreen(
             onConfirm = { password ->
                 exportOpen = false
                 exportPassword = password
+                exportEncrypted = password != null
                 // The name only reaches the picker; where the file lands is the user's
                 // choice from here on.
                 createFile.launch(suggestedName)
