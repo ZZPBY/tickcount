@@ -87,6 +87,23 @@ class BackupTest {
     }
 
     @Test
+    fun `the reminder settings are not part of the file`() {
+        // The notification permission and the alarms belong to the device rather than to a
+        // list of dates, so a backup carries no reminder settings. Decoding one therefore
+        // yields the defaults — which is why importing must keep the device's own instead
+        // of taking them (see MainViewModel.applyBackup).
+        val reminded = settings.copy(remind = true, remindMinutes = 8 * 60, remindLeadMinutes = 30)
+
+        val decoded = BackupCodec.decode(
+            BackupCodec.encode(Backup(events, reminded), exportedAt = 1L)
+        )
+
+        assertFalse(decoded.settings.remind)
+        assertEquals(AppSettings().remindMinutes, decoded.settings.remindMinutes)
+        assertEquals(AppSettings().remindLeadMinutes, decoded.settings.remindLeadMinutes)
+    }
+
+    @Test
     fun `encoding is repeatable when the timestamp is given`() {
         assertEquals(
             BackupCodec.encode(backup(), exportedAt = 7L),

@@ -110,14 +110,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun event(id: String?): CountdownEvent? =
         id?.let { wanted -> _events.value.firstOrNull { it.id == wanted } }
 
-    /** The countdowns on [date], earliest time first, which is the order a day reads in. */
-    fun eventsOn(date: LocalDate): List<CountdownEvent> =
-        _events.value
-            .filter { it.date == date }
-            .sortedWith(compareBy({ it.time }, { it.title }))
-
-    fun eventsByDate(): Map<LocalDate, List<CountdownEvent>> = _events.value.groupBy { it.date }
-
     /** Adds [event], or replaces the stored one carrying the same id. */
     fun saveEvent(event: CountdownEvent) {
         val index = _events.value.indexOfFirst { it.id == event.id }
@@ -269,8 +261,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         persist(events)
-        _settings.value = backup.settings
-        settingsStore.save(backup.settings)
+        // The file carries no reminder settings: the notification permission and the alarms
+        // belong to this device, not to a list of dates. Decoding one therefore fills in the
+        // defaults, and taking them would silently turn a reminder that is on here off. What
+        // the file *does* say about the app — theme, sort, language, widgets — is applied.
+        val current = _settings.value
+        _settings.value = backup.settings.copy(
+            remind = current.remind,
+            remindMinutes = current.remindMinutes,
+            remindLeadMinutes = current.remindLeadMinutes,
+        )
+        settingsStore.save(_settings.value)
         // The restored settings decide the widgets' panel and text size too, and the
         // refresh inside persist() ran before they were saved.
         refreshAllWidgets(getApplication())
