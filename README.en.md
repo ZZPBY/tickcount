@@ -18,69 +18,36 @@ see how long is left — or how long it has been.
 
 ## Features
 
-- **Three buttons at the foot of the window** — Home, Calendar and Settings, one screen each,
-  always within reach. What used to be in the drawer now sits under Settings: reminders,
-  appearance, the home-screen widgets, backup and data, the changelog, the introduction, and
-  the language choice.
-- **Countdown list** — one card each: the days left set large on the left, and the name, tags
-  and date on the right — with the time after the date where there is one. What has gone by
-  sits at the foot of the list, under a **Past** heading; when something falls today or
-  tomorrow, a line at the top of the list says so.
-- **Pinning and sorting** — a pinned countdown leads the list however it is sorted. The sort
-  button offers **By date · nearest first**, **By date · furthest first** and **Date added ·
-  newest first**, and remembers the choice. It governs the part still ahead.
-- **Search and filters** — a box above the list, with a control on the right for searching
-  **Name** (tags included), **Date** or **Time**. Under it, a row of pills narrows the list to
-  **Next 7 days**, or to one tag. The line under the title also says how many fall this year.
-- **Exact minute** — a countdown is either all day, or set to an exact hour and minute.
-- **Tags and colours** — as many tags as you like, and a colour of its own mixed on a hue
-  strip in the editor. Unset, it takes the theme's colour.
-- **Countdown screen** — tap a card to open it: the full years, months, days, hours, minutes
-  and seconds breakdown, plus the pin switch, the date, the time and the tags.
-- **Calendar** — a hand-drawn month grid, with up to three dots on a day that holds several
-  countdowns. Tap a day and that day's countdowns are listed underneath, with the same search
-  and sort.
-- **Fast month switching** — tap the month title for a year-and-month picker with This month,
-  and buttons that step the year by 1 and by 10.
-- **Long-press a card** — pin it, edit it or delete it without opening it first. A delete asks
-  for confirmation before it happens.
-- **Adding several at once** — while creating a countdown, switch on “Add several at once”,
-  give a gap and a count, and a run of countdowns sharing one name, tags, colour and time is
-  added together.
-- **Home-screen widgets** — two of them. **Single countdown** puts one countdown on the home
-  screen, ticking to the second. **Countdown list** shows what is coming next, one per row.
-  Both adapt to their size; their panel — light, dark or the system's — is chosen on the
-  Home-screen widgets page under Settings, along with the list's text size, and neither asks
-  for a permission.
-- **Notifications** — a page of its own under Settings: a reminder time, one app-wide lead
-  time, and an override for any single countdown. It lists what is coming up with the moment
-  each reminder will arrive, and can send a test notification. Reminders use an inexact alarm,
-  so no exact-alarm permission is asked for, and they are put back after a restart.
-- **Lunar dates** — a countdown can be picked on the lunar calendar (1900–2100, leap months
-  included), and the card and its screen name the lunar day after the solar one. One day, not
-  a yearly repeat.
-- **Appearance** — large rounded cards with a hairline outline, and the day count set far
-  larger than anything else. Six themes — white, black, teal, mist blue, amber and rose — or
-  mix your own on a hue strip. White is the plain one: a white page with near-black ink. Teal
-  keeps the warm paper page. The other three, and a mixed hue, tint the page, the panels and
-  the outlines to match their accent. The app does not follow the system dark setting and does
-  not take colours from the wallpaper; a choice stays put.
-- **Bilingual** — follows the system language, or you can pick Chinese or English under
-  Settings. Date formats are localised too.
-- **Backup and restore** — every countdown, and the appearance (including the widgets' panel
-  and text size), sorting and language settings, can be written to a file and read back. An export can be encrypted with AES-256-GCM and a
-  password; an import asks for that password first, then asks **Overwrite** or **Merge**, and
-  says how many countdowns it would add, overwrite or discard before it does any of them.
-  There is also **Export as a calendar file**, which writes .ics for a system calendar.
-- **Changelog and About** — every release is listed under Settings with the installed version
-  marked, and the project's own introduction is readable in the app, with a repository address
-  ready to copy or to open.
-- **Large fonts** — the title bar, the bottom bar and the cards keep clear of the status bar
-  and grow with the system font scale, so nothing is squeezed.
-- **No permissions unless you ask for reminders, no network, no analytics.** One module, no
-  third-party runtime libraries, `minSdk` 27. The optional on-the-day reminder is the only
-  thing that asks for anything — the notification permission, and permission to put its alarm
-  back after a restart.
+- **Three screens** — Home, Calendar and Settings, one tap apart at the foot of the window.
+- **Countdown list** — one card each: the days left set large, with the name, tags and date;
+  what has gone by sits at the bottom.
+- **Exact minute** — a countdown is either all day, or set to a time of day.
+- **Pinning and sorting** — pinned entries lead the list; sort by date or by when added, and
+  the choice is remembered.
+- **Search and filters** — by name, date or time, or narrow the list to the next 7 days or
+  one tag.
+- **Tags and colours** — as many tags as you like, and a colour mixed on a hue strip; unset,
+  it takes the theme's colour.
+- **Countdown screen** — the full years-to-seconds breakdown, plus the pin switch, date, time
+  and tags.
+- **Calendar** — up to three dots on a busy day; tap a day to list its countdowns, tap the
+  month title to jump months.
+- **Long-press a card** — pin, edit or delete it, with a confirmation before a delete.
+- **Adding several at once** — give a gap and a count, and a run of countdowns is added
+  together.
+- **Home-screen widgets** — a single countdown ticking to the second, or a list of what is
+  coming; both fit their size, with a light, dark or system panel.
+- **Notifications** — the reminder time and the lead apply to all-day countdowns only, and any
+  single countdown can set a lead of its own; a test notification is one tap away.
+- **Lunar dates** — pick a day on the lunar calendar (1900–2100, leap months included).
+- **Appearance** — large rounded cards with a hairline outline, the day count far larger than
+  the rest; six themes or a hue of your own.
+- **Bilingual** — follows the system language, or pick one under Settings.
+- **Backup and restore** — everything to a file and back, with optional AES-256-GCM; also
+  .ics for a system calendar.
+- **Changelog and About** — both readable in the app.
+- **Large fonts** — grows with the system font scale instead of squeezing the text.
+- **No permissions unless you ask for reminders, no network, no analytics.**
 
 ## Adding several at once
 
