@@ -22,6 +22,8 @@ see how long is left — or how long it has been.
 - **Countdown list** — one card each: the days left set large, with the name, tags and date;
   what has gone by sits at the bottom.
 - **Exact minute** — a countdown is either all day, or set to a time of day.
+- **Yearly repeats** — a birthday or an anniversary is set once; the list, the calendar and
+  the reminders all count to the day it next comes round.
 - **Pinning and sorting** — pinned entries lead the list; sort by date or by when added, and
   the choice is remembered.
 - **Search and filters** — by name, date or time, or narrow the list to the next 7 days or

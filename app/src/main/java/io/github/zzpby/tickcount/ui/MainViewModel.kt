@@ -19,6 +19,7 @@ import io.github.zzpby.tickcount.data.WidgetTextSize
 import io.github.zzpby.tickcount.data.previewOf
 import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.domain.icsFor
+import io.github.zzpby.tickcount.domain.resolvedOn
 import io.github.zzpby.tickcount.notify.Reminders
 import io.github.zzpby.tickcount.ui.widget.refreshAllWidgets
 import kotlinx.coroutines.Dispatchers
@@ -216,7 +217,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
      */
     fun exportIcs(): String {
         val zone = ZoneId.systemDefault()
-        return icsFor(_events.value, zone, ZonedDateTime.now(zone))
+        val now = ZonedDateTime.now(zone)
+        // Resolved first: a yearly countdown goes out as the day it next comes round, with
+        // the yearly rule attached, rather than as the day it was first entered on.
+        return icsFor(_events.value.resolvedOn(now.toLocalDate()), zone, now)
     }
 
     /**

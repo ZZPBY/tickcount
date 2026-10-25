@@ -82,6 +82,18 @@ class RemindersTest {
         assertEquals(LocalDate.of(2026, 10, 26).atTime(9, 0), local(planned!!.at))    }
 
     @Test
+    fun `a yearly countdown is reminded on the day it next comes round`() {
+        // Its stored date is the day it was entered on, so scheduling from that would fire
+        // in the past and be dropped.
+        val birthday = allDay(date = LocalDate.of(1990, 10, 26)).copy(repeatsYearly = true)
+        val now = LocalDate.of(2026, 10, 20).atTime(12, 0).atZone(zone).toInstant()
+
+        val planned = Reminders.planned(listOf(birthday), 9 * 60, 0, now, zone)
+
+        assertEquals(LocalDate.of(2026, 10, 26).atTime(9, 0), local(planned!!.at))
+    }
+
+    @Test
     fun `a list whose reminders have all passed has nothing to schedule`() {
         val past = allDay(date = LocalDate.of(2026, 10, 20))
         val now = LocalDate.of(2026, 10, 21).atTime(12, 0).atZone(zone).toInstant()

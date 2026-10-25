@@ -57,6 +57,10 @@ fun icsFor(
                 append("DTEND:").append(utcText(startZoned.plusHours(1))).append(CRLF)
             }
 
+            // One rule, and the one every calendar understands. The date it is attached to
+            // is already the next occurrence when the export resolves its list first.
+            if (event.repeatsYearly) append("RRULE:FREQ=YEARLY").append(CRLF)
+
             append("SUMMARY:").append(escape(event.title)).append(CRLF)
             if (event.tags.isNotEmpty()) {
                 append("CATEGORIES:").append(escape(event.tags.joinToString(","))).append(CRLF)
