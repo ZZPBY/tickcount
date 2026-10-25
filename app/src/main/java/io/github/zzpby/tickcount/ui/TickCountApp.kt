@@ -257,8 +257,11 @@ fun TickCountApp(
                 // dialog can be: a dialog is sized by its content, so the fields that
                 // appeared and disappeared inside it resized the window, which re-measured
                 // the content, and the two chased each other every frame.
-                editorOpen -> EventEditorScreen(
-                    initial = editorEvent!!,
+                // The countdown the editor was opened for can be gone — a backup restored
+                // under it, say — in which case there is nothing to edit and the screen
+                // underneath is the honest thing to show.
+                editorOpen && editorEvent != null -> EventEditorScreen(
+                    initial = editorEvent,
                     isNew = editorIsNew,
                     onSave = { edited ->
                         viewModel.saveEvent(edited)
