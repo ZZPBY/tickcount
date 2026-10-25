@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.domain.resolvedOn
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.TickCountTheme
 import java.time.LocalDate
@@ -60,8 +61,11 @@ class CountdownWidgetConfigActivity : ComponentActivity() {
         }
 
         // Soonest first, and same-day countdowns by their time, because that is the
-        // order someone picking one is thinking in.
+        // order someone picking one is thinking in. Resolved first, so a yearly
+        // countdown sorts by the day it next comes round rather than by the day it
+        // was entered on.
         val events = EventStore(this).load()
+            .resolvedOn(LocalDate.now())
             .sortedWith(compareBy({ it.epochDay }, { it.time }, { it.title }))
 
         setContent {

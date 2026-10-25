@@ -32,6 +32,7 @@ object EventCodec {
     private const val KEY_LUNAR_MONTH = "lm"
     private const val KEY_LUNAR_DAY = "ld"
     private const val KEY_LUNAR_LEAP = "ll"
+    private const val KEY_REPEATS = "y"
 
     /** Sentinel for "no time of day", which is not a valid minute. */
     private const val NO_TIME = -1
@@ -71,6 +72,9 @@ object EventCodec {
                     // field is new, and a default that was never chosen need not take up
                     // space in a document that is rewritten on every save.
                     .apply { event.remindLeadMinutes?.let { put(KEY_LEAD, it) } }
+                    // Written only for the countdowns that repeat: the flag is new, and an
+                    // absent one means the ordinary case.
+                    .apply { if (event.repeatsYearly) put(KEY_REPEATS, true) }
                     .apply {
                         event.lunarMonth?.let { put(KEY_LUNAR_MONTH, it) }
                         event.lunarDay?.let { put(KEY_LUNAR_DAY, it) }
@@ -106,6 +110,7 @@ object EventCodec {
                     lunarMonth = obj.optInt(KEY_LUNAR_MONTH, 0).takeIf { it in 1..12 },
                     lunarDay = obj.optInt(KEY_LUNAR_DAY, 0).takeIf { it in 1..30 },
                     lunarLeap = obj.optBoolean(KEY_LUNAR_LEAP, false),
+                    repeatsYearly = obj.optBoolean(KEY_REPEATS, false),
                 )
             )
         }

@@ -42,6 +42,7 @@ import io.github.zzpby.tickcount.domain.SearchScope
 import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.notify.Reminders
 import io.github.zzpby.tickcount.domain.countdownList
+import io.github.zzpby.tickcount.domain.resolvedOn
 import io.github.zzpby.tickcount.ui.calendar.MonthYearPickerDialog
 import io.github.zzpby.tickcount.ui.components.PlusIcon
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
@@ -109,8 +110,11 @@ fun TickCountApp(
         runCatching { AppScreen.valueOf(screenName) }.getOrDefault(AppScreen.HOME)
     }
     val today = now.toLocalDate()
-    val byDate = remember(events) { events.groupBy { it.date } }
-    val detailEvent = viewModel.event(detailId)
+    // A yearly countdown's stored date is the day it was entered on; the screens place it
+    // on the day it next comes round. Resolved here once for the whole screen rather than
+    // in each list that reads this map.
+    val byDate = remember(events, today) { events.resolvedOn(today).groupBy { it.date } }
+    val detailEvent = viewModel.event(detailId)?.resolvedOn(today)
     val calendarDate = calendarEpochDay.takeIf { it != NO_DAY }?.let(LocalDate::ofEpochDay)
 
     // A new countdown's id is random, so it has to be minted once per editing
@@ -119,7 +123,9 @@ fun TickCountApp(
         when {
             !editorOpen -> null
             editorIsNew -> viewModel.draftEvent(LocalDate.ofEpochDay(editorNewOn))
-            else -> viewModel.event(editorId)
+            // Resolved so that editing a yearly countdown starts from the date it is
+            // actually counting to; saving keeps the same month and day.
+            else -> viewModel.event(editorId)?.resolvedOn(today)
         }
     }
 

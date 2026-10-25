@@ -49,6 +49,14 @@ data class CountdownEvent(
      */
     val remindLeadMinutes: Int? = null,
     /**
+     * Whether this countdown comes back on the same month and day every year.
+     *
+     * [date] stays the day it was entered on; everything that shows a countdown resolves it
+     * through `occurrenceOn` first, so a birthday keeps one record instead of thirty. Nothing
+     * is stored about which occurrence this is — there is only ever one on screen.
+     */
+    val repeatsYearly: Boolean = false,
+    /**
      * The lunar date this countdown was entered as, when it was entered that way.
      *
      * Kept beside the solar [date] rather than instead of it: the countdown still counts down

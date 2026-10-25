@@ -14,6 +14,7 @@ import io.github.zzpby.tickcount.MainActivity
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.CountdownEvent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.domain.resolvedOn
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -133,7 +134,10 @@ object Reminders {
         // testing a different question. The app always passes its own zone.
         zone: ZoneId = ZoneId.systemDefault(),
     ): Planned? {
+        // A yearly countdown's stored date is the day it was entered on, so it is resolved
+        // to the day it next comes round before anything is scheduled from it.
         return events
+            .resolvedOn(now.atZone(zone).toLocalDate())
             .sortedBy { it.date }
             .map { event -> Planned(event, momentOf(event, minutes, leadMinutes, zone)) }
             .firstOrNull { it.at.isAfter(now) }

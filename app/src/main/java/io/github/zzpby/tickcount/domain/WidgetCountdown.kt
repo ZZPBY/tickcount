@@ -85,6 +85,9 @@ fun upcomingCountdowns(
     count: Int,
 ): List<CountdownEvent> =
     events
+        // A yearly countdown's stored date may already be behind us; what belongs on the
+        // widget is the day it next comes round.
+        .resolvedOn(today)
         .filterNot { it.date.isBefore(today) }
         .sortedWith(compareBy({ it.epochDay }, { it.time }, { it.title }))
         .take(count)

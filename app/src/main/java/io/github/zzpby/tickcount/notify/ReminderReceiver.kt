@@ -1,9 +1,10 @@
-﻿package io.github.zzpby.tickcount.notify
+package io.github.zzpby.tickcount.notify
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import io.github.zzpby.tickcount.data.EventStore
+import io.github.zzpby.tickcount.domain.resolvedOn
 import java.time.LocalDate
 
 /**
@@ -16,10 +17,13 @@ import java.time.LocalDate
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val id = intent.getStringExtra(Reminders.EXTRA_ID)
-        val events = EventStore(context).load()
-        val event = if (id == null) events.firstOrNull { it.date >= LocalDate.now() }
+        val today = LocalDate.now()
+        // Resolved first: a yearly countdown's stored date is the day it was entered on, and
+        // comparing that to today would drop the reminder the year after it was written.
+        val events = EventStore(context).load().resolvedOn(today)
+        val event = if (id == null) events.firstOrNull { it.date >= today }
         else events.firstOrNull { it.id == id }
-        if (event != null && !event.date.isBefore(LocalDate.now()) && Reminders.canNotify(context)) {
+        if (event != null && !event.date.isBefore(today) && Reminders.canNotify(context)) {
             Reminders.deliver(context, event)
         } else {
             // Still reschedule, or a deleted countdown would silence every later reminder.

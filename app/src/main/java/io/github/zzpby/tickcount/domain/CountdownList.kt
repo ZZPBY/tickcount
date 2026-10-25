@@ -61,8 +61,11 @@ fun countdownList(
     today: LocalDate,
     order: SortOrder = SortOrder.DATE_ASC,
 ): List<CountdownListEntry> {
-    val pinned = events.filter { it.pinned }
-    val (past, ahead) = events.filterNot { it.pinned }.partition { it.date.isBefore(today) }
+    // Yearly countdowns are read as their next occurrence here rather than anywhere the
+    // list is drawn, so every row, sort and heading is looking at the same dates.
+    val shown = events.resolvedOn(today)
+    val pinned = shown.filter { it.pinned }
+    val (past, ahead) = shown.filterNot { it.pinned }.partition { it.date.isBefore(today) }
 
     val ordered = pinned.sortedWith(byOrder(order)) +
         ahead.sortedWith(byOrder(order)) +

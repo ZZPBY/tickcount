@@ -52,6 +52,9 @@
     <string name="field_time">Time</string>
     <string name="field_all_day">All day</string>
     <string name="field_exact_minute">Exact minute</string>
+    <string name="field_repeats">Repeats every year</string>
+    <string name="field_repeats_hint">For birthdays and anniversaries, which come back each year.</string>
+    <string name="detail_repeats_suffix"> · every year</string>
     <string name="field_color">Own colour</string>
     <string name="field_lunar">Lunar date</string>
     <string name="lunar_unset">Not set</string>

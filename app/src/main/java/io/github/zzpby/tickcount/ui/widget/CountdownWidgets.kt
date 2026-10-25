@@ -24,8 +24,10 @@ import io.github.zzpby.tickcount.domain.WidgetCountdown
 import io.github.zzpby.tickcount.domain.WidgetShape
 import io.github.zzpby.tickcount.domain.breakdownOf
 import io.github.zzpby.tickcount.domain.countdownTo
+import io.github.zzpby.tickcount.domain.resolvedOn
 import io.github.zzpby.tickcount.domain.widgetCountdownFor
 import io.github.zzpby.tickcount.domain.widgetShapeFor
+import java.time.LocalDate
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -135,7 +137,10 @@ object CountdownWidgets {
             secondaryIds = SECONDARY_TEXTS,
         )
 
-        val events = EventStore(context).load()
+        // Resolved before either pick: a yearly countdown's stored date is the day it was
+        // entered on, which may be years behind us and would sort it to the bottom of a
+        // nearest-first list.
+        val events = EventStore(context).load().resolvedOn(LocalDate.now())
         // A widget whose countdown was deleted falls back to the soonest one still
         // standing, rather than going blank.
         val event = events.firstOrNull { it.id == savedEventId(context, appWidgetId) }

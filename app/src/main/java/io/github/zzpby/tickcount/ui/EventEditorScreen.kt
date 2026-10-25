@@ -122,6 +122,7 @@ fun EventEditorScreen(
     var minuteOfDay by rememberSaveable(initial.id) {
         mutableIntStateOf(initial.time?.let { it.hour * 60 + it.minute } ?: DEFAULT_MINUTE)
     }
+    var repeatsYearly by rememberSaveable(initial.id) { mutableStateOf(initial.repeatsYearly) }
 
     var tagDraft by rememberSaveable(initial.id) { mutableStateOf("") }
     var datePickerOpen by rememberSaveable { mutableStateOf(false) }
@@ -160,6 +161,7 @@ fun EventEditorScreen(
         lunarMonth = lunarMonth.takeIf { it in 1..12 },
         lunarDay = lunarDay.takeIf { it in 1..30 },
         lunarLeap = lunarLeap && lunarMonth in 1..12,
+        repeatsYearly = repeatsYearly,
     )
 
     /**
@@ -180,6 +182,7 @@ fun EventEditorScreen(
         minuteOfDay,
         hue,
         coloured,
+        repeatsYearly,
         initial,
     ) {
         if (batchStepText.isEmpty() || batchCountText.isEmpty()) {
@@ -363,6 +366,30 @@ fun EventEditorScreen(
                             .format(timeFormatter),
                         onClick = { timePickerOpen = true },
                     )
+                }
+
+                // The day is settled, and whether it comes back is part of what the day
+                // means: a birthday saved once should not have to be saved again next year.
+                Spacer(Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.field_repeats),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = stringResource(R.string.field_repeats_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Switch(checked = repeatsYearly, onCheckedChange = { repeatsYearly = it })
                 }
 
                 // Colour comes after the day is settled: it says how the countdown looks,
