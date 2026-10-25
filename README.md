@@ -202,8 +202,8 @@ TickCount 只在自己私有的 `SharedPreferences` 中保存一份倒数日列�
 「数据管理」里导出的备份文件写到哪里由你选，加不加密也由你定，应用没有任何办法把它送出去。
 它默认不声明任何权限，也不发起网络请求、不含统计与广告；只有可选的「当天提醒」会用到
 `POST_NOTIFICATIONS`（Android 13 起）和 `RECEIVE_BOOT_COMPLETED`，前者在你打开提醒时才申请，
-关掉即撤销。项目介绍里有一个指向本仓库的链接，点击后在浏览器中打开——TickCount 自己没有
-联网能力，也没有 `INTERNET` 权限。
+关掉即撤销。设置页「项目介绍」下面有一个指向本仓库的链接，点「跳转」在浏览器中打开——
+TickCount 自己没有联网能力，也没有 `INTERNET` 权限。
 这些数据仅在 Android 自身的云备份开启时才会离开设备，而这由 `res/xml/backup_rules.xml` 决定。
 
 ## 许可

@@ -319,6 +319,10 @@ fun TickCountApp(
                     // A dialog rather than a row of its own: it is one choice, and
                     // rebuilding the activity would take a second screen with it.
                     onLanguage = { languageOpen = true },
+                    // The link is the one thing here that leaves the app, and it is
+                    // handed to the browser: TickCount has no INTERNET permission of
+                    // its own.
+                    onOpenLink = { runCatching { uriHandler.openUri(linkUrl) } },
                 )
 
                 screen == AppScreen.REMINDERS -> NotificationsScreen(
@@ -357,12 +361,7 @@ fun TickCountApp(
 
                 screen == AppScreen.CHANGELOG -> ChangelogScreen()
 
-                else -> ProjectIntroScreen(
-                    // The link is the one thing here that leaves the app, and it
-                    // is handed to the browser: TickCount has no INTERNET
-                    // permission of its own.
-                    onOpenLink = { runCatching { uriHandler.openUri(linkUrl) } },
-                )
+                else -> ProjectIntroScreen()
             }
         }
     }

@@ -235,10 +235,10 @@ The app declares no permissions by default, makes no network requests, and conta
 analytics or advertising. The one exception is the optional on-the-day reminder, which uses
 `POST_NOTIFICATIONS` (Android 13 and up) and `RECEIVE_BOOT_COMPLETED`; the notification
 permission is asked for when the switch is turned on, and goes away when it is turned off.
-There is a link to this repository in the introduction; tapping it opens the
-address in the browser, because TickCount has no network ability of its own and no
-`INTERNET` permission. The stored data leaves the device only if Android's own cloud backup
-is on, which is what `res/xml/backup_rules.xml` decides.
+There is a link to this repository on the settings page, under the row that opens the
+introduction; tapping Open sends the address to the browser, because TickCount has no network
+ability of its own and no `INTERNET` permission. The stored data leaves the device only if
+Android's own cloud backup is on, which is what `res/xml/backup_rules.xml` decides.
 
 ## Licence
 

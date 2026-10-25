@@ -1,9 +1,12 @@
 package io.github.zzpby.tickcount.ui
 
+import android.content.ClipData
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,19 +14,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.ui.platform.LocalClipboard
+import androidx.compose.ui.platform.toClipEntry
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.AppLanguage
@@ -38,6 +56,8 @@ import io.github.zzpby.tickcount.ui.components.PaletteIcon
 import io.github.zzpby.tickcount.ui.theme.CardShape
 import io.github.zzpby.tickcount.ui.theme.Gutter
 import io.github.zzpby.tickcount.ui.theme.hairline
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * What used to be the drawer, as a screen of its own.
@@ -50,12 +70,17 @@ import io.github.zzpby.tickcount.ui.theme.hairline
  * The rows are grouped by what they are about rather than by how often they are used: what
  * the app does for you, how it behaves, and what it has to say about itself. The gaps between
  * the cards are the only thing saying so, so a flat list would leave the reader guessing.
+ *
+ * The repository link sits under the group that introduces the project rather than at the foot
+ * of that page: the introduction is worth reading once, the address is what people come back
+ * for, and this is the screen they come back to.
  */
 @Composable
 fun SettingsScreen(
     language: AppLanguage,
     onOpen: (AppScreen) -> Unit,
     onLanguage: () -> Unit,
+    onOpenLink: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -110,6 +135,14 @@ fun SettingsScreen(
                 onClick = { onOpen(AppScreen.INTRO) },
             ) { tint -> InfoIcon(color = tint) }
         }
+
+        Spacer(Modifier.height(10.dp))
+        ProjectLinkCard(
+            onOpen = onOpenLink,
+            modifier = Modifier.padding(horizontal = Gutter),
+        )
+
+        Spacer(Modifier.height(24.dp))
     }
 }
 
@@ -200,6 +233,97 @@ private fun SettingsRow(
             size = 16.dp,
             color = scheme.onSurfaceVariant,
         )
+    }
+}
+
+/**
+ * Where the project lives: the mark, what it is, the address, and the way out.
+ *
+ * The address copies rather than opens, and the button beside it opens rather than copies —
+ * the two things someone might want from a repository link, each given its own target
+ * instead of one control guessing. The confirmation replaces the address in place for a
+ * moment, because a snackbar would need a host this screen has none of, and the text it
+ * replaces is the thing that was just copied anyway.
+ *
+ * It used to sit at the foot of the introduction, which meant scrolling through the whole
+ * README to reach the one thing on that page that goes anywhere.
+ */
+@Composable
+private fun ProjectLinkCard(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val shaping = RoundedCornerShape(18.dp)
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+    val url = stringResource(R.string.about_link_url)
+
+    var copied by remember { mutableStateOf(false) }
+    LaunchedEffect(copied) {
+        if (copied) {
+            delay(1800)
+            copied = false
+        }
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(shaping)
+            .background(scheme.surfaceContainerHigh)
+            .border(1.dp, scheme.outlineVariant, shaping)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_github),
+            contentDescription = null,
+            tint = scheme.onSurface,
+            modifier = Modifier.size(34.dp),
+        )
+
+        Spacer(Modifier.width(12.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.intro_github_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = if (copied) {
+                    stringResource(R.string.intro_copied)
+                } else {
+                    url
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = if (copied) scheme.primary else scheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .clickable {
+                        // The clipboard is written through a coroutine because the current
+                        // API is suspending. The label is null because that is what the
+                        // deprecated one-liner this replaced put on the clip — a label is
+                        // only ever shown by clipboard inspectors, and changing it here
+                        // would be a difference nobody asked for.
+                        scope.launch {
+                            clipboard.setClipEntry(ClipEntry(ClipData.newPlainText(null, url)))
+                        }
+                        copied = true
+                    }
+                    .padding(vertical = 3.dp),
+            )
+        }
+
+        Spacer(Modifier.width(10.dp))
+
+        Button(
+            onClick = onOpen,
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        ) {
+            Text(stringResource(R.string.intro_go))
+        }
     }
 }
 
