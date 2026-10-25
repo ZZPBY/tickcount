@@ -61,4 +61,16 @@ class RecurrenceTest {
         assertEquals(day("2027-01-05"), birthday.resolvedOn(day("2026-10-25")).date)
         assertEquals(day("1990-01-05"), birthday.date)
     }
+
+    @Test
+    fun `what is coming keeps a yearly countdown stored years ago`() {
+        // The list of what is coming is filtered by date, so it has to be resolved first:
+        // stored, this birthday is behind us; as it next comes round, it is not.
+        val birthday = event("1990-10-05", repeats = true)
+        val pastTrip = event("2020-03-01", repeats = false)
+
+        val upcoming = listOf(birthday, pastTrip).upcomingOn(day("2026-10-25"))
+
+        assertEquals(listOf(day("2027-10-05")), upcoming.map { it.date })
+    }
 }

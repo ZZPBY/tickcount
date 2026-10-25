@@ -41,3 +41,14 @@ fun CountdownEvent.resolvedOn(today: LocalDate): CountdownEvent =
 /** The same resolution over a whole list, leaving it untouched when nothing repeats. */
 fun List<CountdownEvent>.resolvedOn(today: LocalDate): List<CountdownEvent> =
     if (none { it.repeatsYearly }) this else map { it.resolvedOn(today) }
+
+/**
+ * The countdowns that still have a day ahead of them on [today], soonest first.
+ *
+ * The filter runs *after* the resolution, and that order is the whole point: a yearly
+ * countdown stored years ago is behind us as stored and ahead of us as it next comes round.
+ * Filtering first drops it from every list of what is coming — which is how the reminders
+ * page came to lose its per-countdown rows.
+ */
+fun List<CountdownEvent>.upcomingOn(today: LocalDate): List<CountdownEvent> =
+    resolvedOn(today).filterNot { it.date.isBefore(today) }.sortedBy { it.date }

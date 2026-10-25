@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import io.github.zzpby.tickcount.R
 import io.github.zzpby.tickcount.data.AppSettings
 import io.github.zzpby.tickcount.data.CountdownEvent
+import io.github.zzpby.tickcount.domain.upcomingOn
 import io.github.zzpby.tickcount.notify.Reminders
 import io.github.zzpby.tickcount.ui.components.ChoicePill
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
@@ -64,6 +65,7 @@ import io.github.zzpby.tickcount.ui.theme.Gutter
 import io.github.zzpby.tickcount.ui.theme.PillShape
 import io.github.zzpby.tickcount.ui.theme.hairline
 import io.github.zzpby.tickcount.ui.theme.tintWash
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -111,9 +113,10 @@ fun NotificationsScreen(
     val scheduled = settings.remind && next != null
     var eventQuery by rememberSaveable { mutableStateOf("") }
     var eventFilter by rememberSaveable { mutableStateOf(EventFilter.ALL.name) }
-    val upcoming = remember(events) {
-        events.filter { !it.date.isBefore(java.time.LocalDate.now()) }.sortedBy { it.date }
-    }
+    // What this page lists, and the moment each row says: read as the day a countdown next
+    // lands on. A yearly one stored years ago would otherwise be filtered out as past and
+    // its reminder moment computed for the day it was entered on.
+    val upcoming = remember(events, refreshKey) { events.upcomingOn(LocalDate.now()) }
     val shown = upcoming.filter { event ->
         val query = eventQuery.trim()
         val matchesQuery = query.isEmpty() ||
