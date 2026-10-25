@@ -367,7 +367,9 @@ fun NotificationsScreen(
                         onClick = { eventFilter = EventFilter.CUSTOM.name },
                     )
                     ChoicePill(
-                        label = stringResource(R.string.notify_follow_global),
+                        // "Default" rather than "follow the app setting": a timed countdown
+                        // that has no lead of its own is not following anything.
+                        label = stringResource(R.string.notify_filter_default),
                         selected = eventFilter == EventFilter.GLOBAL.name,
                         onClick = { eventFilter = EventFilter.GLOBAL.name },
                     )
@@ -398,7 +400,6 @@ fun NotificationsScreen(
                                 EventRow(
                                     event = event,
                                     moment = momentText(event, settings),
-                                    customised = event.remindLeadMinutes != null,
                                     onClick = { eventDialogId = event.id },
                                 )
                             }
@@ -444,6 +445,7 @@ fun NotificationsScreen(
         EventLeadDialog(
             title = editing.title,
             current = editing.remindLeadMinutes,
+            timed = editing.time != null,
             onPick = {
                 onEventLead(editing.id, it)
                 eventDialogId = null
@@ -671,7 +673,6 @@ private fun momentText(event: CountdownEvent, settings: AppSettings): String {
 private fun EventRow(
     event: CountdownEvent,
     moment: String,
-    customised: Boolean,
     onClick: () -> Unit,
 ) {
     Row(
@@ -690,11 +691,15 @@ private fun EventRow(
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = if (customised) {
-                    moment + " · " + stringResource(R.string.notify_custom)
-                } else {
-                    moment + " · " + stringResource(R.string.notify_follow_global)
-                },
+                // "Follow the app setting" only says anything for a countdown without a time
+                // of its own: the app-wide lead never moves a timed one, which lands on time.
+                text = moment + " · " + stringResource(
+                    when {
+                        event.remindLeadMinutes != null -> R.string.notify_custom
+                        event.time != null -> R.string.notify_lead_none
+                        else -> R.string.notify_follow_global
+                    }
+                ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -711,13 +716,15 @@ private fun EventRow(
 /**
  * One countdown's own reminder offset.
  *
- * Two answers rather than three: follow the app-wide setting, or name an offset. "On time" is
- * an offset of zero, and giving it a third button would be a menu of one special case.
+ * Two answers rather than three, and the first one says what the app setting means for this
+ * countdown: an all-day one follows the app-wide lead, while one with a time of its own lands
+ * on time because that lead never moves it.
  */
 @Composable
 private fun EventLeadDialog(
     title: String,
     current: Int?,
+    timed: Boolean,
     onPick: (Int?) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -743,7 +750,9 @@ private fun EventLeadDialog(
             Column {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     ChoicePill(
-                        label = stringResource(R.string.notify_follow_global),
+                        label = stringResource(
+                            if (timed) R.string.notify_lead_none else R.string.notify_follow_global
+                        ),
                         selected = follow,
                         onClick = { follow = true },
                     )

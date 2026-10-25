@@ -181,7 +181,7 @@
     <string name="notify_grant">Allow permission</string>
     <string name="notify_time">Reminder time</string>
     <string name="notify_time_all_day">Time for all-day countdowns</string>
-    <string name="notify_time_note">A countdown with a time of its own is reminded before that time, not this one.</string>
+    <string name="notify_time_note">Both apply to all-day countdowns only. One with a time of its own is reminded at that time; give it its own lead to go earlier.</string>
     <string name="notify_advance">How early</string>
     <string name="notify_lead_none">On time</string>
     <plurals name="notify_lead_minutes">
@@ -208,6 +208,7 @@
     <string name="notify_custom">Custom</string>
     <string name="notify_search_hint">Search name or tag</string>
     <string name="notify_filter_all">All</string>
+    <string name="notify_filter_default">Default</string>
     <string name="notify_events_empty">Nothing matches</string>
     <string name="notify_permission">Permission</string>
     <string name="notify_granted">Allowed</string>

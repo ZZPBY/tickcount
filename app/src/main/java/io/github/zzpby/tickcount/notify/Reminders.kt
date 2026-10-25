@@ -105,9 +105,11 @@ object Reminders {
     /**
      * When the reminder for [event] falls, in [zone].
      *
-     * Anchored to the countdown itself — its own time when it names one, the reminder time
-     * of day when it is all day — and then moved back by its own offset if it has one, or by
-     * the app-wide [leadMinutes] if it does not.
+     * A countdown with a time of its own is anchored to that time and moved back only by an
+     * offset set on that countdown. The app-wide [leadMinutes] belongs to the app-wide time of
+     * day it is set beside, so it moves all-day countdowns and nothing else: applied to a timed
+     * one it would quietly pull every such reminder off its own moment, which is not what the
+     * setting says it does.
      */
     fun momentOf(
         event: CountdownEvent,
@@ -117,8 +119,8 @@ object Reminders {
     ): Instant {
         val fallback = LocalTime.of(minutes / 60, minutes % 60)
         val base = event.time?.let { event.date.atTime(it) } ?: event.date.atTime(fallback)
-        return base.minusMinutes((event.remindLeadMinutes ?: leadMinutes).toLong())
-            .atZone(zone).toInstant()
+        val lead = event.remindLeadMinutes ?: if (event.time == null) leadMinutes else 0
+        return base.minusMinutes(lead.toLong()).atZone(zone).toInstant()
     }
 
     fun planned(

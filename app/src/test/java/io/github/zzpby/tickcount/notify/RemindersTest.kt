@@ -41,9 +41,9 @@ class RemindersTest {
     }
 
     @Test
-    fun `a countdown with its own time ignores the app's time of day`() {
+    fun `a countdown with its own time is reminded then, whatever the app-wide lead says`() {
         val moment = Reminders.momentOf(timed(), minutes = 9 * 60, leadMinutes = 30, zone = zone)
-        assertEquals(LocalDate.of(2026, 10, 26).atTime(14, 0), local(moment))
+        assertEquals(LocalDate.of(2026, 10, 26).atTime(14, 30), local(moment))
     }
 
     @Test
@@ -55,6 +55,19 @@ class RemindersTest {
             zone = zone,
         )
         assertEquals(LocalDate.of(2026, 10, 23).atTime(14, 30), local(moment))
+    }
+
+    @Test
+    fun `an all-day countdown's own lead moves it back from the app's time of day`() {
+        // Its date has no time of day to be moved back from, so the app-wide time stands in
+        // for one; the countdown's own lead is then applied to that.
+        val moment = Reminders.momentOf(
+            allDay(lead = 24 * 60),
+            minutes = 9 * 60,
+            leadMinutes = 30,
+            zone = zone,
+        )
+        assertEquals(LocalDate.of(2026, 10, 25).atTime(9, 0), local(moment))
     }
 
     @Test

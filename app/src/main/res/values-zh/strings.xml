@@ -166,7 +166,7 @@
     <string name="notify_grant">授予权限</string>
     <string name="notify_time">提醒时间</string>
     <string name="notify_time_all_day">全天倒数日的提醒时间</string>
-    <string name="notify_time_note">有具体时间的倒数日，按它自己的时间提前，不看这里。</string>
+    <string name="notify_time_note">这两项只管全天倒数日。填了具体时间的，按它自己的时间提醒；要提前，就在那一条上单独设。</string>
     <string name="notify_advance">提前</string>
     <string name="notify_lead_none">准时</string>
     <plurals name="notify_lead_minutes">
@@ -190,6 +190,7 @@
     <string name="notify_custom">自定义</string>
     <string name="notify_search_hint">搜索名称或标签</string>
     <string name="notify_filter_all">全部</string>
+    <string name="notify_filter_default">默认</string>
     <string name="notify_events_empty">没有符合条件的日子</string>
     <string name="notify_permission">通知权限</string>
     <string name="notify_granted">已开启</string>
