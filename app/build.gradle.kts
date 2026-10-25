@@ -244,6 +244,30 @@ android {
     }
 }
 
+/** The version this build carries, read once the `android` block above has filled it in. */
+val releaseVersionName = providers.provider { android.defaultConfig.versionName ?: "0.0.0" }
+
+/**
+ * Puts the built release APK where the project keeps its own copies.
+ *
+ * `.tools/apk输出目录/TickCount-<version>.apk` is the file that gets side-loaded onto a phone,
+ * and what is attached to a release by hand when CI cannot do it, so it is named after the
+ * version rather than after Gradle's `app-release` output. The copy is a finaliser of
+ * `assembleRelease` rather than a task with `dependsOn` it: `assembleRelease` is what produces
+ * the APK and what the workflow runs, so hanging the copy off it keeps both in one invocation.
+ */
+val copyReleaseApk = tasks.register<Copy>("copyReleaseApk") {
+    group = "build"
+    description = "Copies the release APK to .tools/apk输出目录/TickCount-<version>.apk."
+    from(layout.buildDirectory.file("outputs/apk/release/app-release.apk"))
+    into(rootProject.file(".tools/apk输出目录"))
+    rename { "TickCount-${releaseVersionName.get()}.apk" }
+}
+
+tasks.matching { it.name == "assembleRelease" }.configureEach {
+    finalizedBy(copyReleaseApk)
+}
+
 // Declared through the variant API so AGP knows the directory is generated, and
 // wires the dependency for every task that reads assets rather than for whichever
 // ones happened to fail first.
