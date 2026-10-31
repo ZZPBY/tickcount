@@ -6,10 +6,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.IconButton
@@ -174,59 +179,69 @@ fun TickCountApp(
 
     Scaffold(
         topBar = {
-            AppTitleBar(
-                // The home screen keeps its name for the screen itself, where it is set
-                // at display size: the bar there is only a place to put the buttons.
-                title = when {
-                    editorOpen -> stringResource(
-                        if (editorIsNew) R.string.dialog_new_title else R.string.dialog_edit_title
-                    )
-                    detailEvent != null -> detailEvent.title
-                    // These set their own name large in the content, so the bar keeps
-                    // only the buttons.
-                    screen == AppScreen.HOME ||
+            // The home screen sets its own title in the content, and its add button now
+            // sits beside that title. A bar there would be an empty 56dp strip above the
+            // list, so the screen starts as soon as the system bars allow instead.
+            val homeOwnsTheTop =
+                screen == AppScreen.HOME && !editorOpen && detailEvent == null
+            if (homeOwnsTheTop) {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .windowInsetsPadding(
+                            WindowInsets.safeDrawing.only(
+                                WindowInsetsSides.Top + WindowInsetsSides.Horizontal
+                            )
+                        )
+                )
+            } else {
+                AppTitleBar(
+                    // The home screen keeps its name for the screen itself, where it is set
+                    // at display size: the bar there is only a place to put the buttons.
+                    title = when {
+                        editorOpen -> stringResource(
+                            if (editorIsNew) R.string.dialog_new_title else R.string.dialog_edit_title
+                        )
+                        detailEvent != null -> detailEvent.title
+                        // These set their own name large in the content, so the bar keeps
+                        // only the buttons.
                         screen == AppScreen.SETTINGS ||
-                        screen == AppScreen.REMINDERS -> null
-                    else -> stringResource(screen.labelRes)
-                },
-                // The editor and a countdown's own page are steps into something, and the
-                // screens under Settings are one level down from the list they were opened
-                // from. The three tabs have nothing above them: the bar at the foot of the
-                // window is where you go from one to another.
-                navigation = if (detailEvent != null || editorOpen || screen.isUnderSettings) {
-                    TitleBarNavigation.BACK
-                } else {
-                    TitleBarNavigation.NONE
-                },
-                onNavigate = {
+                            screen == AppScreen.REMINDERS -> null
+                        else -> stringResource(screen.labelRes)
+                    },
+                    // The editor and a countdown's own page are steps into something, and the
+                    // screens under Settings are one level down from the list they were opened
+                    // from. The three tabs have nothing above them: the bar at the foot of the
+                    // window is where you go from one to another.
+                    navigation = if (detailEvent != null || editorOpen || screen.isUnderSettings) {
+                        TitleBarNavigation.BACK
+                    } else {
+                        TitleBarNavigation.NONE
+                    },
+                    onNavigate = {
+                        when {
+                            editorOpen -> editorOpen = false
+                            detailEvent != null -> detailId = null
+                            else -> screenName = AppScreen.SETTINGS.name
+                        }
+                    },
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                ) {
                     when {
-                        editorOpen -> editorOpen = false
-                        detailEvent != null -> detailId = null
-                        else -> screenName = AppScreen.SETTINGS.name
-                    }
-                },
-                modifier = Modifier.padding(horizontal = 12.dp),
-            ) {
-                when {
-                    // The editor saves from its own header row: it is a whole screen now,
-                    // and the slot here belongs to one action over a list.
-                    editorOpen -> Unit
+                        // The editor saves from its own header row: it is a whole screen now,
+                        // and the slot here belongs to one action over a list.
+                        editorOpen -> Unit
 
-                    detailEvent != null -> TextButton(onClick = { startEditEvent(detailEvent.id) }) {
-                        Text(stringResource(R.string.action_edit))
-                    }
+                        detailEvent != null -> TextButton(onClick = { startEditEvent(detailEvent.id) }) {
+                            Text(stringResource(R.string.action_edit))
+                        }
 
-                    // The order is chosen from a pill next to the search box, which is
-                    // where the list it orders can see it.
-                    screen == AppScreen.HOME -> {
-                        IconButton(onClick = { startNewEvent(today) }) { PlusIcon() }
-                    }
-
-                    // On the calendar the plus belongs to the chosen day, and
-                    // there is nothing to add to until one is chosen.
-                    screen == AppScreen.CALENDAR -> {
-                        if (calendarDate != null) {
-                            IconButton(onClick = { startNewEvent(calendarDate) }) { PlusIcon() }
+                        // On the calendar the plus belongs to the chosen day, and
+                        // there is nothing to add to until one is chosen.
+                        screen == AppScreen.CALENDAR -> {
+                            if (calendarDate != null) {
+                                IconButton(onClick = { startNewEvent(calendarDate) }) { PlusIcon() }
+                            }
                         }
                     }
                 }
@@ -293,6 +308,7 @@ fun TickCountApp(
                 screen == AppScreen.HOME -> HomeScreen(
                     entries = countdownList(events, today, settings.sortOrder),
                     today = today,
+                    onAdd = { startNewEvent(today) },
                     query = searchQuery,
                     onQueryChange = { searchQuery = it },
                     scope = searchScope,

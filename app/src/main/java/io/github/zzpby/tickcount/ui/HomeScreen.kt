@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,6 +40,7 @@ import io.github.zzpby.tickcount.domain.SearchScope
 import io.github.zzpby.tickcount.domain.SortOrder
 import io.github.zzpby.tickcount.domain.matchesQuery
 import io.github.zzpby.tickcount.domain.searchText
+import io.github.zzpby.tickcount.ui.components.PlusIcon
 import io.github.zzpby.tickcount.ui.components.rememberDateFormatter
 import io.github.zzpby.tickcount.ui.theme.Gutter
 import io.github.zzpby.tickcount.ui.theme.hairline
@@ -59,6 +61,8 @@ import java.time.temporal.ChronoUnit
 fun HomeScreen(
     entries: List<CountdownListEntry>,
     today: LocalDate,
+    /** Adds one on [today]. It sits beside the title rather than in a bar of its own. */
+    onAdd: () -> Unit,
     query: String,
     onQueryChange: (String) -> Unit,
     scope: SearchScope,
@@ -100,7 +104,7 @@ fun HomeScreen(
         }
 
     Column(modifier = modifier.fillMaxSize()) {
-        HomeHeader(entries, today)
+        HomeHeader(entries, today, onAdd)
 
         Row(
             modifier = Modifier
@@ -197,7 +201,11 @@ fun HomeScreen(
  * empty screen says less than the empty screen's own message, which also says what to do.
  */
 @Composable
-private fun HomeHeader(entries: List<CountdownListEntry>, today: LocalDate) {
+private fun HomeHeader(
+    entries: List<CountdownListEntry>,
+    today: LocalDate,
+    onAdd: () -> Unit,
+) {
     val upcoming = entries.count { !it.isPast }
     // How many of those land in the current year, which is the time horizon most people
     // plan a birthday or a deadline against.
@@ -214,24 +222,30 @@ private fun HomeHeader(entries: List<CountdownListEntry>, today: LocalDate) {
     }
     val line = listOfNotNull(summary, yearPart).joinToString(" · ")
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = Gutter, end = Gutter, top = 2.dp, bottom = 16.dp),
+            .padding(start = Gutter, end = Gutter, top = 4.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.Top,
     ) {
-        Text(
-            text = stringResource(R.string.app_name),
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-        if (line.isNotEmpty()) {
-            Spacer(Modifier.height(4.dp))
+        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = line,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.onSurface,
             )
+            if (line.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = line,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
+        // The title bar that used to hold this button was an empty strip above the list.
+        // It belongs beside the title it adds to.
+        IconButton(onClick = onAdd) { PlusIcon() }
     }
 }
 

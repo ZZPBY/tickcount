@@ -33,8 +33,12 @@ import io.github.zzpby.tickcount.ui.components.ChevronIcon
 enum class TitleBarNavigation { NONE, BACK }
 
 /**
- * The bar every screen carries: a button on the left when there is somewhere to go back to,
- * the screen's name in the middle, and whatever that screen offers on the right.
+ * The bar the screens that need one carry: a button on the left when there is somewhere to
+ * go back to, the screen's name in the middle, and whatever that screen offers on the right.
+ *
+ * The home screen leaves the bar out entirely: its name is set at display size in the content,
+ * and its add button sits beside that name, so a bar above it would be an empty strip. The
+ * screens that do use it are the ones that need a back button or a title of their own.
  *
  * There is no menu button any more: the three destinations are on the bar at the foot of the
  * window, so a button here would only repeat them. What the left slot still carries is a way
@@ -58,8 +62,9 @@ fun AppTitleBar(
     /**
      * The screen's name, or null to leave it out.
      *
-     * The home screen passes null: its name is set at display size inside the screen, and a
-     * bar repeating it in small type just above the large one says the same thing twice.
+     * The settings and reminder screens pass null: they set their own name at display size
+     * inside the screen, and a bar repeating it in small type just above the large one says
+     * the same thing twice.
      */
     title: String?,
     navigation: TitleBarNavigation,
