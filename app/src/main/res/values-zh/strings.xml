@@ -45,6 +45,10 @@
     <string name="dialog_pick_month_title">跳转到</string>
     <string name="field_name">名称</string>
     <string name="field_name_hint">生日、考试、旅行…</string>
+    <!-- 只为详情页保存的补充信息；下面那行说明它会出现在哪里 -->
+    <string name="field_note">备注</string>
+    <string name="field_note_placeholder">补充信息…</string>
+    <string name="field_note_hint">只在这个倒数日的详情页显示。</string>
     <string name="field_tags">标签</string>
     <string name="field_tags_hint">输入后点右边的 +</string>
     <string name="field_date">日期</string>

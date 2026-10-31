@@ -25,6 +25,7 @@ class BackupTest {
             id = "a",
             date = LocalDate.of(2026, 10, 16),
             title = "评审",
+            note = "带上门禁卡\n九点前到",
             time = LocalTime.of(9, 30),
             tags = listOf("工作", "重要"),
             colorHue = 210f,
@@ -84,6 +85,22 @@ class BackupTest {
 
         assertEquals(birthday, restored.events.single())
         assertTrue(restored.events.single().repeatsYearly)
+    }
+
+    @Test
+    fun `a note survives the file unchanged, newlines included`() {
+        val noted = CountdownEvent(
+            id = "n",
+            date = LocalDate.of(2026, 11, 3),
+            title = "考试",
+            note = "考场：三楼报告厅\n8:30 前到，带准考证",
+        )
+
+        val restored = BackupCodec.decode(
+            BackupCodec.encode(Backup(listOf(noted), AppSettings()), exportedAt = 1L)
+        )
+
+        assertEquals("考场：三楼报告厅\n8:30 前到，带准考证", restored.events.single().note)
     }
 
     @Test
@@ -153,6 +170,8 @@ class BackupTest {
         assertEquals("旧数据", event.title)
         assertEquals(LocalDate.ofEpochDay(20338), event.date)
         assertEquals(144f, event.colorHue)
+        // Notes came later, so a record without one loads as the ordinary empty note.
+        assertEquals("", event.note)
     }
 
     // -------------------------------------------------------------- the password

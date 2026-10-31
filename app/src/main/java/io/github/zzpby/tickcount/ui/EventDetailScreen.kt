@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -153,6 +154,29 @@ fun EventDetailScreen(
             label = stringResource(R.string.field_time),
             value = event.time?.format(timeFormatter) ?: stringResource(R.string.field_all_day),
         )
+
+        // The note is what this page is opened for, so it sits among the countdown's own
+        // facts rather than after the tags. It is the only place in the app that reads it.
+        if (event.note.isNotBlank()) {
+            Spacer(Modifier.height(10.dp))
+            DetailCard {
+                Text(
+                    text = stringResource(R.string.field_note),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                // Selectable, because a note often holds an address or a number that is
+                // wanted somewhere else; nothing here is editable without going to Edit.
+                SelectionContainer {
+                    Text(
+                        text = event.note,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+        }
 
         if (event.tags.isNotEmpty()) {
             Spacer(Modifier.height(10.dp))

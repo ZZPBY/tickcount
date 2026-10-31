@@ -30,8 +30,10 @@ see how long is left — or how long it has been.
   one tag.
 - **Tags and colours** — as many tags as you like, and a colour mixed on a hue strip; unset,
   it takes the theme's colour.
-- **Countdown screen** — the full years-to-seconds breakdown, plus the pin switch, date, time
-  and tags.
+- **Countdown screen** — the full years-to-seconds breakdown, plus the pin switch, date, time,
+  note and tags.
+- **Notes** — each countdown can carry a note, shown only on its own detail page; the list,
+  the calendar, the widgets and the search never show it.
 - **Calendar** — up to three dots on a busy day; tap a day to list its countdowns, tap the
   month title to jump months.
 - **Long-press a card** — pin, edit or delete it, with a confirmation before a delete.
@@ -53,8 +55,8 @@ see how long is left — or how long it has been.
 
 ## Adding several at once
 
-The name, the tags, the colour and the time of day are answered once. Switch on “Add several
-at once” in the new-countdown screen and two numbers are all that is left:
+The name, the note, the tags, the colour and the time of day are answered once. Switch on
+“Add several at once” in the new-countdown screen and two numbers are all that is left:
 
 - **Days between** — how far apart neighbouring entries are, from 1 to 3650 days.
 - **How many** — how many more of the same countdown to add, from 1 to 100.
@@ -64,9 +66,9 @@ than the one before. So creating “Raid night” on 14 October with a gap of 2 
 leaves the 14th, the 16th, the 18th and the 20th in the list: four in all.
 
 Whatever the time field says is carried by every entry in the run — all day stays all day,
-and 09:30 stays 09:30. They count as one batch, so ordering by when they were added keeps
-them together, reading forwards by date. Each is an ordinary countdown afterwards, to edit
-or delete on its own.
+and 09:30 stays 09:30; the note is carried the same way. They count as one batch, so
+ordering by when they were added keeps them together, reading forwards by date. Each is an
+ordinary countdown afterwards, to edit or delete on its own.
 
 ## How the countdown reads
 
@@ -157,7 +159,7 @@ and the theme does not have to be split in two by version.
 app/src/main/java/io/github/zzpby/tickcount/
 ├── MainActivity.kt              edge-to-edge host + the app theme, system-bar icon colours included
 ├── data/                        the model and how it is stored
-│   ├── CountdownEvent.kt        the model: id / date / time / tags / colour / pinned
+│   ├── CountdownEvent.kt        the model: id / date / time / note / tags / colour / pinned
 │   ├── EventCodec.kt            reading and writing the records as JSON, migrations included
 │   ├── EventStore.kt            keeping that document in SharedPreferences
 │   ├── SettingsStore.kt         the stored theme, sort order, language and widget appearance
@@ -187,7 +189,7 @@ app/src/main/java/io/github/zzpby/tickcount/
     ├── SortButton.kt            the sort pill: choosing how a list is ordered
     ├── SearchField.kt           the search box and its scope control
     ├── EventDetailScreen.kt     one countdown's own screen
-    ├── EventEditorScreen.kt     new or edit (a whole screen): name, tags, date, time,
+    ├── EventEditorScreen.kt     new or edit (a whole screen): name, note, tags, date, time,
     │                            colour, and adding several at once
     ├── DeleteConfirmDialog.kt   the confirmation before a delete
     ├── AppearanceScreen.kt      appearance: the theme, the hue strip, and the surface levels
@@ -226,8 +228,8 @@ java .tools/图标生成/IconGen.java app/src/main/res/drawable-xxxhdpi/ic_launc
 
 ## Privacy
 
-TickCount stores one list of countdowns — date, name, time, tags, colour, pin and when it
-was added — in its own private `SharedPreferences` file, with nothing else in it. The
+TickCount stores one list of countdowns — date, name, note, time, tags, colour, pin and when
+it was added — in its own private `SharedPreferences` file, with nothing else in it. The
 colour belongs to each countdown and is used to tell them apart in the calendar and the
 list. The home-screen widget keeps a second file, `tickcount_widgets`, recording only which
 widget shows which countdown; the theme, sort order, language and the widgets' appearance

@@ -22,6 +22,7 @@ object EventCodec {
     private const val KEY_ID = "i"
     private const val KEY_EPOCH_DAY = "d"
     private const val KEY_TITLE = "t"
+    private const val KEY_NOTE = "n"
     private const val KEY_MINUTE = "m"
     private const val KEY_TAGS = "g"
     private const val KEY_HUE = "h"
@@ -63,6 +64,9 @@ object EventCodec {
                     .put(KEY_ID, event.id)
                     .put(KEY_EPOCH_DAY, event.epochDay)
                     .put(KEY_TITLE, event.title)
+                    // The note is optional and can be long, so a countdown without one
+                    // writes no key at all rather than an empty string on every record.
+                    .apply { if (event.note.isNotBlank()) put(KEY_NOTE, event.note) }
                     .put(KEY_MINUTE, event.time?.let { it.hour * 60 + it.minute } ?: NO_TIME)
                     .put(KEY_TAGS, JSONArray(event.tags))
                     .put(KEY_CREATED, event.createdAt)
@@ -98,6 +102,11 @@ object EventCodec {
                         ?: migratedId(epochDay, index),
                     date = LocalDate.ofEpochDay(epochDay),
                     title = obj.optString(KEY_TITLE).take(CountdownEvent.MAX_TITLE_LENGTH),
+                    // Absent on records written before notes existed, and on every
+                    // countdown that never had one; both load as the empty note.
+                    note = obj.optString(KEY_NOTE)
+                        .trim()
+                        .take(CountdownEvent.MAX_NOTE_LENGTH),
                     time = readTime(obj.optInt(KEY_MINUTE, NO_TIME)),
                     tags = readTags(obj.optJSONArray(KEY_TAGS)),
                     colorHue = readHue(obj),

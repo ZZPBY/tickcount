@@ -28,11 +28,17 @@ import java.util.UUID
  * recently. Records written before it existed load as zero, which the sort treats as
  * "older than everything" and breaks the tie with the date — so an old list keeps
  * the order it was showing.
+ *
+ * [note] is free-form detail for the countdown's own page. It is deliberately read by
+ * nothing else: the list cards, the calendar, the widgets and the search carry only what
+ * can be seen at a glance, so a note stays private to the screen it was written for.
  */
 data class CountdownEvent(
     val id: String,
     val date: LocalDate,
     val title: String,
+    /** Extra detail, shown on this countdown's own page and nowhere else. */
+    val note: String = "",
     val time: LocalTime? = null,
     val tags: List<String> = emptyList(),
     val colorHue: Float? = null,
@@ -80,6 +86,7 @@ data class CountdownEvent(
         const val MAX_TITLE_LENGTH = 60
         const val MAX_TAG_LENGTH = 24
         const val MAX_TAG_COUNT = 8
+        const val MAX_NOTE_LENGTH = 2000
 
         fun newId(): String = UUID.randomUUID().toString()
     }

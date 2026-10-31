@@ -22,6 +22,7 @@ class BatchAddTest {
     private fun template(
         date: LocalDate = base,
         title: String = "打副本",
+        note: String = "",
         time: LocalTime? = null,
         tags: List<String> = emptyList(),
         hue: Float? = null,
@@ -30,6 +31,7 @@ class BatchAddTest {
         id = "base",
         date = date,
         title = title,
+        note = note,
         time = time,
         tags = tags,
         colorHue = hue,
@@ -78,6 +80,7 @@ class BatchAddTest {
     fun `everything but the date and the id travels with the batch`() {
         val source = template(
             title = "例会",
+            note = "带上周的纪要",
             time = LocalTime.of(9, 30),
             tags = listOf("工作", "固定"),
             hue = 210f,
@@ -88,6 +91,7 @@ class BatchAddTest {
 
         added.forEach { copy ->
             assertEquals("例会", copy.title)
+            assertEquals("带上周的纪要", copy.note)
             assertEquals(LocalTime.of(9, 30), copy.time)
             assertEquals(listOf("工作", "固定"), copy.tags)
             assertEquals(210f, copy.colorHue)

@@ -20,6 +20,7 @@ class SearchTest {
         id = "e",
         date = LocalDate.of(2026, 10, 16),
         title = "项目评审",
+        note = "别忘带门禁卡",
         time = LocalTime.of(9, 30),
         tags = listOf("工作", "重要"),
     )
@@ -42,6 +43,13 @@ class SearchTest {
     fun `the name scope looks at the tags too`() {
         assertTrue(matchesQuery(text(SearchScope.NAME), "工作"))
         assertTrue(matchesQuery(text(SearchScope.NAME), "重要"))
+    }
+
+    @Test
+    fun `the name scope does not look at the note`() {
+        // A note is shown only on the countdown's own page, so a search must not surface
+        // a countdown for words the list cannot show. Otherwise the match looks arbitrary.
+        assertFalse(matchesQuery(text(SearchScope.NAME), "门禁卡"))
     }
 
     @Test

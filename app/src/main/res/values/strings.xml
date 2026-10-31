@@ -46,6 +46,10 @@
     <string name="dialog_pick_month_title">Jump to</string>
     <string name="field_name">Name</string>
     <string name="field_name_hint">Birthday, exam, trip…</string>
+    <!-- Free-form detail kept for the detail page; the hint says where it is visible. -->
+    <string name="field_note">Note</string>
+    <string name="field_note_placeholder">Anything worth remembering…</string>
+    <string name="field_note_hint">Shown only on this countdown’s detail page.</string>
     <string name="field_tags">Tags</string>
     <string name="field_tags_hint">Type one, then tap +</string>
     <string name="field_date">Date</string>

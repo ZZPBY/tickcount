@@ -33,10 +33,10 @@ const val MAX_BATCH_COUNT = 100
  * Starting at zero and stepping would describe the same days as "a count of 4", and the
  * two fields would then agree with neither the countdown list nor each other.
  *
- * Everything but the date and the id is copied from [template]: the name, the time of day,
- * the tags, the colour and the pin are one answer given once, and [createdAt] is the moment
- * of the whole batch, because that is when its entries were added. A step of zero or less,
- * or a count of zero or less, adds nothing.
+ * Everything but the date and the id is copied from [template]: the name, the note, the time
+ * of day, the tags, the colour and the pin are one answer given once, and [createdAt] is the
+ * moment of the whole batch, because that is when its entries were added. A step of zero or
+ * less, or a count of zero or less, adds nothing.
  */
 fun batchOf(
     template: CountdownEvent,

@@ -113,6 +113,9 @@ fun EventEditorScreen(
     modifier: Modifier = Modifier,
 ) {
     var title by rememberSaveable(initial.id) { mutableStateOf(initial.title) }
+    // Free-form detail, kept beside the title but read by no list or widget: this field
+    // and the detail screen are the only places a note appears.
+    var note by rememberSaveable(initial.id) { mutableStateOf(initial.note) }
     // An ArrayList because that is what a Bundle can carry across a rotation, and
     // replaced rather than mutated on every edit, so the lint warning about a
     // mutable collection in state does not apply here.
@@ -154,6 +157,7 @@ fun EventEditorScreen(
     /** What has been filled in so far, as the one countdown the batch will copy. */
     fun filledIn(): CountdownEvent = initial.copy(
         title = title.trim(),
+        note = note.trim(),
         tags = tags.toList(),
         date = date,
         time = if (timed) LocalTime.of(minuteOfDay / 60, minuteOfDay % 60) else null,
@@ -176,6 +180,7 @@ fun EventEditorScreen(
         batchStepText,
         batchCountText,
         title,
+        note,
         tags,
         epochDay,
         timed,
@@ -284,6 +289,21 @@ fun EventEditorScreen(
                     label = { Text(stringResource(R.string.field_name)) },
                     placeholder = { Text(stringResource(R.string.field_name_hint)) },
                     singleLine = true,
+                    shape = FieldShape,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                // Directly under the name: a note is another thing this countdown is,
+                // and the hint underneath says where it will and will not be shown.
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it.take(CountdownEvent.MAX_NOTE_LENGTH) },
+                    label = { Text(stringResource(R.string.field_note)) },
+                    placeholder = { Text(stringResource(R.string.field_note_placeholder)) },
+                    supportingText = { Text(stringResource(R.string.field_note_hint)) },
+                    minLines = 3,
+                    maxLines = 6,
                     shape = FieldShape,
                     modifier = Modifier.fillMaxWidth(),
                 )
