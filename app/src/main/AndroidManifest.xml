@@ -66,6 +66,21 @@
                 android:resource="@xml/upcoming_widget_info" />
         </receiver>
 
+        <!--
+          An update replaces this app underneath the widgets the launcher is already
+          holding, and a launcher that reuses the view hierarchy it has drops every action
+          naming a view that hierarchy lacks. Drawing them once on the way back up — and
+          re-arming the midnight alarm with them — is the one moment the app gets to do
+          that without the user opening it.
+        -->
+        <receiver
+            android:name=".ui.widget.WidgetUpdateReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
+
         <!-- Started by the launcher, so this one does have to be exported. -->        <activity
             android:name=".ui.widget.CountdownWidgetConfigActivity"
             android:excludeFromRecents="true"

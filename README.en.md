@@ -115,6 +115,8 @@ Both take their panel from **Home-screen widgets** under Settings: light, dark, 
 the system is using. The list can also be given a smaller or larger text size; the single
 widget keeps its own, because it already fills its cell with the largest text that fits.
 
+An update redraws both of them by itself, so there is no need to remove and re-add them.
+
 **Neither asks for a permission.**
 
 ## Download

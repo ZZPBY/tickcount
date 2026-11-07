@@ -174,11 +174,11 @@ android {
         // conversation of a day and goes to 2 only after that day has been pushed once, so
         // work in progress keeps the number it already has. The version code stays one
         // increasing integer for Play: the date squeezed together with the sequence in the
-        // last two digits — 2026.10.31.1 becomes 26103101 — except that it must never go
+        // last two digits — 2026.11.07.1 becomes 26110701 — except that it must never go
         // backwards: 2026.10.24.2 had been built and installed as 26102402 before that release
         // was withdrawn, so its replacement took 26102403 rather than the formula's 26102401.
-        versionCode = 26103101
-        versionName = "2026.10.31.1"
+        versionCode = 26110701
+        versionName = "2026.11.07.1"
     }
 
     signingConfigs {

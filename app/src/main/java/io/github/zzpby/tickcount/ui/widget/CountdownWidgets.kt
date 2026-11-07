@@ -25,6 +25,7 @@ import io.github.zzpby.tickcount.domain.WidgetShape
 import io.github.zzpby.tickcount.domain.breakdownOf
 import io.github.zzpby.tickcount.domain.countdownTo
 import io.github.zzpby.tickcount.domain.resolvedOn
+import io.github.zzpby.tickcount.domain.storedWidgetEventId
 import io.github.zzpby.tickcount.domain.widgetCountdownFor
 import io.github.zzpby.tickcount.domain.widgetShapeFor
 import java.time.LocalDate
@@ -77,9 +78,24 @@ object CountdownWidgets {
      * Stored as the countdown's id rather than its date, so that editing a
      * countdown's date — or putting a second one on the same day — leaves the widget
      * pointing at the same countdown.
+     *
+     * Read out of the preference map rather than with `getString`, because this key held
+     * a long (the date) before it held a string (the id). `getString` throws on the older
+     * one, and a thrown draw is swallowed as "not drawn this time" — which is how a widget
+     * placed before that change came to be frozen for good, reaching only a reinstall.
+     * An old value is dropped on sight; the id it would map to cannot be recovered from a
+     * date, so the widget falls back to the soonest countdown and draws.
      */
-    fun savedEventId(context: Context, appWidgetId: Int): String? =
-        prefs(context).getString(key(appWidgetId), null)
+    fun savedEventId(context: Context, appWidgetId: Int): String? {
+        val prefs = prefs(context)
+        val key = key(appWidgetId)
+        val stored = prefs.all[key]
+        val id = storedWidgetEventId(stored)
+        if (id == null && stored != null) {
+            prefs.edit { remove(key) }
+        }
+        return id
+    }
 
     fun saveEventId(context: Context, appWidgetId: Int, eventId: String) {
         prefs(context).edit { putString(key(appWidgetId), eventId) }

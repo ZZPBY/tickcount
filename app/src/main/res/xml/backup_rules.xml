@@ -2,7 +2,12 @@
 <!--
   Backup rules. The saved countdown list is small, personal and worth keeping
   across a device change, so it is included in cloud backups.
+
+  The widget bindings are not. A widget is keyed by the id the launcher handed out on this
+  device, so a restored copy names countdowns that are not there — and a copy written by a
+  release before the id existed is read as a broken widget rather than as an unknown one.
 -->
 <full-backup-content>
     <include domain="sharedpref" path="." />
+    <exclude domain="sharedpref" path="tickcount_widgets.xml" />
 </full-backup-content>
